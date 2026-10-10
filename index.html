@@ -33,6 +33,8 @@ input{width:100%;padding:12px;font-size:17px;border:1px solid var(--border);bord
 .x{background:none;border:0;color:var(--muted);font-size:13px;padding:6px}
 .neg{color:var(--bad)}
 #msg{min-height:20px;color:var(--accent);font-size:14px;text-align:center}
+.chk{display:flex;align-items:center;gap:10px;font-size:15px;color:var(--text);margin-top:12px}.chk input{width:auto}
+.two{display:flex;gap:8px}.btn2{flex:1;margin-top:14px;padding:14px;font-size:16px;font-weight:600;border:1px solid var(--border);border-radius:12px;background:var(--bg);color:var(--text)}
 </style></head><body>
 <div class="tabs"><button data-t="work" class="on">Trabajo</button><button data-t="pers">Personal</button></div>
 <div id="msg"></div>
@@ -43,8 +45,9 @@ input{width:100%;padding:12px;font-size:17px;border:1px solid var(--border);bord
 <label>Odómetro</label><input id="fo" inputmode="decimal">
 <label>Galones</label><input id="fg" inputmode="decimal">
 <label>Cuánto pagaste ($)</label><input id="fp" inputmode="decimal">
+<label class="chk"><input type="checkbox" id="ff" checked> Llené el tanque completo</label>
 <button class="btn" id="addf">Guardar llenada</button>
-<p class="muted">Llena el tanque cada vez para que el cálculo sea exacto.</p>
+<p class="muted">El cálculo usa ciclos entre llenadas completas. Si fue parcial, desmarca la casilla.</p>
 <div id="fillinfo"></div><div id="fills"></div></section>
 <section class="card"><h2>Últimos turnos</h2><div id="list"></div></section>
 </main>
@@ -54,58 +57,99 @@ input{width:100%;padding:12px;font-size:17px;border:1px solid var(--border);bord
 <label>Monto ($)</label><input id="pa" inputmode="decimal">
 <label>En qué (luz, mercado, tarjeta...)</label><input id="pn">
 <button class="btn" id="addp">Agregar gasto</button></section>
-<section class="card"><h2>Gastos del mes</h2><div id="plist"></div></section>
+<section class="card"><h2>Gastos del mes</h2><div id="plist"></div><p class="muted">No anotes aquí la gasolina del carro: ya se cuenta en Trabajo.</p></section>
+<section class="card"><h2>Copia de seguridad</h2><div class="two"><button class="btn2" id="exp">Exportar</button><button class="btn2" id="impb">Importar</button></div><input type="file" id="imp" accept="application/json,.json" hidden><p class="muted">Importar suma lo que falte; nunca borra lo que ya tienes.</p></section>
 </main>
 <script>
+//LOGIC-START
 const KEY='sd_tracker_v1';
-let S={active:null,shifts:[],fills:[],personal:[],range:'week'};
-try{const r=localStorage.getItem(KEY);if(r)S=Object.assign(S,JSON.parse(r));}catch(e){}
-const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}};
+const fin=n=>typeof n==='number'&&Number.isFinite(n);
+const num=v=>{if(v===null||v===undefined)return null;const t=String(v).trim().replace(',','.');if(t==='')return null;const n=Number(t);return Number.isFinite(n)?n:null;};
+const okd=d=>Number.isFinite(new Date(d).getTime());
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const vs=s=>!!s&&fin(s.startOdo)&&fin(s.endOdo)&&fin(s.earned)&&s.earned>=0&&s.endOdo>s.startOdo&&okd(s.start)&&okd(s.end)&&new Date(s.end)>=new Date(s.start);
+const vf=f=>!!f&&fin(f.odo)&&f.odo>=0&&fin(f.gal)&&f.gal>0&&fin(f.paid)&&f.paid>=0&&okd(f.date);
+function gas(fills){const f=fills.filter(vf).sort((a,b)=>a.odo-b.odo);let last=null,gal=0,cost=0,mi=0,G=0,C=0,n=0,bad=0;
+ for(const x of f){if(last){gal+=x.gal;cost+=x.paid;}
+  if(x.full!==false){if(last){const d=x.odo-last.odo,m=gal>0?d/gal:0;if(d>0&&m>=5&&m<=80){mi+=d;G+=gal;C+=cost;n++;}else bad++;}last=x;gal=0;cost=0;}}
+ return n?{pending:false,cpm:C/mi,mpg:mi/G,n,bad}:{pending:true,n:0,bad};}
+function period(kind,ref){const d=new Date(ref||Date.now());d.setHours(0,0,0,0);const a=new Date(d);let b;
+ if(kind==='week'){a.setDate(a.getDate()-((a.getDay()+6)%7));b=new Date(a);b.setDate(b.getDate()+7);}
+ else{a.setDate(1);b=new Date(a);b.setMonth(b.getMonth()+1);}
+ return[a,b];}
+const inP=(iso,p)=>{const t=new Date(iso).getTime();return t>=p[0].getTime()&&t<p[1].getTime();};
+function sc(s){const mi=s.endOdo-s.startOdo,h=(new Date(s.end)-new Date(s.start))/36e5;
+ const gc=fin(s.cpm)?mi*s.cpm:null;
+ return{mi,h,e:s.earned,gc,net:gc!==null?s.earned-gc:null};}
+function sumP(D,p){const r={n:0,e:0,mi:0,h:0,gc:0,net:0,ng:0,nn:0};
+ D.shifts.filter(s=>vs(s)&&inP(s.start,p)).map(sc).forEach(x=>{r.n++;r.e+=x.e;r.mi+=x.mi;r.h+=x.h;
+  if(x.gc!==null){r.gc+=x.gc;r.net+=x.net;}else{r.ng++;r.nn++;}});
+ r.complete=r.nn===0;return r;}
+function norm(raw){const o=raw&&typeof raw==='object'?raw:{},A=a=>Array.isArray(a)?a:[],ob=x=>x&&typeof x==='object';
+ return{v:2,active:ob(o.active)&&fin(o.active.startOdo)&&okd(o.active.start)?{start:o.active.start,startOdo:o.active.startOdo}:null,
+ shifts:A(o.shifts).filter(ob).map(s=>({...s,id:s.id||uid()})),
+ fills:A(o.fills).filter(ob).map(f=>({...f,id:f.id||uid(),full:f.full!==false})),
+ personal:A(o.personal).filter(ob).map(p=>({...p,id:p.id||uid(),type:p.type==='ingreso'?'ingreso':'gasto'})),
+ range:o.range==='month'?'month':'week',
+ };}
+function migrate(D){const g=gas(D.fills);if(!g.pending)D.shifts.forEach(s=>{if(!fin(s.cpm)){s.cpm=g.cpm;s.mpg=g.mpg;}});return D;}
+function mergeIn(D,raw){const N=norm(raw);['shifts','fills','personal'].forEach(k=>{const ids=new Set(D[k].map(x=>x.id));N[k].forEach(x=>{if(!ids.has(x.id)){D[k].push(x);ids.add(x.id);}});});
+ if(!D.active&&N.active)D.active=N.active;return D;}
+//LOGIC-END
 const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const money=n=>(n<0?'-$':'$')+Math.abs(n).toFixed(2);
-const num=v=>{const n=parseFloat(String(v).replace(',','.'));return isNaN(n)?null:n;};
 const tf=i=>new Date(i).toLocaleTimeString('es-US',{hour:'numeric',minute:'2-digit'});
 const df=i=>new Date(i).toLocaleDateString('es-US',{weekday:'short',day:'numeric',month:'short'});
-const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+let S;
+try{const raw=localStorage.getItem(KEY);if(raw&&!localStorage.getItem(KEY+'_pre2'))localStorage.setItem(KEY+'_pre2',raw);S=migrate(norm(raw?JSON.parse(raw):null));}catch(e){S=migrate(norm(null));}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){toast('No se pudo guardar en este navegador');}}
 let tab='work';
-function toast(t){$('msg').textContent=t;setTimeout(()=>{$('msg').textContent='';},3000);}
+function toast(t){$('msg').textContent=t;setTimeout(()=>{$('msg').textContent='';},3500);}
 function arm(b,fn){let a=false;b.onclick=()=>{if(a){fn();return;}a=true;b.textContent='¿Seguro?';setTimeout(()=>{a=false;b.textContent=b.dataset.l;},2500);};}
-function gas(){const f=[...S.fills].sort((a,b)=>a.odo-b.odo);if(f.length<2)return null;const mi=f[f.length-1].odo-f[0].odo;if(mi<=0)return null;const r=f.slice(1);const paid=r.reduce((s,x)=>s+x.paid,0),gal=r.reduce((s,x)=>s+x.gal,0);return{cpm:paid/mi,mpg:gal>0?mi/gal:null};}
-function sums(from){const g=gas();let e=0,m=0,h=0;S.shifts.forEach(s=>{if(new Date(s.start)>=from){e+=s.earned;m+=s.endOdo-s.startOdo;h+=(new Date(s.end)-new Date(s.start))/36e5;}});const gc=g?m*g.cpm:null;return{e,m,h,gc,net:g?e-gc:null,g};}
-function rs(){const d=new Date();d.setHours(0,0,0,0);if(S.range==='week'){d.setDate(d.getDate()-((d.getDay()+6)%7));}else d.setDate(1);return d;}
-function mstart(){const d=new Date();d.setHours(0,0,0,0);d.setDate(1);return d;}
 function tick(){const el=$('el');if(!el||!S.active)return;const m=Math.max(0,Math.floor((Date.now()-new Date(S.active.start))/6e4));el.textContent=Math.floor(m/60)+' h '+(m%60)+' min';}
 setInterval(tick,20000);
 function rShift(){const a=S.active;
 if(!a){$('shift').innerHTML='<h2>Turno</h2><label>Odómetro al salir de casa</label><input id="so" inputmode="decimal" placeholder="Ej. 84250"><button class="btn" id="go">Empezar turno</button>';
-$('go').onclick=()=>{const o=num($('so').value);if(o===null||o<0)return toast('Pon el odómetro');S.active={start:new Date().toISOString(),startOdo:o};save();rAll();};}
+$('go').onclick=()=>{const o=num($('so').value);if(o===null||o<0)return toast('Pon un odómetro válido');const me=Math.max(0,...S.shifts.filter(vs).map(s=>s.endOdo));if(o<me)return toast('El odómetro es menor al del último turno ('+me+')');S.active={start:new Date().toISOString(),startOdo:o};save();rAll();};}
 else{$('shift').innerHTML='<h2>Turno en curso</h2><p class="muted">Empezó a las '+tf(a.start)+' · <span id="el"></span> · salió con '+a.startOdo+' mi</p><label>Odómetro al llegar a casa</label><input id="eo" inputmode="decimal"><label>Ganancia del día ($)</label><input id="ea" inputmode="decimal"><button class="btn" id="fin">Terminar turno</button><button class="link" id="can" data-l="Cancelar turno">Cancelar turno</button>';tick();
-$('fin').onclick=()=>{const o=num($('eo').value),e=num($('ea').value);if(o===null||o<=a.startOdo)return toast('El odómetro final debe ser mayor al inicial');if(e===null||e<0)return toast('Pon lo que ganaste');S.shifts.push({id:uid(),start:a.start,end:new Date().toISOString(),startOdo:a.startOdo,endOdo:o,earned:e});S.active=null;save();rAll();toast('Turno guardado');};
+$('fin').onclick=()=>{const o=num($('eo').value),e=num($('ea').value);if(o===null||o<=a.startOdo)return toast('El odómetro final debe ser mayor al inicial');if(o-a.startOdo>1000)return toast('Más de 1,000 millas en un turno: revisa el odómetro');if(e===null||e<0)return toast('Pon lo que ganaste (0 o más)');
+const g=gas(S.fills);S.shifts.push({id:uid(),start:a.start,end:new Date().toISOString(),startOdo:a.startOdo,endOdo:o,earned:e,cpm:g.pending?null:g.cpm,mpg:g.pending?null:g.mpg});S.active=null;save();rAll();toast('Turno guardado');};
 arm($('can'),()=>{S.active=null;save();rAll();});}}
-function rStats(){const x=sums(rs());const w=S.range==='week';
-const nph=x.net!==null&&x.h>0?x.net/x.h:null,bph=x.h>0?x.e/x.h:null;
+function rStats(){const p=period(S.range),x=sumP(S,p),g=gas(S.fills),w=S.range==='week';
+const nph=x.complete&&x.n>0&&x.h>0?x.net/x.h:null,bph=x.h>0?x.e/x.h:null;
+const gt=x.n===0?'—':(x.ng===x.n?'Pendiente':money(x.gc)+(x.ng?'*':''));
+const K=(l,v)=>'<div class="k"><span>'+l+'</span><b>'+v+'</b></div>';
 let h='<div class="seg"><button data-r="week" class="'+(w?'on':'')+'">Esta semana</button><button data-r="month" class="'+(w?'':'on')+'">Este mes</button></div>';
-h+='<div class="muted">'+(nph!==null?'Ganancia neta por hora':'Ganancia bruta por hora')+'</div><div class="big '+(nph!==null&&nph<0?'neg':'')+'">'+money(nph!==null?nph:(bph||0))+'</div>';
-h+='<div class="grid"><div class="k"><span>Ganado</span><b>'+money(x.e)+'</b></div><div class="k"><span>Gasolina</span><b>'+(x.gc!==null?money(x.gc):'—')+'</b></div><div class="k"><span>Neto</span><b>'+(x.net!==null?money(x.net):'—')+'</b></div><div class="k"><span>Horas</span><b>'+x.h.toFixed(1)+'</b></div><div class="k"><span>Millas</span><b>'+Math.round(x.m)+'</b></div><div class="k"><span>Bruto por hora</span><b>'+(bph!==null?money(bph):'—')+'</b></div></div>';
-if(!x.g)h+='<p class="muted">Anota 2 llenadas de gasolina y aquí aparece tu neto real.</p>';
+h+='<div class="muted">Ganancia neta por hora (estimada)</div><div class="big'+(nph!==null&&nph<0?' neg':'')+'">'+(nph!==null?money(nph):(x.n?'Pendiente':'—'))+'</div>';
+h+='<div class="grid">'+K('Ganado',money(x.e))+K('Gasolina (est.)',gt)+K('Neto',x.n===0?'—':(x.complete?money(x.net):'Pendiente'))+K('Horas',x.h.toFixed(1))+K('Millas',Math.round(x.mi))+K('Bruto por hora',bph!==null?money(bph):'—')+'</div>';
+if(g.pending)h+='<p class="muted">Gasolina pendiente: necesito 2 llenadas completas seguidas con datos consistentes.'+(g.bad?' ('+g.bad+' ciclo(s) descartado(s) por inconsistentes.)':'')+'</p>';
+else if(x.ng&&x.ng<x.n)h+='<p class="muted">* '+x.ng+' turno(s) sin gasolina estimada.</p>';
 $('stats').innerHTML=h;
-$('stats').querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{S.range=b.dataset.r;save();rStats();});}
-function rFill(){const g=gas();const f=[...S.fills].sort((a,b)=>b.odo-a.odo).slice(0,3);
-$('fillinfo').innerHTML=g?'<div class="grid"><div class="k"><span>Tu rendimiento real</span><b>'+(g.mpg?g.mpg.toFixed(1)+' MPG':'—')+'</b></div><div class="k"><span>Gasolina por milla</span><b>'+money(g.cpm)+'</b></div></div>':'<p class="muted">Con 2 llenadas ya calculo tu costo por milla.</p>';
-$('fills').innerHTML=f.map(x=>'<div class="row"><div>'+df(x.date)+'<small>'+x.odo+' mi · '+x.gal+' gal</small></div><div><b>'+money(x.paid)+'</b> <button class="x" data-l="Borrar" data-f="'+x.id+'">Borrar</button></div></div>').join('');
+$('stats').querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{S.range=b.dataset.r;save();rAll();});}
+function rFill(){const g=gas(S.fills),f=[...S.fills].filter(vf).sort((a,b)=>b.odo-a.odo).slice(0,3);
+$('fillinfo').innerHTML=g.pending?'<p class="muted">Estimación pendiente: con 2 llenadas completas seguidas calculo tu costo por milla.</p>':'<div class="grid"><div class="k"><span>Rendimiento real</span><b>'+g.mpg.toFixed(1)+' MPG</b></div><div class="k"><span>Gasolina por milla</span><b>'+money(g.cpm)+'</b></div></div><p class="muted">Basado en '+g.n+' ciclo(s)'+(g.bad?' · '+g.bad+' descartado(s)':'')+'.</p>';
+$('fills').innerHTML=f.map(x=>'<div class="row"><div>'+df(x.date)+'<small>'+x.odo+' mi · '+x.gal+' gal'+(x.full===false?' · parcial':'')+'</small></div><div><b>'+money(x.paid)+'</b> <button class="x" data-l="Borrar" data-f="'+x.id+'">Borrar</button></div></div>').join('');
 $('fills').querySelectorAll('[data-f]').forEach(b=>arm(b,()=>{S.fills=S.fills.filter(x=>x.id!==b.dataset.f);save();rAll();}));}
-function rList(){const l=[...S.shifts].sort((a,b)=>new Date(b.start)-new Date(a.start)).slice(0,10);
-$('list').innerHTML=l.length?l.map(s=>{const m=s.endOdo-s.startOdo,h=(new Date(s.end)-new Date(s.start))/36e5;return '<div class="row"><div>'+df(s.start)+'<small>'+m+' mi · '+h.toFixed(1)+' h · '+money(h>0?s.earned/h:0)+'/h bruto</small></div><div><b>'+money(s.earned)+'</b> <button class="x" data-l="Borrar" data-d="'+s.id+'">Borrar</button></div></div>';}).join(''):'<p class="muted">Aún no hay turnos.</p>';
+function rList(){const l=S.shifts.filter(vs).sort((a,b)=>new Date(b.start)-new Date(a.start)).slice(0,10);
+$('list').innerHTML=l.length?l.map(s=>{const c=sc(s);return '<div class="row"><div>'+df(s.start)+'<small>'+c.mi+' mi · '+c.h.toFixed(1)+' h · '+(c.net!==null?'neto '+money(c.net):'neto pendiente')+'</small></div><div><b>'+money(s.earned)+'</b> <button class="x" data-l="Borrar" data-d="'+s.id+'">Borrar</button></div></div>';}).join(''):'<p class="muted">Aún no hay turnos.</p>';
 $('list').querySelectorAll('[data-d]').forEach(b=>arm(b,()=>{S.shifts=S.shifts.filter(x=>x.id!==b.dataset.d);save();rAll();}));}
-function rPers(){const ms=mstart();const x=sums(ms);const p=S.personal.filter(i=>new Date(i.date)>=ms);const pt=p.reduce((s,i)=>s+i.amount,0);const left=x.e-(x.gc||0)-pt;
-const mn=new Date().toLocaleDateString('es-US',{month:'long',year:'numeric'});
-$('psum').innerHTML='<h2>Resumen de '+mn+'</h2><div class="grid"><div class="k"><span>Ganado (Spark)</span><b>'+money(x.e)+'</b></div><div class="k"><span>Gasolina</span><b>'+(x.gc!==null?money(x.gc):'—')+'</b></div><div class="k"><span>Gastos personales</span><b>'+money(pt)+'</b></div><div class="k"><span>Te queda</span><b class="'+(left<0?'neg':'')+'">'+money(left)+'</b></div></div>';
-const l=[...p].sort((a,b)=>new Date(b.date)-new Date(a.date));
+function rPers(){const p=period('month'),x=sumP(S,p),P=S.personal.filter(i=>fin(i.amount)&&okd(i.date)&&inP(i.date,p));
+const pt=P.reduce((a,i)=>a+i.amount,0),left=x.complete?x.net-pt:null;
+const K=(l,v)=>'<div class="k"><span>'+l+'</span><b>'+v+'</b></div>';
+$('psum').innerHTML='<h2>Resumen de '+p[0].toLocaleDateString('es-US',{month:'long',year:'numeric'})+'</h2><div class="grid">'+K('Ganado (Spark)',money(x.e))+K('Gasolina (est.)',x.n===0?money(0):(x.ng===x.n?'Pendiente':money(x.gc)+(x.ng?'*':'')))+K('Gastos personales',money(pt))+K('Te queda (est.)',left!==null?money(left):'Pendiente')+'</div><p class="muted">Es una estimación, no tu saldo bancario.</p>';
+const l=[...P].sort((a,b)=>new Date(b.date)-new Date(a.date));
 $('plist').innerHTML=l.length?l.map(i=>'<div class="row"><div>'+esc(i.note||'Gasto')+'<small>'+df(i.date)+'</small></div><div><b>'+money(i.amount)+'</b> <button class="x" data-l="Borrar" data-p="'+i.id+'">Borrar</button></div></div>').join(''):'<p class="muted">Aún no hay gastos este mes.</p>';
 $('plist').querySelectorAll('[data-p]').forEach(b=>arm(b,()=>{S.personal=S.personal.filter(x=>x.id!==b.dataset.p);save();rAll();}));}
-$('addf').onclick=()=>{const o=num($('fo').value),gl=num($('fg').value),p=num($('fp').value);if(o===null||gl===null||gl<=0||p===null||p<0)return toast('Llena odómetro, galones y lo que pagaste');S.fills.push({id:uid(),date:new Date().toISOString(),odo:o,gal:gl,paid:p});['fo','fg','fp'].forEach(i=>$(i).value='');save();rAll();toast('Llenada guardada');};
-$('addp').onclick=()=>{const a=num($('pa').value);if(a===null||a<=0)return toast('Pon el monto');S.personal.push({id:uid(),date:new Date().toISOString(),amount:a,note:$('pn').value.trim()});$('pa').value='';$('pn').value='';save();rAll();toast('Gasto guardado');};
+$('addf').onclick=()=>{const o=num($('fo').value),gl=num($('fg').value),p=num($('fp').value);
+if(o===null||o<0||gl===null||gl<=0||p===null||p<0)return toast('Llena odómetro, galones y lo que pagaste');
+const pg=p/gl;if(pg<0.5||pg>15)return toast('Revisa galones y monto: el precio por galón sale raro');
+if(S.fills.some(f=>f.odo===o))return toast('Ya hay una llenada con ese odómetro');
+S.fills.push({id:uid(),date:new Date().toISOString(),odo:o,gal:gl,paid:p,full:$('ff').checked});['fo','fg','fp'].forEach(i=>$(i).value='');$('ff').checked=true;migrate(S);save();rAll();toast('Llenada guardada');};
+$('addp').onclick=()=>{const a=num($('pa').value);if(a===null||a<=0)return toast('Pon un monto mayor a 0');S.personal.push({id:uid(),date:new Date().toISOString(),amount:a,note:$('pn').value.trim()});$('pa').value='';$('pn').value='';save();rAll();toast('Guardado');};
+$('exp').onclick=()=>{const b=new Blob([JSON.stringify(S,null,2)],{type:'application/json'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download='gastos-spark-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),2000);};
+$('impb').onclick=()=>$('imp').click();
+$('imp').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const j=JSON.parse(r.result);if(!j||typeof j!=='object'||!['shifts','fills','personal'].some(k=>Array.isArray(j[k])))throw 0;const n0=S.shifts.length+S.fills.length+S.personal.length;mergeIn(S,j);migrate(S);save();rAll();toast('Importado: '+(S.shifts.length+S.fills.length+S.personal.length-n0)+' registro(s) nuevo(s)');}catch(x){toast('Archivo no válido');}e.target.value='';};r.readAsText(f);};
 function rTabs(){document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===tab));$('work').hidden=tab!=='work';$('pers').hidden=tab!=='pers';}
 document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{tab=b.dataset.t;rTabs();});
 function rAll(){rShift();rStats();rFill();rList();rPers();rTabs();}
