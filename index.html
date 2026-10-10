@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Control de gastos + Spark Driver</title>
+<style>
+:root{--bg:#f4f6f8;--card:#fff;--text:#151a21;--muted:#6a7280;--accent:#0b7a4d;--onaccent:#fff;--border:#e1e5ea;--bad:#c0392b;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1217;--card:#19202a;--text:#edf0f4;--muted:#9aa4b1;--accent:#2dc08a;--onaccent:#06150e;--border:#29323e;--bad:#f0705f}}
+:root[data-theme="dark"]{--bg:#0e1217;--card:#19202a;--text:#edf0f4;--muted:#9aa4b1;--accent:#2dc08a;--onaccent:#06150e;--border:#29323e;--bad:#f0705f}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0 auto;background:var(--bg);color:var(--text);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;max-width:560px;padding:0 12px 40px}
+.tabs{position:sticky;top:env(safe-area-inset-top,0px);display:flex;gap:8px;padding:10px 0;background:var(--bg);z-index:5}
+.tabs button{flex:1;padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--card);color:var(--text);font-weight:600;font-size:16px}
+.tabs button.on,.seg button.on{background:var(--accent);color:var(--onaccent);border-color:var(--accent)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px}
+h2{font-size:17px;margin:0 0 10px}
+label{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px}
+input{width:100%;padding:12px;font-size:17px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text)}
+.btn{width:100%;margin-top:14px;padding:14px;font-size:17px;font-weight:700;border:0;border-radius:12px;background:var(--accent);color:var(--onaccent)}
+.link{background:none;border:0;color:var(--muted);padding:12px 0 0;font-size:14px;text-decoration:underline}
+.muted{color:var(--muted);font-size:14px;margin:6px 0 0}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.k{background:var(--bg);border-radius:12px;padding:10px}.k b{display:block;font-size:19px}.k span{font-size:12px;color:var(--muted)}
+.big{font-size:34px;font-weight:800}
+.seg{display:flex;gap:6px;margin-bottom:10px}
+.seg button{flex:1;padding:8px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text)}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 0;border-top:1px solid var(--border);font-size:15px}
+.row small{color:var(--muted);display:block}
+.x{background:none;border:0;color:var(--muted);font-size:13px;padding:6px}
+.neg{color:var(--bad)}
+#msg{min-height:20px;color:var(--accent);font-size:14px;text-align:center}
+</style></head><body>
+<div class="tabs"><button data-t="work" class="on">Trabajo</button><button data-t="pers">Personal</button></div>
+<div id="msg"></div>
+<main id="work">
+<section class="card" id="shift"></section>
+<section class="card" id="stats"></section>
+<section class="card"><h2>Gasolina</h2>
+<label>Odómetro</label><input id="fo" inputmode="decimal">
+<label>Galones</label><input id="fg" inputmode="decimal">
+<label>Cuánto pagaste ($)</label><input id="fp" inputmode="decimal">
+<button class="btn" id="addf">Guardar llenada</button>
+<p class="muted">Llena el tanque cada vez para que el cálculo sea exacto.</p>
+<div id="fillinfo"></div><div id="fills"></div></section>
+<section class="card"><h2>Últimos turnos</h2><div id="list"></div></section>
+</main>
+<main id="pers" hidden>
+<section class="card" id="psum"></section>
+<section class="card"><h2>Nuevo gasto</h2>
+<label>Monto ($)</label><input id="pa" inputmode="decimal">
+<label>En qué (luz, mercado, tarjeta...)</label><input id="pn">
+<button class="btn" id="addp">Agregar gasto</button></section>
+<section class="card"><h2>Gastos del mes</h2><div id="plist"></div></section>
+</main>
+<script>
+const KEY='sd_tracker_v1';
+let S={active:null,shifts:[],fills:[],personal:[],range:'week'};
+try{const r=localStorage.getItem(KEY);if(r)S=Object.assign(S,JSON.parse(r));}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}};
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const money=n=>(n<0?'-$':'$')+Math.abs(n).toFixed(2);
+const num=v=>{const n=parseFloat(String(v).replace(',','.'));return isNaN(n)?null:n;};
+const tf=i=>new Date(i).toLocaleTimeString('es-US',{hour:'numeric',minute:'2-digit'});
+const df=i=>new Date(i).toLocaleDateString('es-US',{weekday:'short',day:'numeric',month:'short'});
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+let tab='work';
+function toast(t){$('msg').textContent=t;setTimeout(()=>{$('msg').textContent='';},3000);}
+function arm(b,fn){let a=false;b.onclick=()=>{if(a){fn();return;}a=true;b.textContent='¿Seguro?';setTimeout(()=>{a=false;b.textContent=b.dataset.l;},2500);};}
+function gas(){const f=[...S.fills].sort((a,b)=>a.odo-b.odo);if(f.length<2)return null;const mi=f[f.length-1].odo-f[0].odo;if(mi<=0)return null;const r=f.slice(1);const paid=r.reduce((s,x)=>s+x.paid,0),gal=r.reduce((s,x)=>s+x.gal,0);return{cpm:paid/mi,mpg:gal>0?mi/gal:null};}
+function sums(from){const g=gas();let e=0,m=0,h=0;S.shifts.forEach(s=>{if(new Date(s.start)>=from){e+=s.earned;m+=s.endOdo-s.startOdo;h+=(new Date(s.end)-new Date(s.start))/36e5;}});const gc=g?m*g.cpm:null;return{e,m,h,gc,net:g?e-gc:null,g};}
+function rs(){const d=new Date();d.setHours(0,0,0,0);if(S.range==='week'){d.setDate(d.getDate()-((d.getDay()+6)%7));}else d.setDate(1);return d;}
+function mstart(){const d=new Date();d.setHours(0,0,0,0);d.setDate(1);return d;}
+function tick(){const el=$('el');if(!el||!S.active)return;const m=Math.max(0,Math.floor((Date.now()-new Date(S.active.start))/6e4));el.textContent=Math.floor(m/60)+' h '+(m%60)+' min';}
+setInterval(tick,20000);
+function rShift(){const a=S.active;
+if(!a){$('shift').innerHTML='<h2>Turno</h2><label>Odómetro al salir de casa</label><input id="so" inputmode="decimal" placeholder="Ej. 84250"><button class="btn" id="go">Empezar turno</button>';
+$('go').onclick=()=>{const o=num($('so').value);if(o===null||o<0)return toast('Pon el odómetro');S.active={start:new Date().toISOString(),startOdo:o};save();rAll();};}
+else{$('shift').innerHTML='<h2>Turno en curso</h2><p class="muted">Empezó a las '+tf(a.start)+' · <span id="el"></span> · salió con '+a.startOdo+' mi</p><label>Odómetro al llegar a casa</label><input id="eo" inputmode="decimal"><label>Ganancia del día ($)</label><input id="ea" inputmode="decimal"><button class="btn" id="fin">Terminar turno</button><button class="link" id="can" data-l="Cancelar turno">Cancelar turno</button>';tick();
+$('fin').onclick=()=>{const o=num($('eo').value),e=num($('ea').value);if(o===null||o<=a.startOdo)return toast('El odómetro final debe ser mayor al inicial');if(e===null||e<0)return toast('Pon lo que ganaste');S.shifts.push({id:uid(),start:a.start,end:new Date().toISOString(),startOdo:a.startOdo,endOdo:o,earned:e});S.active=null;save();rAll();toast('Turno guardado');};
+arm($('can'),()=>{S.active=null;save();rAll();});}}
+function rStats(){const x=sums(rs());const w=S.range==='week';
+const nph=x.net!==null&&x.h>0?x.net/x.h:null,bph=x.h>0?x.e/x.h:null;
+let h='<div class="seg"><button data-r="week" class="'+(w?'on':'')+'">Esta semana</button><button data-r="month" class="'+(w?'':'on')+'">Este mes</button></div>';
+h+='<div class="muted">'+(nph!==null?'Ganancia neta por hora':'Ganancia bruta por hora')+'</div><div class="big '+(nph!==null&&nph<0?'neg':'')+'">'+money(nph!==null?nph:(bph||0))+'</div>';
+h+='<div class="grid"><div class="k"><span>Ganado</span><b>'+money(x.e)+'</b></div><div class="k"><span>Gasolina</span><b>'+(x.gc!==null?money(x.gc):'—')+'</b></div><div class="k"><span>Neto</span><b>'+(x.net!==null?money(x.net):'—')+'</b></div><div class="k"><span>Horas</span><b>'+x.h.toFixed(1)+'</b></div><div class="k"><span>Millas</span><b>'+Math.round(x.m)+'</b></div><div class="k"><span>Bruto por hora</span><b>'+(bph!==null?money(bph):'—')+'</b></div></div>';
+if(!x.g)h+='<p class="muted">Anota 2 llenadas de gasolina y aquí aparece tu neto real.</p>';
+$('stats').innerHTML=h;
+$('stats').querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{S.range=b.dataset.r;save();rStats();});}
+function rFill(){const g=gas();const f=[...S.fills].sort((a,b)=>b.odo-a.odo).slice(0,3);
+$('fillinfo').innerHTML=g?'<div class="grid"><div class="k"><span>Tu rendimiento real</span><b>'+(g.mpg?g.mpg.toFixed(1)+' MPG':'—')+'</b></div><div class="k"><span>Gasolina por milla</span><b>'+money(g.cpm)+'</b></div></div>':'<p class="muted">Con 2 llenadas ya calculo tu costo por milla.</p>';
+$('fills').innerHTML=f.map(x=>'<div class="row"><div>'+df(x.date)+'<small>'+x.odo+' mi · '+x.gal+' gal</small></div><div><b>'+money(x.paid)+'</b> <button class="x" data-l="Borrar" data-f="'+x.id+'">Borrar</button></div></div>').join('');
+$('fills').querySelectorAll('[data-f]').forEach(b=>arm(b,()=>{S.fills=S.fills.filter(x=>x.id!==b.dataset.f);save();rAll();}));}
+function rList(){const l=[...S.shifts].sort((a,b)=>new Date(b.start)-new Date(a.start)).slice(0,10);
+$('list').innerHTML=l.length?l.map(s=>{const m=s.endOdo-s.startOdo,h=(new Date(s.end)-new Date(s.start))/36e5;return '<div class="row"><div>'+df(s.start)+'<small>'+m+' mi · '+h.toFixed(1)+' h · '+money(h>0?s.earned/h:0)+'/h bruto</small></div><div><b>'+money(s.earned)+'</b> <button class="x" data-l="Borrar" data-d="'+s.id+'">Borrar</button></div></div>';}).join(''):'<p class="muted">Aún no hay turnos.</p>';
+$('list').querySelectorAll('[data-d]').forEach(b=>arm(b,()=>{S.shifts=S.shifts.filter(x=>x.id!==b.dataset.d);save();rAll();}));}
+function rPers(){const ms=mstart();const x=sums(ms);const p=S.personal.filter(i=>new Date(i.date)>=ms);const pt=p.reduce((s,i)=>s+i.amount,0);const left=x.e-(x.gc||0)-pt;
+const mn=new Date().toLocaleDateString('es-US',{month:'long',year:'numeric'});
+$('psum').innerHTML='<h2>Resumen de '+mn+'</h2><div class="grid"><div class="k"><span>Ganado (Spark)</span><b>'+money(x.e)+'</b></div><div class="k"><span>Gasolina</span><b>'+(x.gc!==null?money(x.gc):'—')+'</b></div><div class="k"><span>Gastos personales</span><b>'+money(pt)+'</b></div><div class="k"><span>Te queda</span><b class="'+(left<0?'neg':'')+'">'+money(left)+'</b></div></div>';
+const l=[...p].sort((a,b)=>new Date(b.date)-new Date(a.date));
+$('plist').innerHTML=l.length?l.map(i=>'<div class="row"><div>'+esc(i.note||'Gasto')+'<small>'+df(i.date)+'</small></div><div><b>'+money(i.amount)+'</b> <button class="x" data-l="Borrar" data-p="'+i.id+'">Borrar</button></div></div>').join(''):'<p class="muted">Aún no hay gastos este mes.</p>';
+$('plist').querySelectorAll('[data-p]').forEach(b=>arm(b,()=>{S.personal=S.personal.filter(x=>x.id!==b.dataset.p);save();rAll();}));}
+$('addf').onclick=()=>{const o=num($('fo').value),gl=num($('fg').value),p=num($('fp').value);if(o===null||gl===null||gl<=0||p===null||p<0)return toast('Llena odómetro, galones y lo que pagaste');S.fills.push({id:uid(),date:new Date().toISOString(),odo:o,gal:gl,paid:p});['fo','fg','fp'].forEach(i=>$(i).value='');save();rAll();toast('Llenada guardada');};
+$('addp').onclick=()=>{const a=num($('pa').value);if(a===null||a<=0)return toast('Pon el monto');S.personal.push({id:uid(),date:new Date().toISOString(),amount:a,note:$('pn').value.trim()});$('pa').value='';$('pn').value='';save();rAll();toast('Gasto guardado');};
+function rTabs(){document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===tab));$('work').hidden=tab!=='work';$('pers').hidden=tab!=='pers';}
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{tab=b.dataset.t;rTabs();});
+function rAll(){rShift();rStats();rFill();rList();rPers();rTabs();}
+rAll();
+</script></body></html>
