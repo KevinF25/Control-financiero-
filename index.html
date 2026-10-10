@@ -41,6 +41,7 @@ input{width:100%;padding:12px;font-size:17px;border:1px solid var(--border);bord
 <main id="work">
 <section class="card" id="shift"></section>
 <section class="card" id="stats"></section>
+<section class="card" id="resv"></section>
 <section class="card"><h2>Gasolina</h2>
 <label>Odómetro</label><input id="fo" inputmode="decimal">
 <label>Galones</label><input id="fg" inputmode="decimal">
@@ -63,6 +64,7 @@ input{width:100%;padding:12px;font-size:17px;border:1px solid var(--border);bord
 <script>
 //LOGIC-START
 const KEY='sd_tracker_v1';
+const RESERVA_MILLA=0.15; // $ por milla para mantenimiento, llantas y reparaciones (sin gasolina). Cambiarla solo afecta a los turnos NUEVOS.
 const fin=n=>typeof n==='number'&&Number.isFinite(n);
 const num=v=>{if(v===null||v===undefined)return null;const t=String(v).trim().replace(',','.');if(t==='')return null;const n=Number(t);return Number.isFinite(n)?n:null;};
 const okd=d=>Number.isFinite(new Date(d).getTime());
@@ -79,12 +81,13 @@ function period(kind,ref){const d=new Date(ref||Date.now());d.setHours(0,0,0,0);
  return[a,b];}
 const inP=(iso,p)=>{const t=new Date(iso).getTime();return t>=p[0].getTime()&&t<p[1].getTime();};
 function sc(s){const mi=s.endOdo-s.startOdo,h=(new Date(s.end)-new Date(s.start))/36e5;
- const gc=fin(s.cpm)?mi*s.cpm:null;
- return{mi,h,e:s.earned,gc,net:gc!==null?s.earned-gc:null};}
-function sumP(D,p){const r={n:0,e:0,mi:0,h:0,gc:0,net:0,ng:0,nn:0};
- D.shifts.filter(s=>vs(s)&&inP(s.start,p)).map(sc).forEach(x=>{r.n++;r.e+=x.e;r.mi+=x.mi;r.h+=x.h;
+ const gc=fin(s.cpm)?mi*s.cpm:null,rv=fin(s.reserve)&&s.reserve>=0?s.reserve:0;
+ return{mi,h,e:s.earned,gc,rv,net:gc!==null?s.earned-gc-rv:null};}
+function sumP(D,p){const r={n:0,e:0,mi:0,h:0,gc:0,rv:0,net:0,ng:0,nn:0};
+ D.shifts.filter(s=>vs(s)&&inP(s.start,p)).map(sc).forEach(x=>{r.n++;r.e+=x.e;r.mi+=x.mi;r.h+=x.h;r.rv+=x.rv;
   if(x.gc!==null){r.gc+=x.gc;r.net+=x.net;}else{r.ng++;r.nn++;}});
  r.complete=r.nn===0;return r;}
+function resTotal(D){return D.shifts.filter(vs).reduce((a,s)=>a+sc(s).rv,0);}
 function norm(raw){const o=raw&&typeof raw==='object'?raw:{},A=a=>Array.isArray(a)?a:[],ob=x=>x&&typeof x==='object';
  return{v:2,active:ob(o.active)&&fin(o.active.startOdo)&&okd(o.active.start)?{start:o.active.start,startOdo:o.active.startOdo}:null,
  shifts:A(o.shifts).filter(ob).map(s=>({...s,id:s.id||uid()})),
@@ -92,7 +95,9 @@ function norm(raw){const o=raw&&typeof raw==='object'?raw:{},A=a=>Array.isArray(
  personal:A(o.personal).filter(ob).map(p=>({...p,id:p.id||uid(),type:p.type==='ingreso'?'ingreso':'gasto'})),
  range:o.range==='month'?'month':'week',
  };}
-function migrate(D){const g=gas(D.fills);if(!g.pending)D.shifts.forEach(s=>{if(!fin(s.cpm)){s.cpm=g.cpm;s.mpg=g.mpg;}});return D;}
+function migrate(D){const g=gas(D.fills);if(!g.pending)D.shifts.forEach(s=>{if(!fin(s.cpm)){s.cpm=g.cpm;s.mpg=g.mpg;}});
+ // Turnos anteriores sin reserva: se calcula UNA sola vez y se guarda (nunca se sobrescribe una reserva existente).
+ D.shifts.forEach(s=>{if(!fin(s.reserve)&&vs(s))s.reserve=(s.endOdo-s.startOdo)*RESERVA_MILLA;});return D;}
 function mergeIn(D,raw){const N=norm(raw);['shifts','fills','personal'].forEach(k=>{const ids=new Set(D[k].map(x=>x.id));N[k].forEach(x=>{if(!ids.has(x.id)){D[k].push(x);ids.add(x.id);}});});
  if(!D.active&&N.active)D.active=N.active;return D;}
 //LOGIC-END
@@ -102,7 +107,7 @@ const money=n=>(n<0?'-$':'$')+Math.abs(n).toFixed(2);
 const tf=i=>new Date(i).toLocaleTimeString('es-US',{hour:'numeric',minute:'2-digit'});
 const df=i=>new Date(i).toLocaleDateString('es-US',{weekday:'short',day:'numeric',month:'short'});
 let S;
-try{const raw=localStorage.getItem(KEY);if(raw&&!localStorage.getItem(KEY+'_pre2'))localStorage.setItem(KEY+'_pre2',raw);S=migrate(norm(raw?JSON.parse(raw):null));}catch(e){S=migrate(norm(null));}
+try{const raw=localStorage.getItem(KEY);if(raw&&!localStorage.getItem(KEY+'_pre2'))localStorage.setItem(KEY+'_pre2',raw);if(raw&&!localStorage.getItem(KEY+'_pre3'))localStorage.setItem(KEY+'_pre3',raw);S=migrate(norm(raw?JSON.parse(raw):null));}catch(e){S=migrate(norm(null));}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){toast('No se pudo guardar en este navegador');}}
 let tab='work';
 function toast(t){$('msg').textContent=t;setTimeout(()=>{$('msg').textContent='';},3500);}
@@ -114,7 +119,7 @@ if(!a){$('shift').innerHTML='<h2>Turno</h2><label>Odómetro al salir de casa</la
 $('go').onclick=()=>{const o=num($('so').value);if(o===null||o<0)return toast('Pon un odómetro válido');const me=Math.max(0,...S.shifts.filter(vs).map(s=>s.endOdo));if(o<me)return toast('El odómetro es menor al del último turno ('+me+')');S.active={start:new Date().toISOString(),startOdo:o};save();rAll();};}
 else{$('shift').innerHTML='<h2>Turno en curso</h2><p class="muted">Empezó a las '+tf(a.start)+' · <span id="el"></span> · salió con '+a.startOdo+' mi</p><label>Odómetro al llegar a casa</label><input id="eo" inputmode="decimal"><label>Ganancia del día ($)</label><input id="ea" inputmode="decimal"><button class="btn" id="fin">Terminar turno</button><button class="link" id="can" data-l="Cancelar turno">Cancelar turno</button>';tick();
 $('fin').onclick=()=>{const o=num($('eo').value),e=num($('ea').value);if(o===null||o<=a.startOdo)return toast('El odómetro final debe ser mayor al inicial');if(o-a.startOdo>1000)return toast('Más de 1,000 millas en un turno: revisa el odómetro');if(e===null||e<0)return toast('Pon lo que ganaste (0 o más)');
-const g=gas(S.fills);S.shifts.push({id:uid(),start:a.start,end:new Date().toISOString(),startOdo:a.startOdo,endOdo:o,earned:e,cpm:g.pending?null:g.cpm,mpg:g.pending?null:g.mpg});S.active=null;save();rAll();toast('Turno guardado');};
+const g=gas(S.fills);S.shifts.push({id:uid(),start:a.start,end:new Date().toISOString(),startOdo:a.startOdo,endOdo:o,earned:e,cpm:g.pending?null:g.cpm,mpg:g.pending?null:g.mpg,reserve:(o-a.startOdo)*RESERVA_MILLA});S.active=null;save();rAll();toast('Turno guardado');};
 arm($('can'),()=>{S.active=null;save();rAll();});}}
 function rStats(){const p=period(S.range),x=sumP(S,p),g=gas(S.fills),w=S.range==='week';
 const nph=x.complete&&x.n>0&&x.h>0?x.net/x.h:null,bph=x.h>0?x.e/x.h:null;
@@ -123,10 +128,13 @@ const K=(l,v)=>'<div class="k"><span>'+l+'</span><b>'+v+'</b></div>';
 let h='<div class="seg"><button data-r="week" class="'+(w?'on':'')+'">Esta semana</button><button data-r="month" class="'+(w?'':'on')+'">Este mes</button></div>';
 h+='<div class="muted">Ganancia neta por hora (estimada)</div><div class="big'+(nph!==null&&nph<0?' neg':'')+'">'+(nph!==null?money(nph):(x.n?'Pendiente':'—'))+'</div>';
 h+='<div class="grid">'+K('Ganado',money(x.e))+K('Gasolina (est.)',gt)+K('Neto',x.n===0?'—':(x.complete?money(x.net):'Pendiente'))+K('Horas',x.h.toFixed(1))+K('Millas',Math.round(x.mi))+K('Bruto por hora',bph!==null?money(bph):'—')+'</div>';
+h+='<p class="muted">Neto = ganado − gasolina − reserva de desgaste.</p>';
 if(g.pending)h+='<p class="muted">Gasolina pendiente: necesito 2 llenadas completas seguidas con datos consistentes.'+(g.bad?' ('+g.bad+' ciclo(s) descartado(s) por inconsistentes.)':'')+'</p>';
 else if(x.ng&&x.ng<x.n)h+='<p class="muted">* '+x.ng+' turno(s) sin gasolina estimada.</p>';
 $('stats').innerHTML=h;
 $('stats').querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{S.range=b.dataset.r;save();rAll();});}
+function rResv(){const K=(l,v)=>'<div class="k"><span>'+l+'</span><b>'+v+'</b></div>',w=sumP(S,period('week')),m=sumP(S,period('month'));
+$('resv').innerHTML='<h2>Reserva para reparaciones</h2><div class="grid">'+K('Esta semana',money(w.rv))+K('Este mes',money(m.rv))+K('Total acumulado',money(resTotal(S)))+'</div><p class="muted">Lo que deberías apartar para mantenimiento, llantas y reparaciones: '+money(RESERVA_MILLA)+' por milla (la gasolina va aparte).</p>';}
 function rFill(){const g=gas(S.fills),f=[...S.fills].filter(vf).sort((a,b)=>b.odo-a.odo).slice(0,3);
 $('fillinfo').innerHTML=g.pending?'<p class="muted">Estimación pendiente: con 2 llenadas completas seguidas calculo tu costo por milla.</p>':'<div class="grid"><div class="k"><span>Rendimiento real</span><b>'+g.mpg.toFixed(1)+' MPG</b></div><div class="k"><span>Gasolina por milla</span><b>'+money(g.cpm)+'</b></div></div><p class="muted">Basado en '+g.n+' ciclo(s)'+(g.bad?' · '+g.bad+' descartado(s)':'')+'.</p>';
 $('fills').innerHTML=f.map(x=>'<div class="row"><div>'+df(x.date)+'<small>'+x.odo+' mi · '+x.gal+' gal'+(x.full===false?' · parcial':'')+'</small></div><div><b>'+money(x.paid)+'</b> <button class="x" data-l="Borrar" data-f="'+x.id+'">Borrar</button></div></div>').join('');
@@ -137,7 +145,7 @@ $('list').querySelectorAll('[data-d]').forEach(b=>arm(b,()=>{S.shifts=S.shifts.f
 function rPers(){const p=period('month'),x=sumP(S,p),P=S.personal.filter(i=>fin(i.amount)&&okd(i.date)&&inP(i.date,p));
 const pt=P.reduce((a,i)=>a+i.amount,0),left=x.complete?x.net-pt:null;
 const K=(l,v)=>'<div class="k"><span>'+l+'</span><b>'+v+'</b></div>';
-$('psum').innerHTML='<h2>Resumen de '+p[0].toLocaleDateString('es-US',{month:'long',year:'numeric'})+'</h2><div class="grid">'+K('Ganado (Spark)',money(x.e))+K('Gasolina (est.)',x.n===0?money(0):(x.ng===x.n?'Pendiente':money(x.gc)+(x.ng?'*':'')))+K('Gastos personales',money(pt))+K('Te queda (est.)',left!==null?money(left):'Pendiente')+'</div><p class="muted">Es una estimación, no tu saldo bancario.</p>';
+$('psum').innerHTML='<h2>Resumen de '+p[0].toLocaleDateString('es-US',{month:'long',year:'numeric'})+'</h2><div class="grid">'+K('Ganado (Spark)',money(x.e))+K('Gasolina (est.)',x.n===0?money(0):(x.ng===x.n?'Pendiente':money(x.gc)+(x.ng?'*':'')))+K('Reserva de desgaste',money(x.rv))+K('Gastos personales',money(pt))+K('Te queda (est.)',left!==null?money(left):'Pendiente')+'</div><p class="muted">Es una estimación, no tu saldo bancario.</p>';
 const l=[...P].sort((a,b)=>new Date(b.date)-new Date(a.date));
 $('plist').innerHTML=l.length?l.map(i=>'<div class="row"><div>'+esc(i.note||'Gasto')+'<small>'+df(i.date)+'</small></div><div><b>'+money(i.amount)+'</b> <button class="x" data-l="Borrar" data-p="'+i.id+'">Borrar</button></div></div>').join(''):'<p class="muted">Aún no hay gastos este mes.</p>';
 $('plist').querySelectorAll('[data-p]').forEach(b=>arm(b,()=>{S.personal=S.personal.filter(x=>x.id!==b.dataset.p);save();rAll();}));}
@@ -152,6 +160,6 @@ $('impb').onclick=()=>$('imp').click();
 $('imp').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const j=JSON.parse(r.result);if(!j||typeof j!=='object'||!['shifts','fills','personal'].some(k=>Array.isArray(j[k])))throw 0;const n0=S.shifts.length+S.fills.length+S.personal.length;mergeIn(S,j);migrate(S);save();rAll();toast('Importado: '+(S.shifts.length+S.fills.length+S.personal.length-n0)+' registro(s) nuevo(s)');}catch(x){toast('Archivo no válido');}e.target.value='';};r.readAsText(f);};
 function rTabs(){document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===tab));$('work').hidden=tab!=='work';$('pers').hidden=tab!=='pers';}
 document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{tab=b.dataset.t;rTabs();});
-function rAll(){rShift();rStats();rFill();rList();rPers();rTabs();}
+function rAll(){rShift();rStats();rResv();rFill();rList();rPers();rTabs();}
 rAll();
 </script></body></html>
