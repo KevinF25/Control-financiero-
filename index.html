@@ -6,39 +6,51 @@
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#0b7a4d">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#f4f6f8;--card:#fff;--text:#151a21;--muted:#6a7280;--accent:#0b7a4d;--onaccent:#fff;--border:#e1e5ea;--bad:#c0392b;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1217;--card:#19202a;--text:#edf0f4;--muted:#9aa4b1;--accent:#2dc08a;--onaccent:#06150e;--border:#29323e;--bad:#f0705f}}
-:root[data-theme="dark"]{--bg:#0e1217;--card:#19202a;--text:#edf0f4;--muted:#9aa4b1;--accent:#2dc08a;--onaccent:#06150e;--border:#29323e;--bad:#f0705f}
+:root{--bg:#f2f5f3;--card:#fff;--text:#17302b;--muted:#5f726d;--border:#d5ded9;--accent:#1d6b58;--onaccent:#fff;--accbg:#e1efe9;--bad:#b3261e;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1917;--card:#17252a;--text:#e3eeea;--muted:#8fa59f;--border:#2b3f3b;--accent:#5fc4a5;--onaccent:#0f1917;--accbg:#183a31;--bad:#ff8a80}}
+:root[data-theme="dark"]{--bg:#0f1917;--card:#17252a;--text:#e3eeea;--muted:#8fa59f;--border:#2b3f3b;--accent:#5fc4a5;--onaccent:#0f1917;--accbg:#183a31;--bad:#ff8a80}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box}
-body{margin:0 auto;background:var(--bg);color:var(--text);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;max-width:560px;padding:0 12px 40px}
-.tabs{position:sticky;top:env(safe-area-inset-top,0px);display:flex;gap:8px;padding:10px 0;background:var(--bg);z-index:5}
-.tabs button{flex:1;padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--card);color:var(--text);font-weight:600;font-size:16px}
-.tabs button.on,.seg button.on{background:var(--accent);color:var(--onaccent);border-color:var(--accent)}
-.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px}
-h2{font-size:17px;margin:0 0 10px}
-label{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px}
-input{width:100%;padding:12px;font-size:17px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text)}
-.btn{width:100%;margin-top:14px;padding:14px;font-size:17px;font-weight:700;border:0;border-radius:12px;background:var(--accent);color:var(--onaccent)}
-.link{background:none;border:0;color:var(--muted);padding:12px 0 0;font-size:14px;text-decoration:underline}
+body{margin:0 auto;background:var(--bg);color:var(--text);font:400 16px/1.45 "Instrument Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-variant-numeric:tabular-nums;max-width:640px;padding:14px 14px 110px}
+[hidden]{display:none!important}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:14px}
+h2{font-size:17px;margin:0 0 10px;font-weight:600}
+label{display:block;font-size:13px;color:var(--muted);margin:10px 0 3px}
+input{width:100%;font:inherit;color:var(--text);background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 10px;min-height:42px}
+input:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.btn{width:100%;margin-top:14px;padding:9px 12px;min-height:46px;font:inherit;font-weight:600;border:1px solid var(--accent);border-radius:8px;background:var(--accent);color:var(--onaccent)}
+.btn2{flex:1;margin-top:14px;padding:9px 12px;min-height:42px;font:inherit;font-weight:600;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--text)}
+.full{width:100%}
+.link{background:none;border:0;color:var(--muted);padding:12px 0 0;font:inherit;font-size:14px;text-decoration:underline}
 .muted{color:var(--muted);font-size:14px;margin:6px 0 0}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
-.k{background:var(--bg);border-radius:12px;padding:10px}.k b{display:block;font-size:19px}.k span{font-size:12px;color:var(--muted)}
-.big{font-size:34px;font-weight:800}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}.grid3 .k{min-width:0;padding:8px;overflow-wrap:anywhere}
+.k{background:var(--bg);border-radius:8px;padding:8px 10px}.k b{display:block;font-size:19px;font-weight:600}.k span{font-size:12px;color:var(--muted)}
+#stats .grid .k:nth-child(4),#psum .grid .k:nth-child(5){background:var(--accbg)}
+#stats .grid .k:nth-child(4) b,#psum .grid .k:nth-child(5) b{color:var(--accent)}
+#stats .grid .k:nth-child(4) b.neg,#psum .grid .k:nth-child(5) b.neg,.k b.neg{color:var(--bad)}
+.big{font-size:34px;font-weight:700;letter-spacing:-.01em;color:var(--accent)}.big.neg{color:var(--bad)}
 .seg{display:flex;gap:6px;margin-bottom:10px}
-.seg button{flex:1;padding:8px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text)}
+.seg button{flex:1;padding:8px;min-height:38px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font:inherit;font-size:15px}
 .row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 0;border-top:1px solid var(--border);font-size:15px}
 .row small{color:var(--muted);display:block}
-.x{background:none;border:0;color:var(--muted);font-size:13px;padding:6px}
+.x{background:none;border:0;color:var(--bad);font:inherit;font-size:13px;padding:6px}
 .neg{color:var(--bad)}
-#msg{min-height:20px;color:var(--accent);font-size:14px;text-align:center}
-.chk{display:flex;align-items:center;gap:10px;font-size:15px;color:var(--text);margin-top:12px}.chk input{width:auto}
-.two{display:flex;gap:8px}.btn2{flex:1;margin-top:14px;padding:14px;font-size:16px;font-weight:600;border:1px solid var(--border);border-radius:12px;background:var(--bg);color:var(--text)}
-.tabs button[data-t=menu]{flex:0 0 56px;font-size:20px;padding:12px 0}.full{width:100%}
-.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}.grid3 .k{min-width:0;padding:10px 8px;overflow-wrap:anywhere}
+.chk{display:flex;align-items:center;gap:10px;font-size:15px;color:var(--text);margin-top:12px}.chk input{width:auto;min-height:0;accent-color:var(--accent)}
+.two{display:flex;gap:8px}
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:5;display:flex;background:var(--card);border-top:1px solid var(--border);padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px))}
+.tabs button{flex:1;border:0;background:none;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:2px;font:inherit;font-size:12px;padding:4px 0;min-height:48px;border-radius:8px}
+.tabs button.on{color:var(--accent);font-weight:600}
+.tabs svg{width:24px;height:24px}
+.seg button.on{background:var(--accent);color:var(--onaccent);border-color:var(--accent)}
+#msg{position:fixed;left:0;right:0;bottom:calc(72px + env(safe-area-inset-bottom,0px));z-index:6;width:max-content;max-width:90%;margin:0 auto;padding:8px 12px;border-radius:8px;background:var(--accbg);color:var(--accent);font-size:14px;text-align:center;pointer-events:none}
+#msg:empty{display:none}
 </style></head><body>
-<div class="tabs"><button data-t="work" class="on">Trabajo</button><button data-t="pers">Personal</button><button data-t="menu" aria-label="Menú">☰</button></div>
+<div class="tabs"><button data-t="work" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 8-2 2-1.5-3.7A2 2 0 0 0 15.644 5H8.4a2 2 0 0 0-1.903 1.257L5 10 3 8"/><path d="M7 14h.01"/><path d="M17 14h.01"/><rect width="18" height="8" x="3" y="10" rx="2"/><path d="M5 18v2"/><path d="M19 18v2"/></svg>Trabajo</button><button data-t="pers"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></svg>Personal</button><button data-t="menu" aria-label="Menú"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>Menú</button></div>
 <div id="msg"></div>
 <main id="work">
 <section class="card" id="shift"></section>
@@ -141,7 +153,7 @@ arm($('can'),()=>{S.active=null;save();rAll();});}}
 function rStats(){const p=period(S.range),x=sumP(S,p),g=gas(S.fills);
 const nph=x.complete&&x.n>0&&x.h>0?x.net/x.h:null,bph=x.h>0?x.e/x.h:null;
 const gv=x.n===0?'—':(x.ng===x.n?'Pendiente':money(x.gc)+(x.ng?'*':''));
-const K=(l,v)=>'<div class="k"><span>'+l+'</span><b>'+v+'</b></div>';
+const K=(l,v)=>'<div class="k"><span>'+l+'</span><b'+(String(v)[0]==='-'?' class="neg"':'')+'>'+v+'</b></div>';
 const R=[['day','Hoy'],['week','Semana'],['month','Mes']];
 let h='<div class="seg">'+R.map(r=>'<button data-r="'+r[0]+'" class="'+(S.range===r[0]?'on':'')+'">'+r[1]+'</button>').join('')+'</div>';
 h+='<div class="muted">Ganancia neta por hora (estimada)</div><div class="big'+(nph!==null&&nph<0?' neg':'')+'">'+(nph!==null?money(nph):(x.n?'Pendiente':'—'))+'</div>';
@@ -163,7 +175,7 @@ $('rnow').textContent='Ahora: '+money(rate(S))+' por milla. Aplica solo a turnos
 $('rtot').textContent='Reserva acumulada de todos los turnos: '+money(resTotal(S));}
 function rPers(){const p=period('month'),x=sumP(S,p),P=S.personal.filter(i=>fin(i.amount)&&okd(i.date)&&inP(i.date,p));
 const pt=P.reduce((a,i)=>a+i.amount,0),left=x.complete?x.net-pt:null;
-const K=(l,v)=>'<div class="k"><span>'+l+'</span><b>'+v+'</b></div>';
+const K=(l,v)=>'<div class="k"><span>'+l+'</span><b'+(String(v)[0]==='-'?' class="neg"':'')+'>'+v+'</b></div>';
 $('psum').innerHTML='<h2>Resumen de '+p[0].toLocaleDateString('es-US',{month:'long',year:'numeric'})+'</h2><div class="grid">'+K('Ganado (Spark)',money(x.e))+K('Gasolina (est.)',x.n===0?money(0):(x.ng===x.n?'Pendiente':money(x.gc)+(x.ng?'*':'')))+K('Reserva de desgaste',money(x.rv))+K('Gastos personales',money(pt))+K('Te queda (est.)',left!==null?money(left):'Pendiente')+'</div><p class="muted">Es una estimación, no tu saldo bancario.</p>';
 const l=[...P].sort((a,b)=>new Date(b.date)-new Date(a.date));
 $('plist').innerHTML=l.length?l.map(i=>'<div class="row"><div>'+esc(i.note||'Gasto')+'<small>'+df(i.date)+'</small></div><div><b>'+money(i.amount)+'</b> <button class="x" data-l="Borrar" data-p="'+i.id+'">Borrar</button></div></div>').join(''):'<p class="muted">Aún no hay gastos este mes.</p>';
