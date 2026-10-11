@@ -35,30 +35,36 @@ input{width:100%;padding:12px;font-size:17px;border:1px solid var(--border);bord
 #msg{min-height:20px;color:var(--accent);font-size:14px;text-align:center}
 .chk{display:flex;align-items:center;gap:10px;font-size:15px;color:var(--text);margin-top:12px}.chk input{width:auto}
 .two{display:flex;gap:8px}.btn2{flex:1;margin-top:14px;padding:14px;font-size:16px;font-weight:600;border:1px solid var(--border);border-radius:12px;background:var(--bg);color:var(--text)}
+.tabs button[data-t=menu]{flex:0 0 56px;font-size:20px;padding:12px 0}.full{width:100%}
 </style></head><body>
-<div class="tabs"><button data-t="work" class="on">Trabajo</button><button data-t="pers">Personal</button></div>
+<div class="tabs"><button data-t="work" class="on">Trabajo</button><button data-t="pers">Personal</button><button data-t="menu" aria-label="Menú">☰</button></div>
 <div id="msg"></div>
 <main id="work">
 <section class="card" id="shift"></section>
 <section class="card" id="stats"></section>
-<section class="card" id="resv"></section>
-<section class="card"><h2>Gasolina</h2>
+<section class="card"><h2>Gasolina</h2><div id="fillinfo"></div>
+<button class="btn2 full" id="gt">+ Registrar llenada</button>
+<div id="fform" hidden>
 <label>Odómetro</label><input id="fo" inputmode="decimal">
 <label>Galones</label><input id="fg" inputmode="decimal">
 <label>Cuánto pagaste ($)</label><input id="fp" inputmode="decimal">
 <label class="chk"><input type="checkbox" id="ff" checked> Llené el tanque completo</label>
 <button class="btn" id="addf">Guardar llenada</button>
-<p class="muted">El cálculo usa ciclos entre llenadas completas. Si fue parcial, desmarca la casilla.</p>
-<div id="fillinfo"></div><div id="fills"></div></section>
-<section class="card"><h2>Últimos turnos</h2><div id="list"></div></section>
+<p class="muted">El cálculo usa ciclos entre llenadas completas. Si fue parcial, desmarca la casilla.</p></div></section>
 </main>
 <main id="pers" hidden>
 <section class="card" id="psum"></section>
-<section class="card"><h2>Nuevo gasto</h2>
-<label>Monto ($)</label><input id="pa" inputmode="decimal">
+<section class="card"><h2>Gastos del mes</h2>
+<button class="btn2 full" id="pt">+ Nuevo gasto</button>
+<div id="pform" hidden><label>Monto ($)</label><input id="pa" inputmode="decimal">
 <label>En qué (luz, mercado, tarjeta...)</label><input id="pn">
-<button class="btn" id="addp">Agregar gasto</button></section>
-<section class="card"><h2>Gastos del mes</h2><div id="plist"></div><p class="muted">No anotes aquí la gasolina del carro: ya se cuenta en Trabajo.</p></section>
+<button class="btn" id="addp">Agregar gasto</button></div>
+<div id="plist"></div><p class="muted">No anotes aquí la gasolina del carro: ya se cuenta en Trabajo.</p></section>
+</main>
+<main id="menuv" hidden>
+<section class="card"><h2>Reserva por milla</h2><label>Dólares por milla para mantenimiento, llantas y reparaciones</label><input id="rs" inputmode="decimal" placeholder="Ej. 0.15"><button class="btn" id="saver">Guardar</button><p class="muted" id="rnow"></p><p class="muted" id="rtot"></p></section>
+<section class="card"><h2>Historial de turnos</h2><div id="list"></div></section>
+<section class="card"><h2>Llenadas de gasolina</h2><div id="fills"></div></section>
 <section class="card"><h2>Copia de seguridad</h2><div class="two"><button class="btn2" id="exp">Exportar</button><button class="btn2" id="impb">Importar</button></div><input type="file" id="imp" accept="application/json,.json" hidden><p class="muted">Importar suma lo que falte; nunca borra lo que ya tienes.</p></section>
 </main>
 <script>
@@ -77,6 +83,7 @@ function gas(fills){const f=fills.filter(vf).sort((a,b)=>a.odo-b.odo);let last=n
  return n?{pending:false,cpm:C/mi,mpg:mi/G,n,bad}:{pending:true,n:0,bad};}
 function period(kind,ref){const d=new Date(ref||Date.now());d.setHours(0,0,0,0);const a=new Date(d);let b;
  if(kind==='week'){a.setDate(a.getDate()-((a.getDay()+6)%7));b=new Date(a);b.setDate(b.getDate()+7);}
+ else if(kind==='day'){b=new Date(a);b.setDate(b.getDate()+1);}
  else{a.setDate(1);b=new Date(a);b.setMonth(b.getMonth()+1);}
  return[a,b];}
 const inP=(iso,p)=>{const t=new Date(iso).getTime();return t>=p[0].getTime()&&t<p[1].getTime();};
@@ -88,16 +95,17 @@ function sumP(D,p){const r={n:0,e:0,mi:0,h:0,gc:0,rv:0,net:0,ng:0,nn:0};
   if(x.gc!==null){r.gc+=x.gc;r.net+=x.net;}else{r.ng++;r.nn++;}});
  r.complete=r.nn===0;return r;}
 function resTotal(D){return D.shifts.filter(vs).reduce((a,s)=>a+sc(s).rv,0);}
-function norm(raw){const o=raw&&typeof raw==='object'?raw:{},A=a=>Array.isArray(a)?a:[],ob=x=>x&&typeof x==='object';
+function norm(raw){const o=raw&&typeof raw==='object'?raw:{},A=a=>Array.isArray(a)?a:[],ob=x=>x&&typeof x==='object',st=ob(o.set)?o.set:{};
  return{v:2,active:ob(o.active)&&fin(o.active.startOdo)&&okd(o.active.start)?{start:o.active.start,startOdo:o.active.startOdo}:null,
  shifts:A(o.shifts).filter(ob).map(s=>({...s,id:s.id||uid()})),
  fills:A(o.fills).filter(ob).map(f=>({...f,id:f.id||uid(),full:f.full!==false})),
  personal:A(o.personal).filter(ob).map(p=>({...p,id:p.id||uid(),type:p.type==='ingreso'?'ingreso':'gasto'})),
- range:o.range==='month'?'month':'week',
- };}
+ range:['day','week','month'].includes(o.range)?o.range:'week',
+ set:{reserva:fin(st.reserva)&&st.reserva>=0&&st.reserva<=5?st.reserva:null}};}
+const rate=D=>fin(D.set&&D.set.reserva)?D.set.reserva:RESERVA_MILLA;
 // Devuelve cuántos valores completó. Solo rellena lo que falta; nunca sobrescribe una reserva o un costo de gasolina ya guardados (0 también cuenta como guardado).
 function migrate(D){let c=0;const g=gas(D.fills);if(!g.pending)D.shifts.forEach(s=>{if(!fin(s.cpm)){s.cpm=g.cpm;s.mpg=g.mpg;c++;}});
- D.shifts.forEach(s=>{if(!fin(s.reserve)&&vs(s)){s.reserve=(s.endOdo-s.startOdo)*RESERVA_MILLA;c++;}});return c;}
+ D.shifts.forEach(s=>{if(!fin(s.reserve)&&vs(s)){s.reserve=(s.endOdo-s.startOdo)*rate(D);c++;}});return c;}
 // Carga los datos, migra y, si la migración cambió algo, lo GUARDA de inmediato. Antes de la primera escritura deja una copia intacta de lo que había.
 function loadState(st){let D,raw=null;
  try{raw=st.getItem(KEY);if(raw&&!st.getItem(KEY+'_pre2'))st.setItem(KEY+'_pre2',raw);if(raw&&!st.getItem(KEY+'_pre3'))st.setItem(KEY+'_pre3',raw);D=norm(raw?JSON.parse(raw):null);}catch(e){D=norm(null);}
@@ -105,6 +113,7 @@ function loadState(st){let D,raw=null;
  if(c>0&&raw){try{if(!st.getItem(KEY+'_pre_migracion'))st.setItem(KEY+'_pre_migracion',raw);st.setItem(KEY,JSON.stringify(D));}catch(e){}}
  return D;}
 function mergeIn(D,raw){const N=norm(raw);['shifts','fills','personal'].forEach(k=>{const ids=new Set(D[k].map(x=>x.id));N[k].forEach(x=>{if(!ids.has(x.id)){D[k].push(x);ids.add(x.id);}});});
+ if(D.set&&D.set.reserva===null&&N.set)D.set.reserva=N.set.reserva;
  if(!D.active&&N.active)D.active=N.active;return D;}
 //LOGIC-END
 const $=id=>document.getElementById(id);
@@ -114,6 +123,7 @@ const tf=i=>new Date(i).toLocaleTimeString('es-US',{hour:'numeric',minute:'2-dig
 const df=i=>new Date(i).toLocaleDateString('es-US',{weekday:'short',day:'numeric',month:'short'});
 let S;
 try{S=loadState(localStorage);}catch(e){S=norm(null);migrate(S);}
+S.range='day';
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){toast('No se pudo guardar en este navegador');}}
 let tab='work';
 function toast(t){$('msg').textContent=t;setTimeout(()=>{$('msg').textContent='';},3500);}
@@ -125,29 +135,31 @@ if(!a){$('shift').innerHTML='<h2>Turno</h2><label>Odómetro al salir de casa</la
 $('go').onclick=()=>{const o=num($('so').value);if(o===null||o<0)return toast('Pon un odómetro válido');const me=Math.max(0,...S.shifts.filter(vs).map(s=>s.endOdo));if(o<me)return toast('El odómetro es menor al del último turno ('+me+')');S.active={start:new Date().toISOString(),startOdo:o};save();rAll();};}
 else{$('shift').innerHTML='<h2>Turno en curso</h2><p class="muted">Empezó a las '+tf(a.start)+' · <span id="el"></span> · salió con '+a.startOdo+' mi</p><label>Odómetro al llegar a casa</label><input id="eo" inputmode="decimal"><label>Ganancia del día ($)</label><input id="ea" inputmode="decimal"><button class="btn" id="fin">Terminar turno</button><button class="link" id="can" data-l="Cancelar turno">Cancelar turno</button>';tick();
 $('fin').onclick=()=>{const o=num($('eo').value),e=num($('ea').value);if(o===null||o<=a.startOdo)return toast('El odómetro final debe ser mayor al inicial');if(o-a.startOdo>1000)return toast('Más de 1,000 millas en un turno: revisa el odómetro');if(e===null||e<0)return toast('Pon lo que ganaste (0 o más)');
-const g=gas(S.fills);S.shifts.push({id:uid(),start:a.start,end:new Date().toISOString(),startOdo:a.startOdo,endOdo:o,earned:e,cpm:g.pending?null:g.cpm,mpg:g.pending?null:g.mpg,reserve:(o-a.startOdo)*RESERVA_MILLA});S.active=null;save();rAll();toast('Turno guardado');};
+const g=gas(S.fills);S.shifts.push({id:uid(),start:a.start,end:new Date().toISOString(),startOdo:a.startOdo,endOdo:o,earned:e,cpm:g.pending?null:g.cpm,mpg:g.pending?null:g.mpg,reserve:(o-a.startOdo)*rate(S)});S.active=null;save();rAll();toast('Turno guardado');};
 arm($('can'),()=>{S.active=null;save();rAll();});}}
-function rStats(){const p=period(S.range),x=sumP(S,p),g=gas(S.fills),w=S.range==='week';
+function rStats(){const p=period(S.range),x=sumP(S,p),g=gas(S.fills);
 const nph=x.complete&&x.n>0&&x.h>0?x.net/x.h:null,bph=x.h>0?x.e/x.h:null;
-const gt=x.n===0?'—':(x.ng===x.n?'Pendiente':money(x.gc)+(x.ng?'*':''));
+const gv=x.n===0?'—':(x.ng===x.n?'Pendiente':money(x.gc)+(x.ng?'*':''));
 const K=(l,v)=>'<div class="k"><span>'+l+'</span><b>'+v+'</b></div>';
-let h='<div class="seg"><button data-r="week" class="'+(w?'on':'')+'">Esta semana</button><button data-r="month" class="'+(w?'':'on')+'">Este mes</button></div>';
+const R=[['day','Hoy'],['week','Semana'],['month','Mes']];
+let h='<div class="seg">'+R.map(r=>'<button data-r="'+r[0]+'" class="'+(S.range===r[0]?'on':'')+'">'+r[1]+'</button>').join('')+'</div>';
 h+='<div class="muted">Ganancia neta por hora (estimada)</div><div class="big'+(nph!==null&&nph<0?' neg':'')+'">'+(nph!==null?money(nph):(x.n?'Pendiente':'—'))+'</div>';
-h+='<div class="grid">'+K('Ganado',money(x.e))+K('Gasolina (est.)',gt)+K('Neto',x.n===0?'—':(x.complete?money(x.net):'Pendiente'))+K('Horas',x.h.toFixed(1))+K('Millas',Math.round(x.mi))+K('Bruto por hora',bph!==null?money(bph):'—')+'</div>';
-h+='<p class="muted">Neto = ganado − gasolina − reserva de desgaste.</p>';
-if(g.pending)h+='<p class="muted">Gasolina pendiente: necesito 2 llenadas completas seguidas con datos consistentes.'+(g.bad?' ('+g.bad+' ciclo(s) descartado(s) por inconsistentes.)':'')+'</p>';
+h+='<div class="grid">'+K('Ganado',money(x.e))+K('Gasolina (est.)',gv)+K('Reserva',x.n===0?'—':money(x.rv))+K('Neto',x.n===0?'—':(x.complete?money(x.net):'Pendiente'))+'</div>';
+h+=x.n?'<p class="muted">Neto = ganado − gasolina − reserva · '+x.n+' turno(s) · '+x.h.toFixed(1)+' h · '+Math.round(x.mi)+' mi'+(bph!==null?' · bruto '+money(bph)+'/h':'')+'</p>':'<p class="muted">Aún no hay turnos en este periodo.</p>';
+if(x.n&&g.pending)h+='<p class="muted">Gasolina pendiente: necesito 2 llenadas completas seguidas con datos consistentes.'+(g.bad?' ('+g.bad+' ciclo(s) descartado(s) por inconsistentes.)':'')+'</p>';
 else if(x.ng&&x.ng<x.n)h+='<p class="muted">* '+x.ng+' turno(s) sin gasolina estimada.</p>';
 $('stats').innerHTML=h;
 $('stats').querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{S.range=b.dataset.r;save();rAll();});}
-function rResv(){const K=(l,v)=>'<div class="k"><span>'+l+'</span><b>'+v+'</b></div>',w=sumP(S,period('week')),m=sumP(S,period('month'));
-$('resv').innerHTML='<h2>Reserva para reparaciones</h2><div class="grid">'+K('Esta semana',money(w.rv))+K('Este mes',money(m.rv))+K('Total acumulado',money(resTotal(S)))+'</div><p class="muted">Lo que deberías apartar para mantenimiento, llantas y reparaciones: '+money(RESERVA_MILLA)+' por milla (la gasolina va aparte).</p>';}
-function rFill(){const g=gas(S.fills),f=[...S.fills].filter(vf).sort((a,b)=>b.odo-a.odo).slice(0,3);
-$('fillinfo').innerHTML=g.pending?'<p class="muted">Estimación pendiente: con 2 llenadas completas seguidas calculo tu costo por milla.</p>':'<div class="grid"><div class="k"><span>Rendimiento real</span><b>'+g.mpg.toFixed(1)+' MPG</b></div><div class="k"><span>Gasolina por milla</span><b>'+money(g.cpm)+'</b></div></div><p class="muted">Basado en '+g.n+' ciclo(s)'+(g.bad?' · '+g.bad+' descartado(s)':'')+'.</p>';
-$('fills').innerHTML=f.map(x=>'<div class="row"><div>'+df(x.date)+'<small>'+x.odo+' mi · '+x.gal+' gal'+(x.full===false?' · parcial':'')+'</small></div><div><b>'+money(x.paid)+'</b> <button class="x" data-l="Borrar" data-f="'+x.id+'">Borrar</button></div></div>').join('');
-$('fills').querySelectorAll('[data-f]').forEach(b=>arm(b,()=>{S.fills=S.fills.filter(x=>x.id!==b.dataset.f);save();rAll();}));}
-function rList(){const l=S.shifts.filter(vs).sort((a,b)=>new Date(b.start)-new Date(a.start)).slice(0,10);
+function rFill(){const g=gas(S.fills);
+$('fillinfo').innerHTML=g.pending?'<p class="muted">Estimación pendiente: con 2 llenadas completas seguidas calculo tu costo por milla.'+(g.bad?' ('+g.bad+' descartada(s) por inconsistentes.)':'')+'</p>':'<p class="muted"><b>'+g.mpg.toFixed(1)+' MPG</b> · '+money(g.cpm)+' por milla · '+g.n+' ciclo(s)'+(g.bad?' · '+g.bad+' descartado(s)':'')+'</p>';}
+function rHist(){const l=S.shifts.filter(vs).sort((a,b)=>new Date(b.start)-new Date(a.start)).slice(0,30),f=[...S.fills].filter(vf).sort((a,b)=>b.odo-a.odo).slice(0,20);
 $('list').innerHTML=l.length?l.map(s=>{const c=sc(s);return '<div class="row"><div>'+df(s.start)+'<small>'+c.mi+' mi · '+c.h.toFixed(1)+' h · '+(c.net!==null?'neto '+money(c.net):'neto pendiente')+'</small></div><div><b>'+money(s.earned)+'</b> <button class="x" data-l="Borrar" data-d="'+s.id+'">Borrar</button></div></div>';}).join(''):'<p class="muted">Aún no hay turnos.</p>';
-$('list').querySelectorAll('[data-d]').forEach(b=>arm(b,()=>{S.shifts=S.shifts.filter(x=>x.id!==b.dataset.d);save();rAll();}));}
+$('list').querySelectorAll('[data-d]').forEach(b=>arm(b,()=>{S.shifts=S.shifts.filter(x=>x.id!==b.dataset.d);save();rAll();}));
+$('fills').innerHTML=f.length?f.map(x=>'<div class="row"><div>'+df(x.date)+'<small>'+x.odo+' mi · '+x.gal+' gal'+(x.full===false?' · parcial':'')+'</small></div><div><b>'+money(x.paid)+'</b> <button class="x" data-l="Borrar" data-f="'+x.id+'">Borrar</button></div></div>').join(''):'<p class="muted">Aún no hay llenadas.</p>';
+$('fills').querySelectorAll('[data-f]').forEach(b=>arm(b,()=>{S.fills=S.fills.filter(x=>x.id!==b.dataset.f);save();rAll();}));
+$('rs').value=fin(S.set.reserva)?S.set.reserva:'';
+$('rnow').textContent='Ahora: '+money(rate(S))+' por milla. Aplica solo a turnos nuevos; los anteriores conservan la suya.';
+$('rtot').textContent='Reserva acumulada de todos los turnos: '+money(resTotal(S));}
 function rPers(){const p=period('month'),x=sumP(S,p),P=S.personal.filter(i=>fin(i.amount)&&okd(i.date)&&inP(i.date,p));
 const pt=P.reduce((a,i)=>a+i.amount,0),left=x.complete?x.net-pt:null;
 const K=(l,v)=>'<div class="k"><span>'+l+'</span><b>'+v+'</b></div>';
@@ -159,13 +171,16 @@ $('addf').onclick=()=>{const o=num($('fo').value),gl=num($('fg').value),p=num($(
 if(o===null||o<0||gl===null||gl<=0||p===null||p<0)return toast('Llena odómetro, galones y lo que pagaste');
 const pg=p/gl;if(pg<0.5||pg>15)return toast('Revisa galones y monto: el precio por galón sale raro');
 if(S.fills.some(f=>f.odo===o))return toast('Ya hay una llenada con ese odómetro');
-S.fills.push({id:uid(),date:new Date().toISOString(),odo:o,gal:gl,paid:p,full:$('ff').checked});['fo','fg','fp'].forEach(i=>$(i).value='');$('ff').checked=true;migrate(S);save();rAll();toast('Llenada guardada');};
-$('addp').onclick=()=>{const a=num($('pa').value);if(a===null||a<=0)return toast('Pon un monto mayor a 0');S.personal.push({id:uid(),date:new Date().toISOString(),amount:a,note:$('pn').value.trim()});$('pa').value='';$('pn').value='';save();rAll();toast('Guardado');};
+S.fills.push({id:uid(),date:new Date().toISOString(),odo:o,gal:gl,paid:p,full:$('ff').checked});['fo','fg','fp'].forEach(i=>$(i).value='');$('ff').checked=true;$('fform').hidden=true;$('gt').textContent='+ Registrar llenada';migrate(S);save();rAll();toast('Llenada guardada');};
+$('addp').onclick=()=>{const a=num($('pa').value);if(a===null||a<=0)return toast('Pon un monto mayor a 0');S.personal.push({id:uid(),date:new Date().toISOString(),amount:a,note:$('pn').value.trim()});$('pa').value='';$('pn').value='';$('pform').hidden=true;$('pt').textContent='+ Nuevo gasto';save();rAll();toast('Guardado');};
 $('exp').onclick=()=>{const b=new Blob([JSON.stringify(S,null,2)],{type:'application/json'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download='gastos-spark-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),2000);};
 $('impb').onclick=()=>$('imp').click();
 $('imp').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const j=JSON.parse(r.result);if(!j||typeof j!=='object'||!['shifts','fills','personal'].some(k=>Array.isArray(j[k])))throw 0;const n0=S.shifts.length+S.fills.length+S.personal.length;mergeIn(S,j);migrate(S);save();rAll();toast('Importado: '+(S.shifts.length+S.fills.length+S.personal.length-n0)+' registro(s) nuevo(s)');}catch(x){toast('Archivo no válido');}e.target.value='';};r.readAsText(f);};
-function rTabs(){document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===tab));$('work').hidden=tab!=='work';$('pers').hidden=tab!=='pers';}
+$('gt').onclick=()=>{const f=$('fform');f.hidden=!f.hidden;$('gt').textContent=f.hidden?'+ Registrar llenada':'Cerrar';};
+$('pt').onclick=()=>{const f=$('pform');f.hidden=!f.hidden;$('pt').textContent=f.hidden?'+ Nuevo gasto':'Cerrar';};
+$('saver').onclick=()=>{const t=$('rs').value.trim();if(t==='')S.set.reserva=null;else{const r=num(t);if(r===null||r<0||r>5)return toast('Pon un valor entre 0 y 5 $ por milla');S.set.reserva=r;}save();rAll();toast('Reserva guardada');};
+function rTabs(){document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===tab));$('work').hidden=tab!=='work';$('pers').hidden=tab!=='pers';$('menuv').hidden=tab!=='menu';}
 document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{tab=b.dataset.t;rTabs();});
-function rAll(){rShift();rStats();rResv();rFill();rList();rPers();rTabs();}
+function rAll(){rShift();rStats();rFill();rHist();rPers();rTabs();}
 rAll();
 </script></body></html>
