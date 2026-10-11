@@ -85,15 +85,24 @@ input:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:
 const KEY='sd_tracker_v1';
 const RESERVA_MILLA=0.15; // $ por milla para mantenimiento, llantas y reparaciones (sin gasolina). Cambiarla solo afecta a los turnos NUEVOS.
 const fin=n=>typeof n==='number'&&Number.isFinite(n);
-const num=v=>{if(v===null||v===undefined)return null;const t=String(v).trim().replace(',','.');if(t==='')return null;const n=Number(t);return Number.isFinite(n)?n:null;};
+const MPG_MIN=10,MPG_MAX=60; // rendimiento posible de un ciclo completo; fuera de esto se descarta
+const num=v=>{if(v===null||v===undefined)return null;const t=String(v).trim().replace(',','.');if(!/^(\d+\.?\d*|\.\d+)$/.test(t))return null;const n=Number(t);return Number.isFinite(n)?n:null;};
+const numO=v=>{const t=String(v==null?'':v).trim();return /^\d{1,3}(,\d{3})+$/.test(t)?num(t.replace(/,/g,'')):num(t);}; // odometro: 48,393 = 48393
 const okd=d=>Number.isFinite(new Date(d).getTime());
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const vs=s=>!!s&&fin(s.startOdo)&&fin(s.endOdo)&&fin(s.earned)&&s.earned>=0&&s.endOdo>s.startOdo&&okd(s.start)&&okd(s.end)&&new Date(s.end)>=new Date(s.start);
 const vf=f=>!!f&&fin(f.odo)&&f.odo>=0&&fin(f.gal)&&f.gal>0&&fin(f.paid)&&f.paid>=0&&okd(f.date);
-function gas(fills){const f=fills.filter(vf).sort((a,b)=>a.odo-b.odo);let last=null,gal=0,cost=0,mi=0,G=0,C=0,n=0,bad=0;
+function gas(fills){const f=fills.filter(vf).sort((a,b)=>a.odo-b.odo);let last=null,gal=0,cost=0,mi=0,G=0,C=0,n=0,bad=0;const cyc=[];
  for(const x of f){if(last){gal+=x.gal;cost+=x.paid;}
-  if(x.full!==false){if(last){const d=x.odo-last.odo,m=gal>0?d/gal:0;if(d>0&&m>=5&&m<=80){mi+=d;G+=gal;C+=cost;n++;}else bad++;}last=x;gal=0;cost=0;}}
- return n?{pending:false,cpm:C/mi,mpg:mi/G,n,bad}:{pending:true,n:0,bad};}
+  if(x.full!==false){if(last){const d=x.odo-last.odo,m=gal>0?d/gal:0,ok=d>0&&m>=MPG_MIN&&m<=MPG_MAX;cyc.push({from:last.odo,to:x.odo,mi:d,gal,cost,mpg:m,ok});if(ok){mi+=d;G+=gal;C+=cost;n++;}else bad++;}last=x;gal=0;cost=0;}}
+ return n?{pending:false,cpm:C/mi,mpg:mi/G,n,bad,cyc}:{pending:true,n:0,bad,cyc};}
+// Revisa una llenada nueva ANTES de guardarla. Devuelve un aviso (texto) o null si todo luce normal.
+function checkFill(fills,nf){const b=gas(fills),a=gas(fills.concat([nf])),key=c=>c.from+'|'+c.to+'|'+c.gal.toFixed(3),old=new Set(b.cyc.map(key));
+ const keep=new Set(a.cyc.map(key)),good=b.cyc.filter(c=>c.ok&&keep.has(key(c))).map(c=>c.mpg).sort((x,y)=>x-y),k=good.length,med=k?(k%2?good[(k-1)/2]:(good[k/2-1]+good[k/2])/2):null;
+ for(const c of a.cyc.filter(c=>!old.has(key(c)))){
+  if(!c.ok)return 'Con la llenada anterior da '+c.mpg.toFixed(1)+' MPG, fuera de lo normal; si la guardas, ese ciclo no entra al cálculo.';
+  if(med&&(c.mpg<med*0.6||c.mpg>med*1.5))return 'Da '+c.mpg.toFixed(1)+' MPG y tu promedio es '+med.toFixed(1)+'. ¿Olvidaste una llenada o el odómetro está mal?';}
+ return null;}
 function period(kind,ref){const d=new Date(ref||Date.now());d.setHours(0,0,0,0);const a=new Date(d);let b;
  if(kind==='week'){a.setDate(a.getDate()-((a.getDay()+6)%7));b=new Date(a);b.setDate(b.getDate()+7);}
  else if(kind==='day'){b=new Date(a);b.setDate(b.getDate()+1);}
@@ -139,15 +148,15 @@ try{S=loadState(localStorage);}catch(e){S=norm(null);migrate(S);}
 S.range='day';
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){toast('No se pudo guardar en este navegador');}}
 let tab='work';
-function toast(t){$('msg').textContent=t;setTimeout(()=>{$('msg').textContent='';},3500);}
+let tt;function toast(t,ms){clearTimeout(tt);$('msg').textContent=t;tt=setTimeout(()=>{$('msg').textContent='';},ms||3500);}
 function arm(b,fn){let a=false;b.onclick=()=>{if(a){fn();return;}a=true;b.textContent='¿Seguro?';setTimeout(()=>{a=false;b.textContent=b.dataset.l;},2500);};}
 function tick(){const el=$('el');if(!el||!S.active)return;const m=Math.max(0,Math.floor((Date.now()-new Date(S.active.start))/6e4));el.textContent=Math.floor(m/60)+' h '+(m%60)+' min';}
 setInterval(tick,20000);
 function rShift(){const a=S.active;
 if(!a){$('shift').innerHTML='<h2>Turno</h2><label>Odómetro al salir de casa</label><input id="so" inputmode="decimal" placeholder="Ej. 84250"><button class="btn" id="go">Empezar turno</button>';
-$('go').onclick=()=>{const o=num($('so').value);if(o===null||o<0)return toast('Pon un odómetro válido');const me=Math.max(0,...S.shifts.filter(vs).map(s=>s.endOdo));if(o<me)return toast('El odómetro es menor al del último turno ('+me+')');S.active={start:new Date().toISOString(),startOdo:o};save();rAll();};}
+$('go').onclick=()=>{const o=numO($('so').value);if(o===null||o<0)return toast('Pon un odómetro válido');const me=Math.max(0,...S.shifts.filter(vs).map(s=>s.endOdo));if(o<me)return toast('El odómetro es menor al del último turno ('+me+')');S.active={start:new Date().toISOString(),startOdo:o};save();rAll();};}
 else{$('shift').innerHTML='<h2>Turno en curso</h2><p class="muted">Empezó a las '+tf(a.start)+' · <span id="el"></span> · salió con '+a.startOdo+' mi</p><label>Odómetro al llegar a casa</label><input id="eo" inputmode="decimal"><label>Ganancia del día ($)</label><input id="ea" inputmode="decimal"><button class="btn" id="fin">Terminar turno</button><button class="link" id="can" data-l="Cancelar turno">Cancelar turno</button>';tick();
-$('fin').onclick=()=>{const o=num($('eo').value),e=num($('ea').value);if(o===null||o<=a.startOdo)return toast('El odómetro final debe ser mayor al inicial');if(o-a.startOdo>1000)return toast('Más de 1,000 millas en un turno: revisa el odómetro');if(e===null||e<0)return toast('Pon lo que ganaste (0 o más)');
+$('fin').onclick=()=>{const o=numO($('eo').value),e=num($('ea').value);if(o===null||o<=a.startOdo)return toast('El odómetro final debe ser mayor al inicial');if(o-a.startOdo>1000)return toast('Más de 1,000 millas en un turno: revisa el odómetro');if(e===null||e<0)return toast('Pon lo que ganaste (0 o más)');
 const g=gas(S.fills);S.shifts.push({id:uid(),start:a.start,end:new Date().toISOString(),startOdo:a.startOdo,endOdo:o,earned:e,cpm:g.pending?null:g.cpm,mpg:g.pending?null:g.mpg,reserve:(o-a.startOdo)*rate(S)});S.active=null;save();rAll();toast('Turno guardado');};
 arm($('can'),()=>{S.active=null;save();rAll();});}}
 function rStats(){const p=period(S.range),x=sumP(S,p),g=gas(S.fills);
@@ -180,11 +189,14 @@ $('psum').innerHTML='<h2>Resumen de '+p[0].toLocaleDateString('es-US',{month:'lo
 const l=[...P].sort((a,b)=>new Date(b.date)-new Date(a.date));
 $('plist').innerHTML=l.length?l.map(i=>'<div class="row"><div>'+esc(i.note||'Gasto')+'<small>'+df(i.date)+'</small></div><div><b>'+money(i.amount)+'</b> <button class="x" data-l="Borrar" data-p="'+i.id+'">Borrar</button></div></div>').join(''):'<p class="muted">Aún no hay gastos este mes.</p>';
 $('plist').querySelectorAll('[data-p]').forEach(b=>arm(b,()=>{S.personal=S.personal.filter(x=>x.id!==b.dataset.p);save();rAll();}));}
-$('addf').onclick=()=>{const o=num($('fo').value),gl=num($('fg').value),p=num($('fp').value);
+let fw=null;
+$('addf').onclick=()=>{const o=numO($('fo').value),gl=num($('fg').value),p=num($('fp').value);
 if(o===null||o<0||gl===null||gl<=0||p===null||p<0)return toast('Llena odómetro, galones y lo que pagaste');
 const pg=p/gl;if(pg<0.5||pg>15)return toast('Revisa galones y monto: el precio por galón sale raro');
 if(S.fills.some(f=>f.odo===o))return toast('Ya hay una llenada con ese odómetro');
-S.fills.push({id:uid(),date:new Date().toISOString(),odo:o,gal:gl,paid:p,full:$('ff').checked});['fo','fg','fp'].forEach(i=>$(i).value='');$('ff').checked=true;$('fform').hidden=true;$('gt').textContent='+ Registrar llenada';migrate(S);save();rAll();toast('Llenada guardada');};
+const nf={id:uid(),date:new Date().toISOString(),odo:o,gal:gl,paid:p,full:$('ff').checked},w=checkFill(S.fills,nf),sig=[o,gl,p,nf.full].join('|');
+if(w&&fw!==sig){fw=sig;return toast(w+' Si es correcto, toca Guardar llenada otra vez.',9000);}
+fw=null;S.fills.push(nf);['fo','fg','fp'].forEach(i=>$(i).value='');$('ff').checked=true;$('fform').hidden=true;$('gt').textContent='+ Registrar llenada';migrate(S);save();rAll();toast('Llenada guardada');};
 $('addp').onclick=()=>{const a=num($('pa').value);if(a===null||a<=0)return toast('Pon un monto mayor a 0');S.personal.push({id:uid(),date:new Date().toISOString(),amount:a,note:$('pn').value.trim()});$('pa').value='';$('pn').value='';$('pform').hidden=true;$('pt').textContent='+ Nuevo gasto';save();rAll();toast('Guardado');};
 $('exp').onclick=()=>{const b=new Blob([JSON.stringify(S,null,2)],{type:'application/json'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download='gastos-spark-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),2000);};
 $('impb').onclick=()=>$('imp').click();
