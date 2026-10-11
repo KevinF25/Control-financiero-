@@ -36,6 +36,7 @@ input{width:100%;padding:12px;font-size:17px;border:1px solid var(--border);bord
 .chk{display:flex;align-items:center;gap:10px;font-size:15px;color:var(--text);margin-top:12px}.chk input{width:auto}
 .two{display:flex;gap:8px}.btn2{flex:1;margin-top:14px;padding:14px;font-size:16px;font-weight:600;border:1px solid var(--border);border-radius:12px;background:var(--bg);color:var(--text)}
 .tabs button[data-t=menu]{flex:0 0 56px;font-size:20px;padding:12px 0}.full{width:100%}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}.grid3 .k{min-width:0;padding:10px 8px;overflow-wrap:anywhere}
 </style></head><body>
 <div class="tabs"><button data-t="work" class="on">Trabajo</button><button data-t="pers">Personal</button><button data-t="menu" aria-label="Menú">☰</button></div>
 <div id="msg"></div>
@@ -145,7 +146,7 @@ const R=[['day','Hoy'],['week','Semana'],['month','Mes']];
 let h='<div class="seg">'+R.map(r=>'<button data-r="'+r[0]+'" class="'+(S.range===r[0]?'on':'')+'">'+r[1]+'</button>').join('')+'</div>';
 h+='<div class="muted">Ganancia neta por hora (estimada)</div><div class="big'+(nph!==null&&nph<0?' neg':'')+'">'+(nph!==null?money(nph):(x.n?'Pendiente':'—'))+'</div>';
 h+='<div class="grid">'+K('Ganado',money(x.e))+K('Gasolina (est.)',gv)+K('Reserva',x.n===0?'—':money(x.rv))+K('Neto',x.n===0?'—':(x.complete?money(x.net):'Pendiente'))+'</div>';
-h+=x.n?'<p class="muted">Neto = ganado − gasolina − reserva · '+x.n+' turno(s) · '+x.h.toFixed(1)+' h · '+Math.round(x.mi)+' mi'+(bph!==null?' · bruto '+money(bph)+'/h':'')+'</p>':'<p class="muted">Aún no hay turnos en este periodo.</p>';
+h+=x.n?'<div class="grid3">'+K('Horas',x.h.toFixed(1))+K('Millas',Math.round(x.mi))+K('Bruto/h',bph!==null?money(bph):'—')+'</div>':'<p class="muted">Aún no hay turnos en este periodo.</p>';
 if(x.n&&g.pending)h+='<p class="muted">Gasolina pendiente: necesito 2 llenadas completas seguidas con datos consistentes.'+(g.bad?' ('+g.bad+' ciclo(s) descartado(s) por inconsistentes.)':'')+'</p>';
 else if(x.ng&&x.ng<x.n)h+='<p class="muted">* '+x.ng+' turno(s) sin gasolina estimada.</p>';
 $('stats').innerHTML=h;
