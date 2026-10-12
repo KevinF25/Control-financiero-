@@ -5,7 +5,8 @@
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#0b7a4d">
+<meta name="theme-color" content="#1d6b58" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f1917" media="(prefers-color-scheme: dark)">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -30,37 +31,51 @@ input:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}.grid3 .k{min-width:0;padding:8px;overflow-wrap:anywhere}
 .k{background:var(--bg);border-radius:8px;padding:8px 10px}.k b{display:block;font-size:19px;font-weight:600}.k span{font-size:12px;color:var(--muted)}
-#stats .grid .k:nth-child(4),#psum .grid .k:nth-child(5){background:var(--accbg)}
-#stats .grid .k:nth-child(4) b,#psum .grid .k:nth-child(5) b{color:var(--accent)}
-#stats .grid .k:nth-child(4) b.neg,#psum .grid .k:nth-child(5) b.neg,.k b.neg{color:var(--bad)}
+.k.hi{background:var(--accbg)}.k.hi b{color:var(--accent)}.k.wide{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center}.k.wide b{font-size:22px}
+.k b.neg,.k.hi b.neg{color:var(--bad)}
 .big{font-size:34px;font-weight:700;letter-spacing:-.01em;color:var(--accent)}.big.neg{color:var(--bad)}
 .seg{display:flex;gap:6px;margin-bottom:10px}
 .seg button{flex:1;padding:8px;min-height:38px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font:inherit;font-size:15px}
 .row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 0;border-top:1px solid var(--border);font-size:15px}
 .row small{color:var(--muted);display:block}
-.x{background:none;border:0;color:var(--bad);font:inherit;font-size:13px;padding:6px}
+.x{background:none;border:1px solid transparent;border-radius:6px;color:var(--muted);font:inherit;font-size:13px;padding:6px 8px;min-height:36px}.x.armed,.link.armed{color:var(--bad);border-color:var(--bad)}.link.armed{text-decoration:none;padding:6px 10px;border-radius:6px;border:1px solid}
 .neg{color:var(--bad)}
 .chk{display:flex;align-items:center;gap:10px;font-size:15px;color:var(--text);margin-top:12px}.chk input{width:auto;min-height:0;accent-color:var(--accent)}
 .two{display:flex;gap:8px}
-.tabs{position:fixed;left:0;right:0;bottom:0;z-index:5;display:flex;background:var(--card);border-top:1px solid var(--border);padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px))}
+.tabs{position:fixed;left:0;right:0;bottom:0;max-width:640px;margin:0 auto;z-index:5;display:flex;background:var(--card);border-top:1px solid var(--border);padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px))}
 .tabs button{flex:1;border:0;background:none;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:2px;font:inherit;font-size:12px;padding:4px 0;min-height:48px;border-radius:8px}
-.tabs button.on{color:var(--accent);font-weight:600}
-.tabs svg{width:24px;height:24px}
+.tabs button.on{color:var(--accent);font-weight:600}.tabs button.on svg{background:var(--accbg);border-radius:12px}
+@media (min-width:640px){.tabs{border:1px solid var(--border);border-bottom:0;border-radius:14px 14px 0 0}}
+.tabs svg{width:24px;height:24px;padding:2px 12px;box-sizing:content-box}
 .seg button.on{background:var(--accent);color:var(--onaccent);border-color:var(--accent)}
 #msg{position:fixed;left:0;right:0;bottom:calc(72px + env(safe-area-inset-bottom,0px));z-index:6;width:max-content;max-width:90%;margin:0 auto;padding:8px 12px;border-radius:8px;background:var(--accbg);color:var(--accent);font-size:14px;text-align:center;pointer-events:none}
 #msg:empty{display:none}
+#msg{box-shadow:0 4px 16px rgba(0,0,0,.12);border:1px solid var(--border)}
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:2px 0 12px;min-height:56px}.tl{display:flex;align-items:center;gap:2px;min-width:0}.top h1{font-size:22px;font-weight:700;margin:0;letter-spacing:-.01em;line-height:1.2}.top span{display:block;color:var(--muted);font-size:14px}
+.iconb{flex-shrink:0;background:none;border:0;color:var(--text);width:44px;height:44px;display:grid;place-items:center;border-radius:10px;padding:0}.iconb svg{width:24px;height:24px}.iconb:active{background:var(--accbg)}#back{margin-left:-10px}
+.list{padding:0 14px}.mi{display:flex;justify-content:space-between;align-items:center;gap:12px;width:100%;background:none;border:0;border-top:1px solid var(--border);padding:12px 0;min-height:60px;font:inherit;color:var(--text);text-align:left}.list .mi:first-child{border-top:0}.mi b{font-weight:600}.mi small{display:block;color:var(--muted);font-size:13px}.mi svg{width:20px;height:20px;color:var(--muted);flex-shrink:0}
+.wk{margin-bottom:6px}.wk small{display:block;margin-top:2px;font-size:13px;font-weight:400;color:var(--muted)}
+.card>h2+.btn2{margin-top:4px}
+.btn:active,.btn2:active,.seg button:active{transform:scale(.98)}
+.live{border-color:var(--accent);box-shadow:inset 4px 0 0 var(--accent)}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent);margin-right:8px;vertical-align:middle;animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.3}}
+@media (prefers-reduced-motion:reduce){.dot{animation:none}.btn:active,.btn2:active,.seg button:active{transform:none}}
+.hero{background:var(--accbg);border-radius:10px;padding:12px 14px}.hero .muted{margin:0;color:var(--text);opacity:.75}
+.row>div:last-child{display:flex;align-items:center;gap:4px;flex-shrink:0}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
 </style></head><body>
-<div class="tabs"><button data-t="work" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 8-2 2-1.5-3.7A2 2 0 0 0 15.644 5H8.4a2 2 0 0 0-1.903 1.257L5 10 3 8"/><path d="M7 14h.01"/><path d="M17 14h.01"/><rect width="18" height="8" x="3" y="10" rx="2"/><path d="M5 18v2"/><path d="M19 18v2"/></svg>Trabajo</button><button data-t="pers"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></svg>Personal</button><button data-t="menu" aria-label="Menú"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>Menú</button></div>
-<div id="msg"></div>
+<header class="top"><div class="tl"><button class="iconb" id="back" aria-label="Atrás" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button><div><h1 id="ttl">Mis cuentas</h1><span id="today"></span></div></div><button class="iconb" id="menub" aria-label="Menú"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button></header>
+<nav class="tabs" aria-label="Secciones"><button data-t="work" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 8-2 2-1.5-3.7A2 2 0 0 0 15.644 5H8.4a2 2 0 0 0-1.903 1.257L5 10 3 8"/><path d="M7 14h.01"/><path d="M17 14h.01"/><rect width="18" height="8" x="3" y="10" rx="2"/><path d="M5 18v2"/><path d="M19 18v2"/></svg>Trabajo</button><button data-t="pers"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></svg>Personal</button></nav>
+<div id="msg" role="status" aria-live="polite"></div>
 <main id="work">
 <section class="card" id="shift"></section>
 <section class="card" id="stats"></section>
 <section class="card"><h2>Gasolina</h2><div id="fillinfo"></div>
 <button class="btn2 full" id="gt">+ Registrar llenada</button>
 <div id="fform" hidden>
-<label>Odómetro</label><input id="fo" inputmode="decimal">
-<label>Galones</label><input id="fg" inputmode="decimal">
-<label>Cuánto pagaste ($)</label><input id="fp" inputmode="decimal">
+<label for="fo">Odómetro</label><input id="fo" inputmode="decimal" autocomplete="off">
+<div class="pair"><div><label for="fg">Galones</label><input id="fg" inputmode="decimal" autocomplete="off"></div><div><label for="fp">Cuánto pagaste ($)</label><input id="fp" inputmode="decimal" autocomplete="off"></div></div>
 <label class="chk"><input type="checkbox" id="ff" checked> Llené el tanque completo</label>
 <button class="btn" id="addf">Guardar llenada</button>
 <p class="muted">El cálculo usa ciclos entre llenadas completas. Si fue parcial, desmarca la casilla.</p></div></section>
@@ -69,17 +84,18 @@ input:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:
 <section class="card" id="psum"></section>
 <section class="card"><h2>Gastos del mes</h2>
 <button class="btn2 full" id="pt">+ Nuevo gasto</button>
-<div id="pform" hidden><label>Monto ($)</label><input id="pa" inputmode="decimal">
-<label>En qué (luz, mercado, tarjeta...)</label><input id="pn">
+<div id="pform" hidden><label for="pa">Monto ($)</label><input id="pa" inputmode="decimal" autocomplete="off">
+<label for="pn">En qué (luz, mercado, tarjeta...)</label><input id="pn" autocomplete="off">
 <button class="btn" id="addp">Agregar gasto</button></div>
 <div id="plist"></div><p class="muted">No anotes aquí la gasolina del carro: ya se cuenta en Trabajo.</p></section>
 </main>
 <main id="menuv" hidden>
-<section class="card"><h2>Reserva por milla</h2><label>Dólares por milla para mantenimiento, llantas y reparaciones</label><input id="rs" inputmode="decimal" placeholder="Ej. 0.15"><button class="btn" id="saver">Guardar</button><p class="muted" id="rnow"></p><p class="muted" id="rtot"></p></section>
-<section class="card"><h2>Historial de turnos</h2><div id="list"></div></section>
-<section class="card"><h2>Llenadas de gasolina</h2><div id="fills"></div></section>
-<section class="card"><h2>Copia de seguridad</h2><div class="two"><button class="btn2" id="exp">Exportar</button><button class="btn2" id="impb">Importar</button></div><input type="file" id="imp" accept="application/json,.json" hidden><p class="muted">Importar suma lo que falte; nunca borra lo que ya tienes.</p></section>
+<section class="card list"><button class="mi" data-go="turnos"><span><b>Historial de turnos</b><small id="ms-turnos"></small></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button><button class="mi" data-go="llenadas"><span><b>Llenadas de gasolina</b><small id="ms-llenadas"></small></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button><button class="mi" data-go="reserva"><span><b>Reserva por milla</b><small id="ms-reserva"></small></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button><button class="mi" data-go="copia"><span><b>Copia de seguridad</b><small id="ms-copia"></small></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button></section>
 </main>
+<main id="v-turnos" hidden><div id="list"></div></main>
+<main id="v-llenadas" hidden><section class="card"><div id="fsum"></div><div id="fills"></div></section></main>
+<main id="v-reserva" hidden><section class="card"><label for="rs">Dólares por milla para mantenimiento, llantas y reparaciones</label><input id="rs" inputmode="decimal" placeholder="Ej. 0.15"><button class="btn" id="saver">Guardar</button><p class="muted" id="rnow"></p><p class="muted" id="rtot"></p></section></main>
+<main id="v-copia" hidden><section class="card"><div class="two"><button class="btn2" id="exp">Exportar</button><button class="btn2" id="impb">Importar</button></div><input type="file" id="imp" accept="application/json,.json" hidden><p class="muted">Importar suma lo que falte; nunca borra lo que ya tienes.</p></section></main>
 <script>
 //LOGIC-START
 const KEY='sd_tracker_v1';
@@ -147,26 +163,25 @@ let S;
 try{S=loadState(localStorage);}catch(e){S=norm(null);migrate(S);}
 S.range='day';
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){toast('No se pudo guardar en este navegador');}}
-let tab='work';
 let tt;function toast(t,ms){clearTimeout(tt);$('msg').textContent=t;tt=setTimeout(()=>{$('msg').textContent='';},ms||3500);}
-function arm(b,fn){let a=false;b.onclick=()=>{if(a){fn();return;}a=true;b.textContent='¿Seguro?';setTimeout(()=>{a=false;b.textContent=b.dataset.l;},2500);};}
+function arm(b,fn){let a=false;b.onclick=()=>{if(a){fn();return;}a=true;b.textContent='¿Seguro?';b.classList.add('armed');setTimeout(()=>{a=false;b.textContent=b.dataset.l;b.classList.remove('armed');},2500);};}
 function tick(){const el=$('el');if(!el||!S.active)return;const m=Math.max(0,Math.floor((Date.now()-new Date(S.active.start))/6e4));el.textContent=Math.floor(m/60)+' h '+(m%60)+' min';}
 setInterval(tick,20000);
-function rShift(){const a=S.active;
-if(!a){$('shift').innerHTML='<h2>Turno</h2><label>Odómetro al salir de casa</label><input id="so" inputmode="decimal" placeholder="Ej. 84250"><button class="btn" id="go">Empezar turno</button>';
+function rShift(){const a=S.active;$('shift').classList.toggle('live',!!a);
+if(!a){$('shift').innerHTML='<h2>Turno</h2><label for="so">Odómetro al salir de casa</label><input id="so" inputmode="decimal" autocomplete="off" placeholder="Ej. 84250"><button class="btn" id="go">Empezar turno</button>';
 $('go').onclick=()=>{const o=numO($('so').value);if(o===null||o<0)return toast('Pon un odómetro válido');const me=Math.max(0,...S.shifts.filter(vs).map(s=>s.endOdo));if(o<me)return toast('El odómetro es menor al del último turno ('+me+')');S.active={start:new Date().toISOString(),startOdo:o};save();rAll();};}
-else{$('shift').innerHTML='<h2>Turno en curso</h2><p class="muted">Empezó a las '+tf(a.start)+' · <span id="el"></span> · salió con '+a.startOdo+' mi</p><label>Odómetro al llegar a casa</label><input id="eo" inputmode="decimal"><label>Ganancia del día ($)</label><input id="ea" inputmode="decimal"><button class="btn" id="fin">Terminar turno</button><button class="link" id="can" data-l="Cancelar turno">Cancelar turno</button>';tick();
+else{$('shift').innerHTML='<h2><span class="dot" aria-hidden="true"></span>Turno en curso</h2><p class="muted">Empezó a las '+tf(a.start)+' · <span id="el"></span> · salió con '+a.startOdo+' mi</p><label for="eo">Odómetro al llegar a casa</label><input id="eo" inputmode="decimal" autocomplete="off"><label for="ea">Ganancia del día ($)</label><input id="ea" inputmode="decimal" autocomplete="off"><button class="btn" id="fin">Terminar turno</button><button class="link" id="can" data-l="Cancelar turno">Cancelar turno</button>';tick();
 $('fin').onclick=()=>{const o=numO($('eo').value),e=num($('ea').value);if(o===null||o<=a.startOdo)return toast('El odómetro final debe ser mayor al inicial');if(o-a.startOdo>1000)return toast('Más de 1,000 millas en un turno: revisa el odómetro');if(e===null||e<0)return toast('Pon lo que ganaste (0 o más)');
 const g=gas(S.fills);S.shifts.push({id:uid(),start:a.start,end:new Date().toISOString(),startOdo:a.startOdo,endOdo:o,earned:e,cpm:g.pending?null:g.cpm,mpg:g.pending?null:g.mpg,reserve:(o-a.startOdo)*rate(S)});S.active=null;save();rAll();toast('Turno guardado');};
 arm($('can'),()=>{S.active=null;save();rAll();});}}
 function rStats(){const p=period(S.range),x=sumP(S,p),g=gas(S.fills);
 const nph=x.complete&&x.n>0&&x.h>0?x.net/x.h:null,bph=x.h>0?x.e/x.h:null;
 const gv=x.n===0?'—':(x.ng===x.n?'Pendiente':money(x.gc)+(x.ng?'*':''));
-const K=(l,v)=>'<div class="k"><span>'+l+'</span><b'+(String(v)[0]==='-'?' class="neg"':'')+'>'+v+'</b></div>';
+const K=(l,v,c)=>'<div class="k'+(c?' '+c:'')+'"><span>'+l+'</span><b'+(String(v)[0]==='-'?' class="neg"':'')+'>'+v+'</b></div>';
 const R=[['day','Hoy'],['week','Semana'],['month','Mes']];
 let h='<div class="seg">'+R.map(r=>'<button data-r="'+r[0]+'" class="'+(S.range===r[0]?'on':'')+'">'+r[1]+'</button>').join('')+'</div>';
-h+='<div class="muted">Ganancia neta por hora (estimada)</div><div class="big'+(nph!==null&&nph<0?' neg':'')+'">'+(nph!==null?money(nph):(x.n?'Pendiente':'—'))+'</div>';
-h+='<div class="grid">'+K('Ganado',money(x.e))+K('Gasolina (est.)',gv)+K('Reserva',x.n===0?'—':money(x.rv))+K('Neto',x.n===0?'—':(x.complete?money(x.net):'Pendiente'))+'</div>';
+h+='<div class="hero"><p class="muted">Ganancia neta por hora (estimada)</p><div class="big'+(nph!==null&&nph<0?' neg':'')+'">'+(nph!==null?money(nph):(x.n?'Pendiente':'—'))+'</div></div>';
+h+='<div class="grid">'+K('Ganado',x.n===0?'—':money(x.e))+K('Gasolina (est.)',gv)+K('Reserva',x.n===0?'—':money(x.rv))+K('Neto',x.n===0?'—':(x.complete?money(x.net):'Pendiente'),'hi')+'</div>';
 h+=x.n?'<div class="grid3">'+K('Horas',x.h.toFixed(1))+K('Millas',Math.round(x.mi))+K('Bruto/h',bph!==null?money(bph):'—')+'</div>':'<p class="muted">Aún no hay turnos en este periodo.</p>';
 if(x.n&&g.pending)h+='<p class="muted">Gasolina pendiente: necesito 2 llenadas completas seguidas con datos consistentes.'+(g.bad?' ('+g.bad+' ciclo(s) descartado(s) por inconsistentes.)':'')+'</p>';
 else if(x.ng&&x.ng<x.n)h+='<p class="muted">* '+x.ng+' turno(s) sin gasolina estimada.</p>';
@@ -174,8 +189,16 @@ $('stats').innerHTML=h;
 $('stats').querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{S.range=b.dataset.r;save();rAll();});}
 function rFill(){const g=gas(S.fills);
 $('fillinfo').innerHTML=g.pending?'<p class="muted">Estimación pendiente: con 2 llenadas completas seguidas calculo tu costo por milla.'+(g.bad?' ('+g.bad+' descartada(s) por inconsistentes.)':'')+'</p>':'<p class="muted"><b>'+g.mpg.toFixed(1)+' MPG</b> · '+money(g.cpm)+' por milla · '+g.n+' ciclo(s)'+(g.bad?' · '+g.bad+' descartado(s)':'')+'</p>';}
-function rHist(){const l=S.shifts.filter(vs).sort((a,b)=>new Date(b.start)-new Date(a.start)).slice(0,30),f=[...S.fills].filter(vf).sort((a,b)=>b.odo-a.odo).slice(0,20);
-$('list').innerHTML=l.length?l.map(s=>{const c=sc(s);return '<div class="row"><div>'+df(s.start)+'<small>'+c.mi+' mi · '+c.h.toFixed(1)+' h · '+(c.net!==null?'neto '+money(c.net):'neto pendiente')+'</small></div><div><b>'+money(s.earned)+'</b> <button class="x" data-l="Borrar" data-d="'+s.id+'">Borrar</button></div></div>';}).join(''):'<p class="muted">Aún no hay turnos.</p>';
+function rHist(){const l=S.shifts.filter(vs).sort((a,b)=>new Date(b.start)-new Date(a.start)),f=[...S.fills].filter(vf).sort((a,b)=>b.odo-a.odo),g=gas(S.fills),cw=period('week')[0].getTime();
+const W=[];l.forEach(s=>{const k=period('week',s.start)[0].getTime();let w=W[W.length-1];if(!w||w.k!==k)W.push(w={k,s:[]});w.s.push(s);});
+$('list').innerHTML=W.length?W.map(w=>{const C=w.s.map(sc),e=C.reduce((a,c)=>a+c.e,0),ok=C.every(c=>c.net!==null),net=C.reduce((a,c)=>a+(c.net||0),0);
+ return '<section class="card"><h2 class="wk">'+(w.k===cw?'Esta semana':'Semana del '+new Date(w.k).toLocaleDateString('es-US',{day:'numeric',month:'short'}))+'<small>'+w.s.length+' turno(s) · '+money(e)+(ok?' · neto '+money(net):'')+'</small></h2>'+
+ w.s.map((s,i)=>{const c=C[i];return '<div class="row"><div>'+df(s.start)+'<small>'+c.mi+' mi · '+c.h.toFixed(1)+' h · '+(c.net!==null?'neto '+money(c.net):'neto pendiente')+'</small></div><div><b>'+money(s.earned)+'</b> <button class="x" data-l="Borrar" data-d="'+s.id+'">Borrar</button></div></div>';}).join('')+'</section>';}).join(''):'<section class="card"><p class="muted">Aún no hay turnos.</p></section>';
+$('fsum').innerHTML=$('fillinfo').innerHTML;
+$('ms-turnos').textContent=l.length?l.length+' turno(s)':'Sin turnos';
+$('ms-llenadas').textContent=g.pending?(f.length?f.length+' llenada(s)':'Sin llenadas'):g.mpg.toFixed(1)+' MPG · '+money(g.cpm)+' por milla';
+$('ms-reserva').textContent=money(rate(S))+' por milla · '+money(resTotal(S))+' acumulado';
+$('ms-copia').textContent='Exportar o importar tus datos';
 $('list').querySelectorAll('[data-d]').forEach(b=>arm(b,()=>{S.shifts=S.shifts.filter(x=>x.id!==b.dataset.d);save();rAll();}));
 $('fills').innerHTML=f.length?f.map(x=>'<div class="row"><div>'+df(x.date)+'<small>'+x.odo+' mi · '+x.gal+' gal'+(x.full===false?' · parcial':'')+'</small></div><div><b>'+money(x.paid)+'</b> <button class="x" data-l="Borrar" data-f="'+x.id+'">Borrar</button></div></div>').join(''):'<p class="muted">Aún no hay llenadas.</p>';
 $('fills').querySelectorAll('[data-f]').forEach(b=>arm(b,()=>{S.fills=S.fills.filter(x=>x.id!==b.dataset.f);save();rAll();}));
@@ -184,8 +207,8 @@ $('rnow').textContent='Ahora: '+money(rate(S))+' por milla. Aplica solo a turnos
 $('rtot').textContent='Reserva acumulada de todos los turnos: '+money(resTotal(S));}
 function rPers(){const p=period('month'),x=sumP(S,p),P=S.personal.filter(i=>fin(i.amount)&&okd(i.date)&&inP(i.date,p));
 const pt=P.reduce((a,i)=>a+i.amount,0),left=x.complete?x.net-pt:null;
-const K=(l,v)=>'<div class="k"><span>'+l+'</span><b'+(String(v)[0]==='-'?' class="neg"':'')+'>'+v+'</b></div>';
-$('psum').innerHTML='<h2>Resumen de '+p[0].toLocaleDateString('es-US',{month:'long',year:'numeric'})+'</h2><div class="grid">'+K('Ganado (Spark)',money(x.e))+K('Gasolina (est.)',x.n===0?money(0):(x.ng===x.n?'Pendiente':money(x.gc)+(x.ng?'*':'')))+K('Reserva de desgaste',money(x.rv))+K('Gastos personales',money(pt))+K('Te queda (est.)',left!==null?money(left):'Pendiente')+'</div><p class="muted">Es una estimación, no tu saldo bancario.</p>';
+const K=(l,v,c)=>'<div class="k'+(c?' '+c:'')+'"><span>'+l+'</span><b'+(String(v)[0]==='-'?' class="neg"':'')+'>'+v+'</b></div>';
+$('psum').innerHTML='<h2>Resumen de '+p[0].toLocaleDateString('es-US',{month:'long',year:'numeric'})+'</h2><div class="grid">'+K('Ganado (Spark)',money(x.e))+K('Gasolina (est.)',x.n===0?money(0):(x.ng===x.n?'Pendiente':money(x.gc)+(x.ng?'*':'')))+K('Reserva de desgaste',money(x.rv))+K('Gastos personales',money(pt))+K('Te queda (est.)',left!==null?money(left):'Pendiente','hi wide')+'</div><p class="muted">Es una estimación, no tu saldo bancario.</p>';
 const l=[...P].sort((a,b)=>new Date(b.date)-new Date(a.date));
 $('plist').innerHTML=l.length?l.map(i=>'<div class="row"><div>'+esc(i.note||'Gasto')+'<small>'+df(i.date)+'</small></div><div><b>'+money(i.amount)+'</b> <button class="x" data-l="Borrar" data-p="'+i.id+'">Borrar</button></div></div>').join(''):'<p class="muted">Aún no hay gastos este mes.</p>';
 $('plist').querySelectorAll('[data-p]').forEach(b=>arm(b,()=>{S.personal=S.personal.filter(x=>x.id!==b.dataset.p);save();rAll();}));}
@@ -204,8 +227,23 @@ $('imp').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileRea
 $('gt').onclick=()=>{const f=$('fform');f.hidden=!f.hidden;$('gt').textContent=f.hidden?'+ Registrar llenada':'Cerrar';};
 $('pt').onclick=()=>{const f=$('pform');f.hidden=!f.hidden;$('pt').textContent=f.hidden?'+ Nuevo gasto':'Cerrar';};
 $('saver').onclick=()=>{const t=$('rs').value.trim();if(t==='')S.set.reserva=null;else{const r=num(t);if(r===null||r<0||r>5)return toast('Pon un valor entre 0 y 5 $ por milla');S.set.reserva=r;}save();rAll();toast('Reserva guardada');};
-function rTabs(){document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===tab));$('work').hidden=tab!=='work';$('pers').hidden=tab!=='pers';$('menuv').hidden=tab!=='menu';}
-document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{tab=b.dataset.t;rTabs();});
-function rAll(){rShift();rStats();rFill();rHist();rPers();rTabs();}
+// Navegación: Trabajo y Personal son pestañas; el menú y sus páginas usan el historial del navegador para que el gesto de "atrás" funcione.
+const HV={'':'work','#personal':'pers','#menu':'menu','#turnos':'turnos','#llenadas':'llenadas','#reserva':'reserva','#copia':'copia'};
+const VID={work:'work',pers:'pers',menu:'menuv',turnos:'v-turnos',llenadas:'v-llenadas',reserva:'v-reserva',copia:'v-copia'};
+const TTL={menu:'Menú',turnos:'Historial de turnos',llenadas:'Llenadas de gasolina',reserva:'Reserva por milla',copia:'Copia de seguridad'};
+const fromHash=()=>HV[location.hash]||'work';
+let view=fromHash(),lastTab=view==='pers'?'pers':'work';
+const vurl=v=>v==='work'?location.pathname+location.search:'#'+(v==='pers'?'personal':v);
+function go(v,push){if(v==='work'||v==='pers')lastTab=v;if(push)history.pushState({p:1},'',vurl(v));else history.replaceState(null,'',vurl(v));view=v;rView();window.scrollTo(0,0);}
+function rView(){const sub=!!TTL[view];Object.keys(VID).forEach(k=>$(VID[k]).hidden=k!==view);
+ document.querySelector('.tabs').hidden=sub;$('back').hidden=!sub;$('menub').hidden=sub;$('today').hidden=sub;$('ttl').textContent=sub?TTL[view]:'Mis cuentas';document.title=sub?TTL[view]+' · Mis cuentas':'Control de gastos + Spark Driver';
+ document.querySelectorAll('.tabs button').forEach(b=>{const on=b.dataset.t===view;b.classList.toggle('on',on);if(on)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');});}
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>go(b.dataset.t,false));
+document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go,true));
+$('menub').onclick=()=>go('menu',true);
+$('back').onclick=()=>{if(history.state&&history.state.p)history.back();else go(view==='menu'?lastTab:'menu',false);};
+window.addEventListener('popstate',()=>{view=fromHash();if(view==='work'||view==='pers')lastTab=view;rView();});
+function rAll(){rShift();rStats();rFill();rHist();rPers();rView();}
+$('today').textContent=new Date().toLocaleDateString('es-US',{weekday:'long',day:'numeric',month:'long'});
 rAll();
 </script></body></html>
