@@ -181,7 +181,7 @@ const K=(l,v,c)=>'<div class="k'+(c?' '+c:'')+'"><span>'+l+'</span><b'+(String(v
 const R=[['day','Hoy'],['week','Semana'],['month','Mes']];
 let h='<div class="seg">'+R.map(r=>'<button data-r="'+r[0]+'" class="'+(S.range===r[0]?'on':'')+'">'+r[1]+'</button>').join('')+'</div>';
 h+='<div class="hero"><p class="muted">Ganancia neta por hora (estimada)</p><div class="big'+(nph!==null&&nph<0?' neg':'')+'">'+(nph!==null?money(nph):(x.n?'Pendiente':'—'))+'</div></div>';
-h+='<div class="grid">'+K('Ganado',money(x.e))+K('Gasolina (est.)',gv)+K('Reserva',x.n===0?'—':money(x.rv))+K('Neto',x.n===0?'—':(x.complete?money(x.net):'Pendiente'),'hi')+'</div>';
+h+='<div class="grid">'+K('Ganado',x.n===0?'—':money(x.e))+K('Gasolina (est.)',gv)+K('Reserva',x.n===0?'—':money(x.rv))+K('Neto',x.n===0?'—':(x.complete?money(x.net):'Pendiente'),'hi')+'</div>';
 h+=x.n?'<div class="grid3">'+K('Horas',x.h.toFixed(1))+K('Millas',Math.round(x.mi))+K('Bruto/h',bph!==null?money(bph):'—')+'</div>':'<p class="muted">Aún no hay turnos en este periodo.</p>';
 if(x.n&&g.pending)h+='<p class="muted">Gasolina pendiente: necesito 2 llenadas completas seguidas con datos consistentes.'+(g.bad?' ('+g.bad+' ciclo(s) descartado(s) por inconsistentes.)':'')+'</p>';
 else if(x.ng&&x.ng<x.n)h+='<p class="muted">* '+x.ng+' turno(s) sin gasolina estimada.</p>';
