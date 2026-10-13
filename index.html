@@ -80,7 +80,9 @@ main.enter{animation:enter .22s ease-out}main.back{animation:back .22s ease-out}
 @keyframes enter{from{opacity:0;transform:translateX(28px)}}@keyframes back{from{opacity:0;transform:translateX(-28px)}}
 @media (prefers-reduced-motion:reduce){main.enter,main.back{animation:none}}
 .card>label:first-child,.card>.pair:first-child label,#e_form>label:first-child{margin-top:0}.del{display:block;margin:8px auto 0}
-.pair>div{min-width:0}.pair{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
+.pair>div{min-width:0}.hero.fi{margin-bottom:12px}.hero.fi b{color:var(--accent)}
+.k.tap{display:flex;flex-direction:column;justify-content:flex-start;align-items:stretch;width:100%;border:0;font:inherit;line-height:inherit;color:inherit;text-align:left;cursor:pointer}.k.tap span{min-height:calc(16px*1.45);display:flex;justify-content:space-between;align-items:center}.k.tap svg{width:16px;height:16px;margin:-4px 0}.k.tap:active{transform:scale(.98)}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
 </style></head><body>
 <nav class="tabs" aria-label="Secciones"><button data-t="work" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 8-2 2-1.5-3.7A2 2 0 0 0 15.644 5H8.4a2 2 0 0 0-1.903 1.257L5 10 3 8"/><path d="M7 14h.01"/><path d="M17 14h.01"/><rect width="18" height="8" x="3" y="10" rx="2"/><path d="M5 18v2"/><path d="M19 18v2"/></svg>Trabajo</button><button data-t="pers"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></svg>Personal</button></nav>
 <div id="msg" role="status" aria-live="polite"></div>
@@ -89,21 +91,16 @@ main.enter{animation:enter .22s ease-out}main.back{animation:back .22s ease-out}
 <main id="work">
 <section class="card" id="shift"></section>
 <section class="card" id="stats"></section>
-<section class="card"><h2>Gasolina</h2><div id="fillinfo"></div>
-<button class="btn2 full" id="gt">+ Registrar llenada</button></section>
 </main>
 <main id="pers" hidden>
 <section class="card" id="psum"></section>
-<section class="card"><h2>Gastos del mes</h2>
-<button class="btn2 full" id="pt">+ Nuevo gasto</button>
-<div id="plist"></div></section>
 </main>
 <main id="menuv" hidden>
 <p class="grp">Historial</p><section class="card list"><button class="mi" data-go="turnos"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 8-2 2-1.5-3.7A2 2 0 0 0 15.644 5H8.4a2 2 0 0 0-1.903 1.257L5 10 3 8"/><path d="M7 14h.01"/><path d="M17 14h.01"/><rect width="18" height="8" x="3" y="10" rx="2"/><path d="M5 18v2"/><path d="M19 18v2"/></svg></span><span><b>Turnos</b><small id="ms-turnos"></small></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button><button class="mi" data-go="llenadas"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 22h12"/><path d="M4 9h10"/><path d="M14 22V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v18"/><path d="M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 2 2a2 2 0 0 0 2-2V9.83a2 2 0 0 0-.59-1.42L18 5"/></svg></span><span><b>Llenadas de gasolina</b><small id="ms-llenadas"></small></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button><button class="mi" data-go="gastos"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></svg></span><span><b>Gastos personales</b><small id="ms-gastos"></small></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button></section>
 <p class="grp">Ajustes</p><section class="card list"><button class="mi" data-go="reserva"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span><span><b>Reserva por milla</b><small id="ms-reserva"></small></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button><button class="mi" data-go="copia"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/></svg></span><span><b>Copia de seguridad</b><small id="ms-copia"></small></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button></section>
 </main>
 <main id="v-gastos" hidden><div id="plh"></div></main>
-<main id="v-llenada" hidden><section class="card">
+<main id="v-llenada" hidden><div class="hero fi" id="fillinfo"></div><section class="card">
 <label for="fo">Odómetro</label><input id="fo" inputmode="decimal" autocomplete="off">
 <div class="pair"><div><label for="fg">Galones</label><input id="fg" inputmode="decimal" autocomplete="off"></div><div><label for="fp">Cuánto pagaste ($)</label><input id="fp" inputmode="decimal" autocomplete="off"></div></div>
 <label class="chk"><input type="checkbox" id="ff" checked> Llené el tanque completo</label>
@@ -260,14 +257,13 @@ $('rtot').textContent='Reserva acumulada de todos los turnos: '+money(resTotal(S
 function rPers(){const p=period('month'),x=sumP(S,p),P=S.personal.filter(i=>fin(i.amount)&&okd(i.date)&&inP(i.date,p));
 const pt=P.reduce((a,i)=>a+i.amount,0),left=x.complete?x.net-pt:null;
 const K=(l,v,c)=>'<div class="k'+(c?' '+c:'')+'"><span>'+l+'</span><b'+(String(v)[0]==='-'?' class="neg"':'')+'>'+v+'</b></div>';
-$('psum').innerHTML='<h2>Resumen de '+p[0].toLocaleDateString('es-US',{month:'long',year:'numeric'})+'</h2><div class="grid">'+K('Ganado (Spark)',money(x.e))+K('Gasolina (est.)',x.n===0?money(0):(x.ng===x.n?'Pendiente':money(x.gc)+(x.ng?'*':'')))+K('Reserva de desgaste',money(x.rv))+K('Gastos personales',money(pt))+K('Te queda (est.)',left!==null?money(left):'Pendiente','hi wide')+'</div><p class="muted">Es una estimación, no tu saldo bancario.</p>';
-const l=[...P].sort((a,b)=>new Date(b.date)-new Date(a.date));
+$('psum').innerHTML='<h2>Resumen de '+p[0].toLocaleDateString('es-US',{month:'long',year:'numeric'})+'</h2><div class="grid">'+K('Ganado (Spark)',money(x.e))+K('Gasolina (est.)',x.n===0?money(0):(x.ng===x.n?'Pendiente':money(x.gc)+(x.ng?'*':'')))+K('Reserva de desgaste',money(x.rv))+'<button class="k tap" id="gk" aria-label="Ver gastos personales"><span>Gastos personales<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></span><b>'+money(pt)+'</b></button>'+K('Te queda (est.)',left!==null?money(left):'Pendiente','hi wide')+'</div><p class="muted">Es una estimación, no tu saldo bancario.</p>';
+$('gk').onclick=()=>go('gastos',true);
 const pRow=i=>'<div class="row"><div>'+esc(i.note||'Gasto')+'<small>'+df(i.date)+'</small></div><div><b>'+money(i.amount)+'</b> <button class="x" data-e="'+i.id+'">Editar</button></div></div>';
-$('plist').innerHTML=l.length?l.map(pRow).join(''):'<p class="muted">Aún no hay gastos este mes.</p>';
 const A=S.personal.filter(i=>fin(i.amount)&&okd(i.date)).sort((a,b)=>new Date(b.date)-new Date(a.date)),M=[];
 A.forEach(i=>{const d=new Date(i.date),k=d.getFullYear()*12+d.getMonth();let m=M[M.length-1];if(!m||m.k!==k)M.push(m={k,d,i:[]});m.i.push(i);});
 $('plh').innerHTML=M.length?M.map(m=>{const t=m.i.reduce((a,i)=>a+i.amount,0),n=m.d.toLocaleDateString('es-US',{month:'long',year:'numeric'});return '<section class="card"><h2 class="wk">'+n[0].toUpperCase()+n.slice(1)+'<small>'+m.i.length+' gasto(s) · '+money(t)+'</small></h2>'+m.i.map(pRow).join('')+'</section>';}).join(''):'<section class="card"><p class="muted">Aún no hay gastos.</p></section>';
-['plist','plh'].forEach(c=>$(c).querySelectorAll('[data-e]').forEach(b=>b.onclick=()=>openEd('p',b.dataset.e)));
+['plh'].forEach(c=>$(c).querySelectorAll('[data-e]').forEach(b=>b.onclick=()=>openEd('p',b.dataset.e)));
 $('ms-gastos').textContent=money(pt)+' este mes';}
 let fw=null;
 $('addf').onclick=()=>{const o=numO($('fo').value),gl=num($('fg').value),p=num($('fp').value);
@@ -281,8 +277,6 @@ $('addp').onclick=()=>{const a=num($('pa').value);if(a===null||a<=0)return toast
 $('exp').onclick=()=>{const b=new Blob([JSON.stringify(S,null,2)],{type:'application/json'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download='gastos-spark-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),2000);};
 $('impb').onclick=()=>$('imp').click();
 $('imp').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const j=JSON.parse(r.result);if(!j||typeof j!=='object'||!['shifts','fills','personal'].some(k=>Array.isArray(j[k])))throw 0;const n0=S.shifts.length+S.fills.length+S.personal.length;mergeIn(S,j);migrate(S);save();rAll();toast('Importado: '+(S.shifts.length+S.fills.length+S.personal.length-n0)+' registro(s) nuevo(s)');}catch(x){toast('Archivo no válido');}e.target.value='';};r.readAsText(f);};
-$('gt').onclick=()=>{fw=null;go('llenada',true);};
-$('pt').onclick=()=>go('gasto',true);
 $('saver').onclick=()=>{const t=$('rs').value.trim();if(t==='')S.set.reserva=null;else{const r=num(t);if(r===null||r<0||r>5)return toast('Pon un valor entre 0 y 5 $ por milla');S.set.reserva=r;}save();rAll();toast('Reserva guardada');};
 // Navegación: Trabajo y Personal son pestañas; el menú y sus páginas usan el historial del navegador para que el gesto de "atrás" funcione.
 const HV={'':'work','#personal':'pers','#menu':'menu','#turnos':'turnos','#llenadas':'llenadas','#reserva':'reserva','#copia':'copia','#gastos':'gastos','#llenada':'llenada','#gasto':'gasto','#editar':'editar'};
