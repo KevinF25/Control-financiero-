@@ -25,9 +25,9 @@ button,label,.tabs{-webkit-user-select:none;user-select:none;touch-action:manipu
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--text);font:400 16px/1.45 "Instrument Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-variant-numeric:tabular-nums}
 /* El contenido se desplaza dentro de #app (no la página) para poder ocultar la barra de desplazamiento, también en iPhone. */
-#app{height:100%;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain;scrollbar-width:none;-ms-overflow-style:none;scroll-padding-top:80px}
+#app{height:100%;overflow-y:auto;overflow-x:hidden;overscroll-behavior:none;scrollbar-width:none;-ms-overflow-style:none;scroll-padding-top:80px}
 #app::-webkit-scrollbar{display:none;width:0;height:0}
-#wrap{margin:0 auto;max-width:640px;padding:0 14px calc(96px + env(safe-area-inset-bottom,0px));padding-left:max(14px,env(safe-area-inset-left,0px));padding-right:max(14px,env(safe-area-inset-right,0px))}
+#wrap{margin:0 auto;max-width:640px;padding:0 14px calc(80px + env(safe-area-inset-bottom,0px));padding-left:max(14px,env(safe-area-inset-left,0px));padding-right:max(14px,env(safe-area-inset-right,0px))}
 [hidden]{display:none!important}
 .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:var(--shadow)}
 @media (prefers-color-scheme:light){.card{border-color:transparent}}
@@ -80,7 +80,7 @@ main.enter{animation:enter .22s ease-out}main.back{animation:back .22s ease-out}
 @keyframes enter{from{opacity:0;transform:translateX(28px)}}@keyframes back{from{opacity:0;transform:translateX(-28px)}}
 @media (prefers-reduced-motion:reduce){main.enter,main.back{animation:none}}
 .card>label:first-child,.card>.pair:first-child label,#e_form>label:first-child{margin-top:0}.del{display:block;margin:8px auto 0}
-.pair>div{min-width:0}.hero.fi{margin-bottom:12px}.hero.fi b{color:var(--accent)}
+main>.card:last-child,main>div>.card:last-child{margin-bottom:0}.pair>div{min-width:0}.hero.fi{margin-bottom:12px}.hero.fi b{color:var(--accent)}
 .k.tap{display:flex;flex-direction:column;justify-content:flex-start;align-items:stretch;width:100%;border:0;font:inherit;line-height:inherit;color:inherit;text-align:left;cursor:pointer}.k.tap span{min-height:calc(16px*1.45);display:flex;justify-content:space-between;align-items:center}.k.tap svg{width:16px;height:16px;margin:-4px 0}.k.tap:active{transform:scale(.98)}
 .pair{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
 </style></head><body>
@@ -193,12 +193,12 @@ $('fin').onclick=()=>{const o=numO($('eo').value),e=num($('ea').value);if(o===nu
 const g=gas(S.fills);S.shifts.push({id:uid(),start:a.start,end:new Date().toISOString(),startOdo:a.startOdo,endOdo:o,earned:e,cpm:g.pending?null:g.cpm,mpg:g.pending?null:g.mpg,reserve:(o-a.startOdo)*rate(S)});S.active=null;save();rAll();toast('Turno guardado');};
 arm($('can'),()=>{S.active=null;save();rAll();});}}
 function rStats(){const p=period(S.range),x=sumP(S,p),g=gas(S.fills);
-const nph=x.complete&&x.n>0&&x.h>0?x.net/x.h:null,bph=x.h>=0.1?x.e/x.h:null;
+const nph=x.complete&&x.n>0&&x.h>=0.1?x.net/x.h:null,bph=x.h>=0.1?x.e/x.h:null;
 const gv=x.n===0?'—':(x.ng===x.n?'Pendiente':money(x.gc)+(x.ng?'*':''));
 const K=(l,v,c)=>'<div class="k'+(c?' '+c:'')+'"><span>'+l+'</span><b'+(String(v)[0]==='-'?' class="neg"':'')+'>'+v+'</b></div>';
 const R=[['day','Hoy'],['week','Semana'],['month','Mes']];
 let h='<div class="seg">'+R.map(r=>'<button data-r="'+r[0]+'" class="'+(S.range===r[0]?'on':'')+'">'+r[1]+'</button>').join('')+'</div>';
-h+='<div class="hero"><p class="muted">Ganancia neta por hora (estimada)</p><div class="big'+(nph!==null&&nph<0?' neg':'')+(nph===null?' pend':'')+'">'+(nph!==null?money(nph):(x.n?'Pendiente':'—'))+'</div></div>';
+h+='<div class="hero"><p class="muted">Ganancia neta por hora (estimada)</p><div class="big'+(nph!==null&&nph<0?' neg':'')+(nph===null?' pend':'')+'">'+(nph!==null?money(nph):(x.n&&!x.complete?'Pendiente':'—'))+'</div></div>';
 h+='<div class="grid">'+K('Ganado',x.n===0?'—':money(x.e))+K('Gasolina (est.)',gv)+K('Reserva',x.n===0?'—':money(x.rv))+K('Neto',x.n===0?'—':(x.complete?money(x.net):'Pendiente'),'hi')+'</div>';
 h+=x.n?'<div class="grid3">'+K('Horas',x.h.toFixed(1))+K('Millas',Math.round(x.mi))+K('Bruto/h',bph!==null?money(bph):'—')+'</div>':'<p class="muted">Aún no hay turnos en este periodo.</p>';
 if(x.n&&g.pending)h+='<p class="muted">Gasolina pendiente: necesito 2 llenadas completas seguidas con datos consistentes.'+(g.bad?' ('+g.bad+' ciclo(s) descartado(s) por inconsistentes.)':'')+'</p>';
