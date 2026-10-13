@@ -34,11 +34,10 @@ body{margin:0;background:var(--bg);color:var(--text);font:400 16px/1.45 "Instrum
 h2{font-size:17px;margin:0 0 10px;font-weight:600}
 label{display:block;font-size:13px;color:var(--muted);margin:10px 0 3px}
 input{width:100%;font:inherit;color:var(--text);background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 10px;min-height:42px}
-/* Fecha y hora con listas propias, para que siempre salgan en español (también la rueda del iPhone). */
-.dt{display:grid;grid-template-columns:1fr 1.7fr 1.3fr;gap:8px}.dt+.dt{margin-top:8px;grid-template-columns:1fr 1fr 1.3fr}
-.sel{position:relative;min-width:0}.sel::after{content:"";position:absolute;right:12px;top:50%;width:7px;height:7px;margin-top:-6px;border:solid var(--muted);border-width:0 2px 2px 0;transform:rotate(45deg);pointer-events:none}
-.sel select{width:100%;-webkit-appearance:none;appearance:none;font:inherit;color:var(--text);background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 28px 9px 10px;min-height:42px}
-.sel select:focus{outline:2px solid var(--accent);outline-offset:1px}
+/* Fecha y hora: se ve el texto en español y encima va el campo nativo invisible, que al tocarlo abre el selector del teléfono. */
+.dtw{position:relative}.dtx{display:block;width:100%;color:var(--text);background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 10px;min-height:42px}
+.dti{position:absolute;inset:0;width:100%;height:100%;min-height:0;opacity:0;-webkit-appearance:none;appearance:none;cursor:pointer}
+.dtw:focus-within .dtx{outline:2px solid var(--accent);outline-offset:1px}
 input:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 .btn{width:100%;margin-top:14px;padding:9px 12px;min-height:46px;font:inherit;font-weight:600;border:1px solid var(--accent);border-radius:8px;background:var(--accent);color:var(--onaccent)}
 .btn2{flex:1;margin-top:14px;padding:9px 12px;min-height:42px;font:inherit;font-weight:600;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--text)}
@@ -214,38 +213,34 @@ function rFill(){const g=gas(S.fills);
 $('fillinfo').innerHTML=g.pending?'<p class="muted">Estimación pendiente: con 2 llenadas completas seguidas calculo tu costo por milla.'+(g.bad?' ('+g.bad+' descartada(s) por inconsistentes.)':'')+'</p>':'<p class="muted"><b>'+g.mpg.toFixed(1)+' MPG</b> · '+money(g.cpm)+' por milla · '+g.n+' ciclo(s)'+(g.bad?' · '+g.bad+' descartado(s)':'')+'</p>';}
 // Edición de turnos y llenadas (una a la vez).
 let ed=null;
-const MES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-const sel=(id,lab,opts,v)=>'<span class="sel"><select id="'+id+'" aria-label="'+lab+'">'+opts.map(o=>'<option value="'+o[0]+'"'+(o[0]===v?' selected':'')+'>'+o[1]+'</option>').join('')+'</select></span>';
-const rng=(a,b,f)=>{const r=[];for(let i=a;i<=b;i++)r.push([i,f?f(i):String(i)]);return r;};
-// Campo de fecha y hora: día, mes, año / hora, minutos, a. m.-p. m.
-function dtField(id,lab,iso){const d=new Date(iso),y=d.getFullYear(),cy=new Date().getFullYear(),h=d.getHours();
- return '<label for="'+id+'_d">'+lab+'</label><div class="dt">'+sel(id+'_d','Día',rng(1,31),d.getDate())+sel(id+'_m','Mes',MES.map((m,i)=>[i,m]),d.getMonth())+sel(id+'_y','Año',rng(Math.min(y,cy-5),Math.max(y,cy+1)),y)+'</div>'+
- '<div class="dt">'+sel(id+'_h','Hora',rng(1,12),h%12||12)+sel(id+'_i','Minutos',rng(0,59,i=>String(i).padStart(2,'0')),d.getMinutes())+sel(id+'_a','a. m. o p. m.',[[0,'a. m.'],[1,'p. m.']],h>=12?1:0)+'</div>';}
-// Devuelve la fecha elegida o null si no existe (por ejemplo, 31 de febrero).
-function dtVal(id){const g=k=>Number($(id+'_'+k).value),D=g('d'),M=g('m'),Y=g('y'),H=g('h')%12+(g('a')?12:0),d=new Date(Y,M,D,H,g('i'));
- return d.getDate()===D&&d.getMonth()===M?d:null;}
+const dl=i=>{const d=new Date(i);d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,16);};
+const dtTxt=d=>d.toLocaleDateString('es-US',{day:'numeric',month:'long',year:'numeric'})+', '+d.toLocaleTimeString('es-US',{hour:'numeric',minute:'2-digit'});
+// Campo de fecha y hora con el texto siempre en español.
+function dtField(id,lab,iso){return '<label for="'+id+'">'+lab+'</label><div class="dtw"><span class="dtx" id="'+id+'_t" aria-hidden="true">'+dtTxt(new Date(iso))+'</span><input type="datetime-local" class="dti" id="'+id+'" value="'+dl(iso)+'"></div>';}
+function dtVal(id){const v=$(id).value,d=v?new Date(v):null;return d&&okd(d)?d:null;}
+function dtBind(root){root.querySelectorAll('.dti').forEach(i=>i.oninput=i.onchange=()=>{const d=dtVal(i.id);$(i.id+'_t').textContent=d?dtTxt(d):'Elige fecha y hora';});}
 const fld=(id,l,v)=>'<label for="'+id+'">'+l+'</label><input id="'+id+'" inputmode="decimal" autocomplete="off" value="'+esc(v)+'">';
 const edBtns='<button class="btn" id="e_ok">Guardar cambios</button><button class="link del" id="e_del" data-l="Borrar este registro">Borrar este registro</button></div>';
 function edPers(i){return '<div id="e_form">'+dtField('e_dt','Fecha',i.date)+fld('e_pa','Monto ($)',i.amount)+'<label for="e_pn">En qué</label><input id="e_pn" autocomplete="off" value="'+esc(i.note||'')+'">'+edBtns;}
 const EDK={s:'shifts',f:'fills',p:'personal'},EDT={s:'Editar turno',f:'Editar llenada',p:'Editar gasto'};
-function openEd(k,id){ed={k,id,from:view};fw=null;const it=S[EDK[k]].find(x=>x.id===id);if(!it)return;$('edc').innerHTML=(k==='s'?edShift:k==='f'?edFill:edPers)(it);bindEdit();go('editar',true);}
+function openEd(k,id){ed={k,id,from:view};fw=null;const it=S[EDK[k]].find(x=>x.id===id);if(!it)return;$('edc').innerHTML=(k==='s'?edShift:k==='f'?edFill:edPers)(it);bindEdit();dtBind($('edc'));go('editar',true);}
 function edShift(s){return '<div id="e_form">'+dtField('e_st','Inicio',s.start)+dtField('e_en','Fin',s.end)+'<div class="pair"><div>'+fld('e_so','Odómetro inicial',s.startOdo)+'</div><div>'+fld('e_eo','Odómetro final',s.endOdo)+'</div></div>'+fld('e_ea','Ganancia ($)',s.earned)+edBtns;}
 function edFill(x){return '<div id="e_form">'+dtField('e_dt','Fecha',x.date)+fld('e_fo','Odómetro',x.odo)+'<div class="pair"><div>'+fld('e_fg','Galones',x.gal)+'</div><div>'+fld('e_fp','Cuánto pagaste ($)',x.paid)+'</div></div><label class="chk"><input type="checkbox" id="e_ff"'+(x.full!==false?' checked':'')+'> Llené el tanque completo</label>'+edBtns;}
 function bindEdit(){const k=ed.k,key=EDK[k],it=S[key].find(x=>x.id===ed.id);if(!it)return;
  arm($('e_del'),()=>{S[key]=S[key].filter(x=>x.id!==it.id);save();rAll();goBack();toast('Registro borrado');});
  $('e_ok').onclick=()=>{
   if(k==='s'){const st=dtVal('e_st'),en=dtVal('e_en'),o1=numO($('e_so').value),o2=numO($('e_eo').value),e=num($('e_ea').value);
-   if(!st||!en)return toast('Esa fecha no existe: revisa el día y el mes');
+   if(!st||!en)return toast('Revisa la fecha y la hora');
    if(en<st)return toast('El fin debe ser después del inicio');if((en-st)/36e5>24)return toast('Un turno no puede durar más de 24 horas');
    if(o1===null||o2===null||o2<=o1)return toast('El odómetro final debe ser mayor al inicial');if(o2-o1>1000)return toast('Más de 1,000 millas en un turno: revisa el odómetro');
    if(e===null||e<0)return toast('Pon lo que ganaste (0 o más)');
    const om=it.endOdo-it.startOdo,pm=fin(it.reserve)&&om>0?it.reserve/om:rate(S); // conserva la reserva por milla que tenía el turno
    Object.assign(it,{start:st.toISOString(),end:en.toISOString(),startOdo:o1,endOdo:o2,earned:e,reserve:(o2-o1)*pm});}
   else if(k==='p'){const dt=dtVal('e_dt'),a=num($('e_pa').value);
-   if(!dt)return toast('Esa fecha no existe: revisa el día y el mes');if(a===null||a<=0)return toast('Pon un monto mayor a 0');
+   if(!dt)return toast('Revisa la fecha y la hora');if(a===null||a<=0)return toast('Pon un monto mayor a 0');
    Object.assign(it,{date:dt.toISOString(),amount:a,note:$('e_pn').value.trim()});}
   else{const dt=dtVal('e_dt'),o=numO($('e_fo').value),gl=num($('e_fg').value),p=num($('e_fp').value),full=$('e_ff').checked;
-   if(!dt)return toast('Esa fecha no existe: revisa el día y el mes');
+   if(!dt)return toast('Revisa la fecha y la hora');
    if(o===null||o<0||gl===null||gl<=0||p===null||p<0)return toast('Llena odómetro, galones y lo que pagaste');
    const pg=p/gl;if(pg<0.5||pg>15)return toast('Revisa galones y monto: el precio por galón sale raro');
    const others=S.fills.filter(x=>x.id!==it.id);if(others.some(x=>x.odo===o))return toast('Ya hay una llenada con ese odómetro');
