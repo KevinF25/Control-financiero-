@@ -34,6 +34,10 @@ body{margin:0;background:var(--bg);color:var(--text);font:400 16px/1.45 "Instrum
 h2{font-size:17px;margin:0 0 10px;font-weight:600}
 label{display:block;font-size:13px;color:var(--muted);margin:10px 0 3px}
 input{width:100%;font:inherit;color:var(--text);background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 10px;min-height:42px}
+/* Safari (iPhone) ignora el ancho de los campos de fecha y centra el texto: se fuerza el mismo ancho y alineación que los demás. */
+input[type="datetime-local"],input[type="date"],input[type="time"]{-webkit-appearance:none;appearance:none;display:block;min-width:0;max-width:100%;text-align:left;line-height:1.45}
+input::-webkit-date-and-time-value{text-align:left;margin:0}
+input::-webkit-datetime-edit{padding:0}
 input:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 .btn{width:100%;margin-top:14px;padding:9px 12px;min-height:46px;font:inherit;font-weight:600;border:1px solid var(--accent);border-radius:8px;background:var(--accent);color:var(--onaccent)}
 .btn2{flex:1;margin-top:14px;padding:9px 12px;min-height:42px;font:inherit;font-weight:600;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--text)}
