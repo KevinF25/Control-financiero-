@@ -2,6 +2,8 @@
 
 App web instalable (PWA) en un solo archivo: `index.html` (HTML, CSS y JS juntos), `sw.js` (funciona sin conexión), `manifest.webmanifest` e iconos. Los datos viven en `localStorage` del teléfono (clave `sd_tracker_v1`).
 
+Datos guardados (todo en `sd_tracker_v1`): `shifts` (turnos), `fills` (llenadas), `personal` (gastos e ingresos, `type`), `apart` (apartados que el dueño marcó a mano: `day`, `fund` = tax/emer/veh, `amount`), `set.reserva` ($/milla) y `set.ap` (configuración de apartados; viene apagada). `norm()` debe conservar cualquier campo nuevo o se pierde al cargar.
+
 ## Preferencias del dueño (tener en cuenta en todo cambio)
 - Todo en **español**: textos, mensajes, commits y PRs.
 - El dueño usa la app en **iPhone**, como app instalada en la pantalla de inicio.
