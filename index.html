@@ -86,6 +86,11 @@ main.enter{animation:enter .22s ease-out}main.back{animation:back .22s ease-out}
 .card>label:first-child,.card>.pair:first-child label,#e_form>label:first-child{margin-top:0}.del{display:block;margin:8px auto 0}
 main>.card:last-child,main>div>.card:last-child{margin-bottom:0}.pair>div{min-width:0}.hero.fi{margin-bottom:12px}.hero.fi b{color:var(--accent)}
 .k.tap{display:flex;flex-direction:column;justify-content:flex-start;align-items:stretch;width:100%;border:0;font:inherit;line-height:inherit;color:inherit;text-align:left;cursor:pointer}.k.tap span{min-height:calc(16px*1.45);display:flex;justify-content:space-between;align-items:center}.k.tap svg{width:16px;height:16px;margin:-4px 0}.k.tap:active{transform:scale(.98)}
+.sw{-webkit-appearance:none;appearance:none;width:51px;height:31px;min-height:0;padding:0;border:0;border-radius:16px;background:var(--border);position:relative;flex-shrink:0;cursor:pointer;transition:background .2s}.sw::before{content:"";position:absolute;top:2px;left:2px;width:27px;height:27px;border-radius:50%;background:#fff;box-shadow:0 2px 4px rgba(0,0,0,.25);transition:transform .2s}.sw:checked{background:var(--accent)}.sw:checked::before{transform:translateX(20px)}
+.swrow{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:4px 0;font-size:16px;color:var(--text);margin:0}
+.apday{border-top:1px solid var(--border);padding:8px 0 4px}.apday:first-of-type{border-top:0}.apday h3{font-size:14px;font-weight:600;margin:4px 0;color:var(--muted)}
+.ck{display:flex;align-items:center;gap:12px;width:100%;background:none;border:0;padding:8px 0;font:inherit;color:var(--text);text-align:left;cursor:pointer}.ck i{width:24px;height:24px;border-radius:50%;border:2px solid var(--muted);flex-shrink:0;display:grid;place-items:center}.ck.on i{background:var(--accent);border-color:var(--accent)}.ck.on i::after{content:"";width:6px;height:11px;border:solid var(--onaccent);border-width:0 2.5px 2.5px 0;transform:rotate(45deg) translate(-1px,-1px)}.ck span{flex:1}.ck b{font-weight:600}.ck.on b{color:var(--accent)}.ck small{display:block;color:var(--muted);font-size:12px}
+.apsal{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}.apsal .k b{font-size:16px}.apsal .k b small{font-weight:400}
 .pair{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
 </style></head><body>
 <nav class="tabs" aria-label="Secciones"><button data-t="work" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 8-2 2-1.5-3.7A2 2 0 0 0 15.644 5H8.4a2 2 0 0 0-1.903 1.257L5 10 3 8"/><path d="M7 14h.01"/><path d="M17 14h.01"/><rect width="18" height="8" x="3" y="10" rx="2"/><path d="M5 18v2"/><path d="M19 18v2"/></svg>Trabajo</button><button data-t="pers"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></svg>Personal</button></nav>
@@ -98,10 +103,11 @@ main>.card:last-child,main>div>.card:last-child{margin-bottom:0}.pair>div{min-wi
 </main>
 <main id="pers" hidden>
 <section class="card" id="psum"></section>
+<section class="card" id="apcard" hidden></section>
 </main>
 <main id="menuv" hidden>
 <p class="grp">Historial</p><section class="card list"><button class="mi" data-go="turnos"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 8-2 2-1.5-3.7A2 2 0 0 0 15.644 5H8.4a2 2 0 0 0-1.903 1.257L5 10 3 8"/><path d="M7 14h.01"/><path d="M17 14h.01"/><rect width="18" height="8" x="3" y="10" rx="2"/><path d="M5 18v2"/><path d="M19 18v2"/></svg></span><span><b>Turnos</b><small id="ms-turnos"></small></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button><button class="mi" data-go="llenadas"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 22h12"/><path d="M4 9h10"/><path d="M14 22V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v18"/><path d="M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 2 2a2 2 0 0 0 2-2V9.83a2 2 0 0 0-.59-1.42L18 5"/></svg></span><span><b>Llenadas de gasolina</b><small id="ms-llenadas"></small></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button><button class="mi" data-go="gastos"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></svg></span><span><b>Gastos personales</b><small id="ms-gastos"></small></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button></section>
-<p class="grp">Ajustes</p><section class="card list"><button class="mi" data-go="reserva"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span><span><b>Reserva por milla</b><small id="ms-reserva"></small></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button><button class="mi" data-go="copia"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/></svg></span><span><b>Copia de seguridad</b><small id="ms-copia"></small></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button></section>
+<p class="grp">Ajustes</p><section class="card list"><button class="mi" data-go="apconf"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 17h3v2a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1v-3a3.16 3.16 0 0 0 2-2h1a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1h-1a5 5 0 0 0-2-4V3a4 4 0 0 0-3.2 1.6l-.3.4H11a6 6 0 0 0-6 6v1a5 5 0 0 0 2 4v3a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1z"/><path d="M16 10h.01"/><path d="M2 8v1a2 2 0 0 0 2 2h1"/></svg></span><span><b>Apartados</b><small id="ms-apconf"></small></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button><button class="mi" data-go="reserva"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span><span><b>Reserva por milla</b><small id="ms-reserva"></small></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button><button class="mi" data-go="copia"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/></svg></span><span><b>Copia de seguridad</b><small id="ms-copia"></small></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button></section>
 </main>
 <main id="v-gastos" hidden><div id="plh"></div></main>
 <main id="v-llenada" hidden><div class="hero fi" id="fillinfo"></div><section class="card">
@@ -116,6 +122,14 @@ main>.card:last-child,main>div>.card:last-child{margin-bottom:0}.pair>div{min-wi
 <main id="v-editar" hidden><section class="card" id="edc"></section></main>
 <main id="v-turnos" hidden><div id="list"></div></main>
 <main id="v-llenadas" hidden><section class="card"><div id="fsum"></div><div id="fills"></div></section></main>
+<main id="v-apconf" hidden><section class="card"><label class="swrow" for="ap_on">Activar apartados<input type="checkbox" class="sw" id="ap_on"></label>
+<p class="muted">Te muestra cada día cuánto apartar para impuestos, emergencias y el vehículo, y tú lo marcas cuando lo hayas pasado a tu ahorro. La app nunca marca nada sola. Cuenta desde el día en que lo activas.</p></section>
+<section class="card" id="ap_cfg"><label for="ap_tax">Impuestos (% del resultado operativo)</label><input id="ap_tax" inputmode="decimal" autocomplete="off">
+<p class="muted">Trabajando por tu cuenta (1099) lo habitual es 25–30%. Confírmalo con quien te prepara los impuestos.</p>
+<div class="pair"><div><label for="ap_emer">Emergencias (%)</label><input id="ap_emer" inputmode="decimal" autocomplete="off"></div><div><label for="ap_goal">Meta de emergencias ($)</label><input id="ap_goal" inputmode="decimal" autocomplete="off"></div></div>
+<label class="swrow" for="ap_veh" style="margin-top:14px">Incluir reserva del vehículo<input type="checkbox" class="sw" id="ap_veh"></label>
+<button class="btn" id="ap_save">Guardar</button></section></main>
+<main id="v-apart" hidden><section class="card" id="apsum"></section><div id="aplist"></div></main>
 <main id="v-reserva" hidden><section class="card"><label for="rs">Dólares por milla para mantenimiento, llantas y reparaciones</label><input id="rs" inputmode="decimal" placeholder="Ej. 0.15"><button class="btn" id="saver">Guardar</button><p class="muted" id="rnow"></p><p class="muted" id="rtot"></p></section></main>
 <main id="v-copia" hidden><section class="card"><div class="two"><button class="btn2" id="exp">Exportar</button><button class="btn2" id="impb">Importar</button></div><input type="file" id="imp" accept="application/json,.json" hidden><p class="muted">Importar suma lo que falte; nunca borra lo que ya tienes.</p></section></main>
 </div></div>
@@ -164,8 +178,19 @@ function norm(raw){const o=raw&&typeof raw==='object'?raw:{},A=a=>Array.isArray(
  shifts:A(o.shifts).filter(ob).map(s=>({...s,id:s.id||uid()})),
  fills:A(o.fills).filter(ob).map(f=>({...f,id:f.id||uid(),full:f.full!==false})),
  personal:A(o.personal).filter(ob).map(p=>({...p,id:p.id||uid(),type:p.type==='ingreso'?'ingreso':'gasto'})),
+ apart:A(o.apart).filter(ob).map(x=>({...x,id:x.id||uid()})), // apartados que TÚ marcaste (nunca se crean solos)
  range:['day','week','month'].includes(o.range)?o.range:'week',
- set:{reserva:fin(st.reserva)&&st.reserva>=0&&st.reserva<=5?st.reserva:null}};}
+ set:{reserva:fin(st.reserva)&&st.reserva>=0&&st.reserva<=5?st.reserva:null,ap:normAp(st.ap)}};}
+// Configuración de apartados: viene apagada. "since" = día en que se activó (lo sugerido cuenta desde ahí).
+function normAp(a){a=a&&typeof a==='object'?a:{};const pc=(v,d)=>fin(v)&&v>=0&&v<=60?v:d;
+ return{on:a.on===true,since:a.since&&okd(a.since)?a.since:null,tax:pc(a.tax,25),emer:pc(a.emer,10),goal:fin(a.goal)&&a.goal>=0?a.goal:1000,veh:a.veh!==false};}
+const dk=d=>{const x=new Date(d);return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0');}; // día local
+const r2=n=>Math.round(n*100)/100;
+// Lo sugerido para apartar, por día (desde que se activó). Base = resultado operativo del día; si un turno aún no tiene gasolina, se usa ganado − reserva.
+function apDays(D){const c=D.set.ap;if(!c.on||!c.since)return[];const from=dk(c.since),by={};
+ D.shifts.filter(s=>vs(s)&&dk(s.start)>=from).forEach(s=>{const k=dk(s.start),x=sc(s),d=by[k]||(by[k]={day:k,n:0,base:0,veh:0,aprox:false});d.n++;d.base+=x.net!==null?x.net:x.e-x.rv;d.veh+=x.rv;if(x.net===null)d.aprox=true;});
+ const emerSaved=D.apart.filter(m=>m.fund==='emer').reduce((a,m)=>a+m.amount,0),goalOk=c.goal>0&&emerSaved>=c.goal;
+ return Object.values(by).sort((a,b)=>a.day<b.day?1:-1).map(d=>({...d,items:{tax:r2(Math.max(0,d.base)*c.tax/100),emer:goalOk?0:r2(Math.max(0,d.base)*c.emer/100),veh:c.veh?r2(d.veh):0}}));}
 const rate=D=>fin(D.set&&D.set.reserva)?D.set.reserva:RESERVA_MILLA;
 // Devuelve cuántos valores completó. Solo rellena lo que falta; nunca sobrescribe una reserva o un costo de gasolina ya guardados (0 también cuenta como guardado).
 function migrate(D){let c=0;const g=gas(D.fills);if(!g.pending)D.shifts.forEach(s=>{if(!fin(s.cpm)){s.cpm=g.cpm;s.mpg=g.mpg;c++;}});
@@ -178,9 +203,9 @@ function loadState(st){let D,raw=null,noId=false;
  return D;}
 // Huella por contenido: detecta el mismo registro aunque venga con otro id (copias viejas sin id, o importar dos veces).
 const tmin=d=>{const t=new Date(d).getTime();return Number.isFinite(t)?Math.round(t/6e4):'x';};
-const FP={shifts:s=>tmin(s.start)+'|'+s.startOdo,fills:f=>f.odo+'|'+f.gal+'|'+f.paid,personal:p=>tmin(p.date)+'|'+p.amount+'|'+(p.note||'')+'|'+p.type};
-function mergeIn(D,raw){const N=norm(raw),add={shifts:0,fills:0,personal:0},dup={shifts:0,fills:0,personal:0};
- ['shifts','fills','personal'].forEach(k=>{const ids=new Set(D[k].map(x=>x.id)),fps=new Set(D[k].map(FP[k]));N[k].forEach(x=>{const f=FP[k](x);if(ids.has(x.id)||fps.has(f)){dup[k]++;return;}D[k].push(x);ids.add(x.id);fps.add(f);add[k]++;});});
+const FP={apart:m=>m.day+'|'+m.fund,shifts:s=>tmin(s.start)+'|'+s.startOdo,fills:f=>f.odo+'|'+f.gal+'|'+f.paid,personal:p=>tmin(p.date)+'|'+p.amount+'|'+(p.note||'')+'|'+p.type};
+function mergeIn(D,raw){const N=norm(raw),add={shifts:0,fills:0,personal:0,apart:0},dup={shifts:0,fills:0,personal:0,apart:0};
+ ['shifts','fills','personal','apart'].forEach(k=>{const ids=new Set(D[k].map(x=>x.id)),fps=new Set(D[k].map(FP[k]));N[k].forEach(x=>{const f=FP[k](x);if(ids.has(x.id)||fps.has(f)){dup[k]++;return;}D[k].push(x);ids.add(x.id);fps.add(f);add[k]++;});});
 
  if(D.set&&D.set.reserva===null&&N.set)D.set.reserva=N.set.reserva;
  if(!D.active&&N.active)D.active=N.active;return{add,dup};} // cuántos se agregaron y cuántos ya existían
@@ -206,7 +231,7 @@ $('fin').onclick=()=>{const o=numO($('eo').value),e=num($('ea').value);
 let end=new Date();if($('fe')){end=dtVal('fe');if(!end)return toast('Elige la hora en que terminaste');if(end<=new Date(a.start))return toast('La hora de fin debe ser después del inicio ('+tf(a.start)+')');if(end>new Date())return toast('La hora de fin no puede ser en el futuro');if((end-new Date(a.start))/36e5>24)return toast('Un turno no puede durar más de 24 horas');}
 else if((end-new Date(a.start))/36e5>16){const d=new Date(a.start);d.setHours(d.getHours()+8);$('fin').insertAdjacentHTML('beforebegin','<div class="hero fi" id="fwarn"><p class="muted">Este turno lleva '+Math.round((end-new Date(a.start))/36e5)+' horas abierto. ¿A qué hora terminaste de verdad?</p></div>'+dtField('fe','Hora en que terminaste',d.toISOString()));dtBind($('shift'));return toast('Elige la hora real de fin y toca Terminar turno otra vez',6000);}
 if(o===null||o<=a.startOdo)return toast('El odómetro final debe ser mayor al inicial');if(o-a.startOdo>1000)return toast('Más de 1,000 millas en un turno: revisa el odómetro');if(e===null||e<0)return toast('Pon lo que ganaste (0 o más)');
-const g=gas(S.fills);S.shifts.push({id:uid(),start:a.start,end:end.toISOString(),startOdo:a.startOdo,endOdo:o,earned:e,cpm:g.pending?null:g.cpm,mpg:g.pending?null:g.mpg,reserve:(o-a.startOdo)*rate(S)});S.active=null;save();rAll();toast('Turno guardado');};
+const g=gas(S.fills);S.shifts.push({id:uid(),start:a.start,end:end.toISOString(),startOdo:a.startOdo,endOdo:o,earned:e,cpm:g.pending?null:g.cpm,mpg:g.pending?null:g.mpg,reserve:(o-a.startOdo)*rate(S)});S.active=null;save();rAll();const ap=apToday();toast(ap>0?'Turno guardado. Para apartar hoy: '+money(ap)+' (en Personal)':'Turno guardado',ap>0?6000:3500);};
 arm($('can'),()=>{S.active=null;save();rAll();});}}
 function rStats(){const p=period(S.range),x=sumP(S,p),g=gas(S.fills);
 const nph=x.complete&&x.n>0&&x.h>=0.1?x.net/x.h:null,bph=x.h>=0.1?x.e/x.h:null;
@@ -279,7 +304,7 @@ function rPers(){const p=period('month'),x=sumP(S,p),P=S.personal.filter(i=>fin(
 const G=P.filter(i=>i.type!=='ingreso'),I=P.filter(i=>i.type==='ingreso'),pt=G.reduce((a,i)=>a+i.amount,0),pi=I.reduce((a,i)=>a+i.amount,0);
 const left=x.n>0&&x.complete?x.net+pi-pt:null; // sin turnos este mes no hay con qué calcular: no se muestra una cifra
 const K=(l,v,c)=>'<div class="k'+(c?' '+c:'')+'"><span>'+l+'</span><b'+(String(v)[0]==='-'?' class="neg"':'')+'>'+v+'</b></div>';
-$('psum').innerHTML='<h2>Resumen de '+p[0].toLocaleDateString('es-US',{month:'long',year:'numeric'})+'</h2><div class="grid">'+K('Ganado (Spark)',money(x.e))+K('Gasolina (est.)',x.n===0?'—':(x.ng===x.n?'Pendiente':money(x.gc)+(x.ng?'*':'')))+K('Reserva de desgaste',x.n===0?'—':money(x.rv))+'<button class="k tap" id="gk" aria-label="Ver gastos personales"><span>Gastos personales<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></span><b>'+money(pt)+'</b></button>'+(pi?K('Otros ingresos',money(pi),'wide'):'')+K('Te queda (est.)',left!==null?money(left):(x.n?'Pendiente':'Sin datos'),'hi wide'+(left===null?' pend':''))+'</div><p class="muted">'+(x.n?'Es una estimación, no tu saldo bancario.':'Registra al menos un turno este mes para calcularlo.')+'</p>';
+$('psum').innerHTML='<h2>Resumen de '+p[0].toLocaleDateString('es-US',{month:'long',year:'numeric'})+'</h2><div class="grid">'+K('Ganado (Spark)',money(x.e))+K('Gasolina (est.)',x.n===0?'—':(x.ng===x.n?'Pendiente':money(x.gc)+(x.ng?'*':'')))+K('Reserva de desgaste',x.n===0?'—':money(x.rv))+'<button class="k tap" id="gk" aria-label="Ver gastos personales"><span>Gastos personales<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></span><b>'+money(pt)+'</b></button>'+(pi?K('Otros ingresos',money(pi),'wide'):'')+K('Te queda (est.)',left!==null?money(left):(x.n?'Pendiente':'Sin datos'),'hi wide'+(left===null?' pend':''))+(S.set.ap.on&&left!==null?K('Libre para usar (est.)',money(left-apDays(S).filter(d=>d.day.slice(0,7)===dk(p[0]).slice(0,7)).reduce((a,d)=>a+d.items.tax+d.items.emer,0)),'wide'):'')+'</div><p class="muted">'+(x.n?'Es una estimación, no tu saldo bancario.':'Registra al menos un turno este mes para calcularlo.')+'</p>';
 $('gk').onclick=()=>go('gastos',true);
 const pRow=i=>'<div class="row"><div>'+esc(i.note||(i.type==='ingreso'?'Ingreso':'Gasto'))+'<small>'+(i.type==='ingreso'?'Ingreso · ':'')+df(i.date)+'</small></div><div><b>'+(i.type==='ingreso'?'+':'')+money(i.amount)+'</b> <button class="x" data-e="'+i.id+'">Editar</button></div></div>';
 const A=S.personal.filter(i=>fin(i.amount)&&okd(i.date)).sort((a,b)=>new Date(b.date)-new Date(a.date)),M=[];
@@ -288,6 +313,35 @@ $('plh').innerHTML=M.length?M.map(m=>{const t=m.i.filter(i=>i.type!=='ingreso').
 ['plh'].forEach(c=>$(c).querySelectorAll('[data-e]').forEach(b=>b.onclick=()=>openEd('p',b.dataset.e)));
 $('ms-gastos').textContent=money(pt)+' este mes';}
 let fw=null;
+// ---------- Apartados ----------
+const APN={tax:'Impuestos',emer:'Emergencias',veh:'Vehículo'};
+const apMark=(day,f)=>S.apart.find(m=>m.day===day&&m.fund===f);
+const dayTxt=k=>{const t=dk(new Date()),y=new Date();y.setDate(y.getDate()-1);if(k===t)return 'Hoy';if(k===dk(y))return 'Ayer';const [Y,M,D]=k.split('-').map(Number);return new Date(Y,M-1,D).toLocaleDateString('es-US',{weekday:'long',day:'numeric',month:'short'});};
+const apSaldo=f=>S.apart.filter(m=>m.fund===f).reduce((a,m)=>a+m.amount,0);
+const apPending=d=>Object.keys(d.items).filter(f=>d.items[f]>0&&!apMark(d.day,f));
+function apDayHtml(d){const fs=Object.keys(d.items).filter(f=>d.items[f]>0||apMark(d.day,f));if(!fs.length)return '';
+ return '<div class="apday"><h3>'+dayTxt(d.day)+' · '+d.n+' turno(s)'+(d.aprox?' · aprox.':'')+'</h3>'+fs.map(f=>{const m=apMark(d.day,f);return '<button class="ck'+(m?' on':'')+'" data-ap="'+d.day+'|'+f+'" aria-pressed="'+!!m+'"><i></i><span>'+APN[f]+(m?'<small>Apartado el '+new Date(m.at).toLocaleDateString('es-US',{day:'numeric',month:'short'})+'</small>':'')+'</span><b>'+money(m?m.amount:d.items[f])+'</b></button>';}).join('')+'</div>';}
+function apBind(root,days){root.querySelectorAll('[data-ap]').forEach(b=>b.onclick=()=>{const [day,f]=b.dataset.ap.split('|'),m=apMark(day,f),d=days.find(x=>x.day===day);
+ if(m){if(!confirm('¿Desmarcar '+APN[f]+' de '+dayTxt(day).toLowerCase()+'? ('+money(m.amount)+')'))return;S.apart=S.apart.filter(x=>x!==m);save();rAll();return;}
+ const v=prompt('¿Cuánto apartaste para '+APN[f]+'? ('+dayTxt(day).toLowerCase()+')',d.items[f].toFixed(2));if(v===null)return;const a=num(v);if(a===null||a<=0)return toast('Pon un monto mayor a 0');
+ S.apart.push({id:uid(),day,fund:f,amount:r2(a),at:new Date().toISOString()});save();rAll();toast(APN[f]+': '+money(a)+' apartado');});}
+function apSalHtml(){const c=S.set.ap,K=(l,v)=>'<div class="k"><span>'+l+'</span><b>'+v+'</b></div>';
+ return '<div class="apsal">'+K('Impuestos',money(apSaldo('tax')))+K('Emergencias',money(apSaldo('emer'))+(c.goal>0?'<small class="muted" style="display:block;font-size:12px;margin:0"> de '+money(c.goal)+'</small>':''))+(c.veh?K('Vehículo',money(apSaldo('veh'))):'')+'</div>';}
+function rAp(){const c=S.set.ap,on=c.on&&c.since;$('ms-apconf').textContent=on?'Activo · '+c.tax+'% impuestos':'Desactivado';
+ $('ap_on').checked=c.on;$('ap_cfg').hidden=!c.on;$('ap_tax').value=c.tax;$('ap_emer').value=c.emer;$('ap_goal').value=c.goal;$('ap_veh').checked=c.veh;
+ const card=$('apcard');card.hidden=!on;if(!on)return;
+ const days=apDays(S),pend=days.filter(d=>apPending(d).length),tot=pend.reduce((a,d)=>a+apPending(d).reduce((x,f)=>x+d.items[f],0),0);
+ card.innerHTML='<h2 class="wk">Apartar<small>'+(pend.length?pend.length+' día(s) pendiente(s) · '+money(tot):(days.length?'Todo al día ✓':'Aún no hay turnos desde que lo activaste'))+'</small></h2>'+pend.slice(0,3).map(apDayHtml).join('')+apSalHtml()+'<button class="link" id="apall">Ver todo ›</button>';
+ apBind(card,days);$('apall').onclick=()=>go('apart',true);
+ $('apsum').innerHTML='<h2>Apartado hasta hoy</h2>'+apSalHtml()+'<p class="muted">Solo cuenta lo que tú marcaste. Desde el '+new Date(c.since).toLocaleDateString('es-US',{day:'numeric',month:'long',year:'numeric'})+'.</p>';
+ $('aplist').innerHTML=days.length?'<section class="card">'+days.map(apDayHtml).join('')+'</section>':'<section class="card"><p class="muted">Aún no hay turnos desde que lo activaste.</p></section>';apBind($('aplist'),days);}
+// Lo que falta apartar hoy (para recordarlo al terminar un turno).
+function apToday(){if(!S.set.ap.on)return 0;const d=apDays(S).find(x=>x.day===dk(new Date()));return d?apPending(d).reduce((a,f)=>a+d.items[f],0):0;}
+$('ap_on').onchange=()=>{const c=S.set.ap;c.on=$('ap_on').checked;if(c.on&&!c.since){const t=new Date();t.setHours(0,0,0,0);c.since=t.toISOString();}save();rAll();toast(c.on?'Apartados activados':'Apartados desactivados (no se borró nada)');};
+$('ap_veh').onchange=()=>{S.set.ap.veh=$('ap_veh').checked;save();rAll();};
+$('ap_save').onclick=()=>{const t=num($('ap_tax').value),e=num($('ap_emer').value),g=num($('ap_goal').value);
+ if(t===null||t>60)return toast('Impuestos: pon un porcentaje entre 0 y 60');if(e===null||e>60)return toast('Emergencias: pon un porcentaje entre 0 y 60');if(g===null)return toast('Pon una meta en dólares (0 = sin meta)');
+ Object.assign(S.set.ap,{tax:t,emer:e,goal:g});save();rAll();toast('Apartados guardados');};
 $('addf').onclick=()=>{const o=numO($('fo').value),gl=num($('fg').value),p=num($('fp').value);
 if(o===null||o<0||gl===null||gl<=0||p===null||p<0)return toast('Llena odómetro, galones y lo que pagaste');
 const pg=p/gl;if(pg<0.5||pg>15)return toast('Revisa galones y monto: el precio por galón sale raro');
@@ -301,15 +355,15 @@ $('impb').onclick=()=>$('imp').click();
 $('imp').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const j=JSON.parse(r.result);if(!j||typeof j!=='object'||!['shifts','fills','personal'].some(k=>Array.isArray(j[k])))throw 0;const res=mergeIn(S,j),T=o=>o.shifts+o.fills+o.personal,na=T(res.add),nd=T(res.dup);migrate(S);save();rAll();toast(na?'Importado: '+res.add.shifts+' turno(s), '+res.add.fills+' llenada(s), '+res.add.personal+' gasto(s) nuevos'+(nd?'. '+nd+' ya existían.':'.'):'No había nada nuevo: los '+nd+' registro(s) ya existían.',6000);}catch(x){toast('Archivo no válido');}e.target.value='';};r.readAsText(f);};
 $('saver').onclick=()=>{const t=$('rs').value.trim();if(t==='')S.set.reserva=null;else{const r=num(t);if(r===null||r<0||r>5)return toast('Pon un valor entre 0 y 5 $ por milla');S.set.reserva=r;}save();rAll();toast('Reserva guardada');};
 // Navegación: Trabajo y Personal son pestañas; el menú y sus páginas usan el historial del navegador para que el gesto de "atrás" funcione.
-const HV={'':'work','#personal':'pers','#menu':'menu','#turnos':'turnos','#llenadas':'llenadas','#reserva':'reserva','#copia':'copia','#gastos':'gastos','#llenada':'llenada','#gasto':'gasto','#editar':'editar'};
-const VID={work:'work',pers:'pers',menu:'menuv',turnos:'v-turnos',llenadas:'v-llenadas',reserva:'v-reserva',copia:'v-copia',gastos:'v-gastos',llenada:'v-llenada',gasto:'v-gasto',editar:'v-editar'};
-const TTL={menu:'Menú',turnos:'Historial de turnos',llenadas:'Llenadas de gasolina',reserva:'Reserva por milla',copia:'Copia de seguridad',gastos:'Gastos personales',llenada:'Registrar llenada',gasto:'Nuevo gasto',editar:'Editar'};
+const HV={'':'work','#personal':'pers','#menu':'menu','#turnos':'turnos','#llenadas':'llenadas','#reserva':'reserva','#copia':'copia','#gastos':'gastos','#llenada':'llenada','#gasto':'gasto','#editar':'editar','#apartados-ajustes':'apconf','#apartados':'apart'};
+const VID={work:'work',pers:'pers',menu:'menuv',turnos:'v-turnos',llenadas:'v-llenadas',reserva:'v-reserva',copia:'v-copia',gastos:'v-gastos',llenada:'v-llenada',gasto:'v-gasto',editar:'v-editar',apconf:'v-apconf',apart:'v-apart'};
+const TTL={menu:'Menú',turnos:'Historial de turnos',llenadas:'Llenadas de gasolina',reserva:'Reserva por milla',copia:'Copia de seguridad',gastos:'Gastos personales',llenada:'Registrar llenada',gasto:'Nuevo gasto',editar:'Editar',apconf:'Apartados',apart:'Apartados'};
 const fromHash=()=>{const v=HV[location.hash]||'work';return v==='editar'&&!ed?'menu':v;}; // sin registro elegido (p. ej. al recargar) no hay nada que editar
-const parentOf=v=>v==='menu'||v==='llenada'?lastTab:v==='gasto'?'pers':v==='editar'?(ed&&ed.from)||'menu':'menu';
+const parentOf=v=>v==='menu'||v==='llenada'?lastTab:v==='gasto'||v==='apart'?'pers':v==='editar'?(ed&&ed.from)||'menu':'menu';
 function goBack(){if(history.state&&history.state.p)history.back();else go(parentOf(view),false);}
 const UIK=KEY+'_tab',getTab=()=>{try{return localStorage.getItem(UIK)==='pers'?'pers':'work';}catch(e){return 'work';}},putTab=v=>{try{localStorage.setItem(UIK,v);}catch(e){}};
 let view=location.hash?fromHash():getTab(),lastTab=view==='pers'?'pers':(TTL[view]?getTab():'work');
-const vurl=v=>v==='work'?location.pathname+location.search:'#'+(v==='pers'?'personal':v);
+const vurl=v=>v==='work'?location.pathname+location.search:'#'+({pers:'personal',apconf:'apartados-ajustes',apart:'apartados'}[v]||v);
 if(!location.hash&&view==='pers')history.replaceState(null,'',vurl('pers'));
 if(location.hash==='#editar')history.replaceState(null,'',vurl(view));
 function anim(c){const el=$(VID[view]);el.classList.remove('enter','back');void el.offsetWidth;el.classList.add(c);}
@@ -326,7 +380,7 @@ $('actb').onclick=()=>{fw=null;go(view==='pers'?'gasto':'llenada',true);};
 window.addEventListener('popstate',()=>{view=fromHash();if(view==='work'||view==='pers'){lastTab=view;putTab(view);}rView();anim('back');});
 $('app').addEventListener('scroll',()=>$('top').classList.toggle('sc',$('app').scrollTop>4),{passive:true});
 if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost'))navigator.serviceWorker.register('sw.js').catch(()=>{});
-function rAll(){rShift();rStats();rFill();rHist();rPers();rView();}
+function rAll(){rShift();rStats();rFill();rHist();rPers();rAp();rView();}
 $('today').textContent=new Date().toLocaleDateString('es-US',{weekday:'long',day:'numeric',month:'long'});
 rAll();
 </script></body></html>
