@@ -160,20 +160,21 @@ select{width:100%;-webkit-appearance:none;appearance:none;font:inherit;color:var
 <div id="d_card"><div class="pair"><div><label for="d_lim">Límite ($) · opcional</label><input id="d_lim" inputmode="decimal" autocomplete="off"></div><div><label for="d_min">Pago mínimo ($) · opcional</label><input id="d_min" inputmode="decimal" autocomplete="off"></div></div>
 <div class="pair"><div><label for="d_due">Día de pago · opcional</label><input id="d_due" inputmode="numeric" autocomplete="off" placeholder="Ej. 27"></div><div><label for="d_apr">Interés anual APR (%) · opcional</label><input id="d_apr" inputmode="decimal" autocomplete="off" placeholder="Ej. 29.99"></div></div></div>
 <button class="btn" id="d_save">Guardar</button><button class="link del" id="d_del" data-l="Borrar esta deuda">Borrar esta deuda</button></section></main>
-<main id="v-dpay" hidden><section class="card"><p class="muted" style="margin-top:0" id="p_info"></p><label for="p_from">Pagar desde</label><span class="sel"><select id="p_from"><option value="spark">Débito Spark</option><option value="pers">Débito Personal</option></select></span>
+<main id="v-dpay" hidden><section class="card"><p class="muted" style="margin-top:0" id="p_info"></p><label for="p_from">Pagar desde</label><span class="sel"><select id="p_from"><option value="spark">Débito Spark</option><option value="pers">Débito Personal</option><option value="ahorro">Ahorro</option></select></span>
 <label for="p_amt">Monto ($)</label><input id="p_amt" inputmode="decimal" autocomplete="off"><button class="btn" id="p_save">Registrar pago</button><p class="muted">Un pago de deuda no es un gasto: lo que compraste ya se contó cuando lo compraste. Baja la deuda y sale de tu débito.</p></section></main>
 <main id="v-dplan" hidden><section class="card"><label for="pl_date">Fecha del pago</label><input type="date" id="pl_date"><label for="pl_amt">Monto ($)</label><input id="pl_amt" inputmode="decimal" autocomplete="off"><button class="btn" id="pl_save">Agregar pago</button><p class="muted">Copia los pagos que te muestra la app de Affirm. Cuando se cobren, márcalos como pagados.</p></section></main>
 <main id="v-cuentas" hidden><section class="card"><p class="muted" style="margin-top:0">Pon cuánto tienes <b>hoy</b> en cada tarjeta de débito (lo que dice tu banco). Desde ahora la app suma tus ganancias de Spark y resta tu gasolina, gastos y transferencias para decirte cuánto deberías tener.</p>
 <label for="c_spark">Débito Spark (donde Spark deposita)</label><input id="c_spark" inputmode="decimal" autocomplete="off" placeholder="Ej. 250.00">
 <label for="c_pers">Débito Personal</label><input id="c_pers" inputmode="decimal" autocomplete="off" placeholder="Ej. 400.00">
+<label for="c_ahorro">Ahorro (cuenta de ahorro de One, donde guardas la reserva)</label><input id="c_ahorro" inputmode="decimal" autocomplete="off" placeholder="Ej. 300.00">
 <div class="pair"><div><label for="c_fpct">Comisión instantánea (%)</label><input id="c_fpct" inputmode="decimal" autocomplete="off"></div><div><label for="c_fmin">Comisión mínima ($)</label><input id="c_fmin" inputmode="decimal" autocomplete="off"></div></div>
 <button class="btn" id="c_save">Guardar</button><p class="muted">Lo que registraste antes de hoy no cambia estos saldos. Si después no coincide con el banco, usa "Ajustar al banco" en la cuenta.</p></section></main>
 <main id="v-cuenta" hidden><section class="card" id="ccard"></section><section class="card" id="clist"></section></main>
-<main id="v-transfer" hidden><section class="card"><div class="pair"><div><label for="t_from">Desde</label><span class="sel"><select id="t_from"><option value="spark">Débito Spark</option><option value="pers">Débito Personal</option></select></span></div><div><label for="t_to">Hacia</label><span class="sel"><select id="t_to"><option value="pers">Débito Personal</option><option value="spark">Débito Spark</option></select></span></div></div>
+<main id="v-transfer" hidden><section class="card"><div class="pair"><div><label for="t_from">Desde</label><span class="sel"><select id="t_from"><option value="spark">Débito Spark</option><option value="pers">Débito Personal</option><option value="ahorro">Ahorro</option></select></span></div><div><label for="t_to">Hacia</label><span class="sel"><select id="t_to"><option value="pers">Débito Personal</option><option value="spark">Débito Spark</option><option value="ahorro">Ahorro</option></select></span></div></div>
 <label for="t_amt">Monto ($)</label><input id="t_amt" inputmode="decimal" autocomplete="off">
 <label class="swrow" for="t_inst" id="t_instw" style="margin-top:14px">Transferencia instantánea<input type="checkbox" class="sw" id="t_inst"></label>
 <div id="t_feebox"><span class="sel"><select id="t_mode"><option value="aparte">One cobra la comisión aparte</option><option value="resta">One la resta de lo que llega</option></select></span><div class="hero fi" style="margin:10px 0 0" id="t_prev"></div></div>
-<button class="btn" id="t_save">Transferir</button><p class="muted">Una transferencia no es un gasto: el dinero solo cambia de cuenta.</p></section></main>
+<button class="btn" id="t_save">Transferir</button><p class="muted">Una transferencia no es un gasto: el dinero solo cambia de cuenta. Entre Spark y Ahorro (dentro de One) no hay comisión.</p></section></main>
 <main id="v-llenada" hidden><div class="hero fi" id="fillinfo"></div><section class="card">
 <label for="fo">Odómetro</label><input id="fo" inputmode="decimal" autocomplete="off">
 <div class="pair"><div><label for="fg">Galones</label><input id="fg" inputmode="decimal" autocomplete="off"></div><div><label for="fp">Cuánto pagaste ($)</label><input id="fp" inputmode="decimal" autocomplete="off"></div></div>
@@ -250,7 +251,7 @@ function norm(raw){const o=raw&&typeof raw==='object'?raw:{},A=a=>Array.isArray(
  personal:A(o.personal).filter(ob).map(p=>({...p,id:p.id||uid(),type:p.type==='ingreso'?'ingreso':'gasto'})),
  apart:A(o.apart).filter(ob).map(x=>({...x,id:x.id||uid()})), // apartados que TÚ marcaste (nunca se crean solos)
  moves:A(o.moves).filter(ob).map(x=>({...x,id:x.id||uid()})), // transferencias entre cuentas y ajustes al banco
- acc:{spark:normAcc(ob(o.acc)?o.acc.spark:null),pers:normAcc(ob(o.acc)?o.acc.pers:null),last:ob(o.acc)&&typeof o.acc.last==='string'&&o.acc.last?o.acc.last:'pers',lastCat:ob(o.acc)&&typeof o.acc.lastCat==='string'?o.acc.lastCat:''},
+ acc:{spark:normAcc(ob(o.acc)?o.acc.spark:null),pers:normAcc(ob(o.acc)?o.acc.pers:null),ahorro:normAcc(ob(o.acc)?o.acc.ahorro:null),last:ob(o.acc)&&typeof o.acc.last==='string'&&o.acc.last?o.acc.last:'pers',lastCat:ob(o.acc)&&typeof o.acc.lastCat==='string'?o.acc.lastCat:''},
  cats:Array.isArray(o.cats)?[...new Set(o.cats.filter(c=>typeof c==='string'&&c.trim()).map(c=>c.trim()))]:CATS0.slice(), // categorías de gastos (editables)
  recs:A(o.recs).filter(ob).map(r=>({...r,id:r.id||uid(),freq:['week','month','year'].includes(r.freq)?r.freq:'month'})), // pagos recurrentes (suscripciones y facturas)
  debts:Array.isArray(o.debts)?o.debts.filter(ob).map(d=>({...d,id:d.id||uid(),kind:d.kind==='affirm'?'affirm':'card',name:String(d.name||'Deuda'),plan:A(d.plan).filter(ob).map(x=>({...x,id:x.id||uid()}))})):DEBTS0(), // deudas (tarjetas de crédito y Affirm)
@@ -284,7 +285,7 @@ function debtBal(D,d){if(!fin(d.start)||!d.since)return null;const t0=new Date(d
  return{bal:d.start+M.reduce((x,m)=>x+m.amount,0),moves:M,fees:M.filter(m=>m.ref.k==='m'&&m.amount>0).reduce((x,m)=>x+m.amount,0)};}
 // Cuenta de débito: saldo que tenías en el banco ("start") en el momento "since". Sin configurar = null.
 function normAcc(a){return a&&typeof a==='object'&&fin(a.start)&&a.since&&okd(a.since)?{start:a.start,since:a.since}:{start:null,since:null};}
-const ACC={spark:'Spark',pers:'Personal'};
+const ACC={spark:'Spark',pers:'Personal',ahorro:'Ahorro'},ACCK=Object.keys(ACC); // Ahorro = cuenta de ahorro dentro de One (ahí va la reserva)
 // Movimientos de una cuenta desde que se puso su saldo inicial. Solo usa datos reales (no estimaciones):
 // pago base de Spark (al terminar el turno), propina (al día siguiente), gasolina pagada, gastos, transferencias y ajustes.
 function acctMoves(D,k){const a=D.acc[k];if(!fin(a.start))return[];const t0=new Date(a.since).getTime(),M=[],add=(date,amount,txt,ref)=>{if(new Date(date).getTime()>=t0&&amount)M.push({date,amount,txt,ref});};
@@ -328,7 +329,7 @@ function mergeIn(D,raw){const N=norm(raw),add={shifts:0,fills:0,personal:0,apart
  ['shifts','fills','personal','apart','moves','recs'].forEach(k=>{const ids=new Set(D[k].map(x=>x.id)),fps=new Set(D[k].map(FP[k]));N[k].forEach(x=>{const f=FP[k](x);if(ids.has(x.id)||fps.has(f)){dup[k]++;return;}D[k].push(x);ids.add(x.id);fps.add(f);add[k]++;});});
 
  if(D.set&&D.set.reserva===null&&N.set)D.set.reserva=N.set.reserva;
- ['spark','pers'].forEach(k=>{if(!fin(D.acc[k].start)&&fin(N.acc[k].start))D.acc[k]=N.acc[k];});
+ ACCK.forEach(k=>{if(!fin(D.acc[k].start)&&fin(N.acc[k].start))D.acc[k]=N.acc[k];});
  N.cats.forEach(c=>{if(!D.cats.some(x=>x.toLowerCase()===c.toLowerCase()))D.cats.push(c);});
  N.debts.forEach(n=>{const l=D.debts.find(x=>x.id===n.id)||D.debts.find(x=>x.name.toLowerCase()===n.name.toLowerCase());
   if(!l){if(fin(n.start)){D.debts.push(n);}return;}if(!fin(l.start)&&fin(n.start)){Object.assign(l,{...n,id:l.id});return;}
@@ -455,7 +456,7 @@ const catOpts=(v,none)=>(none?'<option value="">Sin categoría</option>':'')+S.c
 function catBind(sel){let prev=sel.value;sel.onchange=()=>{if(sel.value!=='__new'){prev=sel.value;return;}const n=(prompt('Nombre de la nueva categoría')||'').trim();
  if(!n){sel.value=prev;return;}let c=S.cats.find(x=>x.toLowerCase()===n.toLowerCase());if(!c){S.cats.push(n);c=n;save();}sel.innerHTML=catOpts(c,sel.id==='e_cat');sel.value=c;prev=c;toast('Categoría "'+c+'" lista');};}
 // ---------- Pagado con (débitos y tarjetas de crédito) ----------
-const payOpts=(v,none)=>(none?'<option value="">Sin cuenta</option>':'')+'<option value="spark"'+(v==='spark'?' selected':'')+'>Débito Spark</option><option value="pers"'+(v==='pers'?' selected':'')+'>Débito Personal</option>'+S.debts.map(d=>'<option value="debt:'+d.id+'"'+(v==='debt:'+d.id?' selected':'')+'>'+(d.kind==='affirm'?'':'Crédito ')+esc(d.name)+'</option>').join('');
+const payOpts=(v,none)=>(none?'<option value="">Sin cuenta</option>':'')+'<option value="spark"'+(v==='spark'?' selected':'')+'>Débito Spark</option><option value="pers"'+(v==='pers'?' selected':'')+'>Débito Personal</option><option value="ahorro"'+(v==='ahorro'?' selected':'')+'>Ahorro</option>'+S.debts.map(d=>'<option value="debt:'+d.id+'"'+(v==='debt:'+d.id?' selected':'')+'>'+(d.kind==='affirm'?'':'Crédito ')+esc(d.name)+'</option>').join('');
 function fillSels(){const fa=$('fa').value||'spark';$('fa').innerHTML=payOpts(fa);$('fa').value=[...$('fa').options].some(o=>o.value===fa)?fa:'spark';
  const pa=S.acc.last;$('pacc').innerHTML=payOpts(pa);if(![...$('pacc').options].some(o=>o.value===pa))$('pacc').value='pers';
  const lc=S.cats.includes(S.acc.lastCat)?S.acc.lastCat:S.cats[0]||'';$('pcat').innerHTML=catOpts(lc);$('pcat').value=lc;catBind($('pcat'));}
@@ -577,32 +578,35 @@ $('pl_save').onclick=()=>{const d=S.debts.find(x=>x.id===dv),dt=$('pl_date').val
 // ---------- Cuentas (saldo tipo chequera) ----------
 let cv='spark'; // cuenta abierta en la página de detalle
 const CHV='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>';
-function rAcc(){const conf=['spark','pers'].some(k=>fin(S.acc[k].start));
- $('ms-cuentas').textContent=conf?['spark','pers'].filter(k=>fin(S.acc[k].start)).map(k=>ACC[k]+' '+money(acctBal(S,k).bal)).join(' · '):'Sin configurar';
- $('c_fpct').value=S.set.fee.pct;$('c_fmin').value=S.set.fee.min;$('c_spark').value=fin(S.acc.spark.start)?S.acc.spark.start:'';$('c_pers').value=fin(S.acc.pers.start)?S.acc.pers.start:'';
+function rAcc(){const conf=ACCK.some(k=>fin(S.acc[k].start));
+ $('ms-cuentas').textContent=conf?ACCK.filter(k=>fin(S.acc[k].start)).map(k=>ACC[k]+' '+money(acctBal(S,k).bal)).join(' · '):'Sin configurar';
+ $('c_fpct').value=S.set.fee.pct;$('c_fmin').value=S.set.fee.min;$('c_spark').value=fin(S.acc.spark.start)?S.acc.spark.start:'';$('c_pers').value=fin(S.acc.pers.start)?S.acc.pers.start:'';$('c_ahorro').value=fin(S.acc.ahorro.start)?S.acc.ahorro.start:'';
  if(!conf){$('acard').innerHTML='<h2>Cuentas</h2><p class="muted">Pon el saldo de tus tarjetas de débito y la app te dirá cuánto deberías tener en cada una.</p><button class="btn2 full" id="acfg">Configurar cuentas</button>';$('acfg').onclick=()=>go('cuentas',true);}
- else{$('acard').innerHTML='<h2 class="wk">Cuentas<small>Debería tener (según lo que registraste)</small></h2>'+['spark','pers'].map(k=>{const r=acctBal(S,k);if(!r)return '<button class="arow" data-acc="'+k+'"><span>'+ACC[k]+'<small>Sin saldo inicial</small></span><span class="r">'+CHV+'</span></button>';
-  return '<button class="arow" data-acc="'+k+'"><span>'+ACC[k]+(r.pend?'<small>+'+money(r.pend)+' propina por llegar</small>':'<small>Débito</small>')+'</span><span class="r"><b'+(r.bal<0?' class="neg"':'')+'>'+money(r.bal)+'</b>'+CHV+'</span></button>';}).join('')+'<button class="btn2 full" id="atr">Transferir entre cuentas</button>';
+ else{$('acard').innerHTML='<h2 class="wk">Cuentas<small>Debería tener (según lo que registraste)</small></h2>'+ACCK.map(k=>{const r=acctBal(S,k);if(!r)return '<button class="arow" data-acc="'+k+'"><span>'+ACC[k]+'<small>Sin saldo inicial</small></span><span class="r">'+CHV+'</span></button>';
+  return '<button class="arow" data-acc="'+k+'"><span>'+ACC[k]+(r.pend?'<small>+'+money(r.pend)+' propina por llegar</small>':k==='ahorro'?(()=>{const g=ahGap();return g.d>0?'<small class="neg">Te falta apartar '+money(g.d)+'</small>':'<small>Reserva del carro · al día</small>';})():'<small>Débito</small>')+'</span><span class="r"><b'+(r.bal<0?' class="neg"':'')+'>'+money(r.bal)+'</b>'+CHV+'</span></button>';}).join('')+'<button class="btn2 full" id="atr">Transferir entre cuentas</button>';
   $('acard').querySelectorAll('[data-acc]').forEach(b=>b.onclick=()=>{cv=b.dataset.acc;if(!fin(S.acc[cv].start))return go('cuentas',true);rCuenta();go('cuenta',true);});$('atr').onclick=openTransfer;}
  if(view==='cuenta')rCuenta();}
+// Reserva de desgaste generada desde que pusiste el saldo del Ahorro vs. lo que transferiste al Ahorro.
+function ahGap(){const t0=new Date(S.acc.ahorro.since).getTime(),rv=S.shifts.filter(s=>vs(s)&&new Date(s.end).getTime()>=t0).reduce((a,s)=>a+sc(s).rv,0),
+ inn=S.moves.filter(m=>m.kind==='transfer'&&m.to==='ahorro'&&new Date(m.date).getTime()>=t0).reduce((a,m)=>a+m.amount-(m.feeMode==='resta'&&fin(m.fee)?m.fee:0),0);return{rv,inn,d:r2(rv-inn)};}
 function rCuenta(){const r=acctBal(S,cv);if(!r)return;TTL.cuenta='Cuenta '+ACC[cv];
- $('ccard').innerHTML='<p class="muted" style="margin:0">Debería tener</p><div class="big'+(r.bal<0?' neg':'')+'">'+money(r.bal)+'</div>'+(r.pend?'<p class="muted">+'+money(r.pend)+' de propina por llegar mañana.</p>':'')+(()=>{const p=period('month'),fs=S.moves.filter(m=>m.kind==='transfer'&&m.from===cv&&fin(m.fee)&&inP(m.date,p)).reduce((a,m)=>a+m.fee,0);return fs?'<p class="muted">Comisiones de transferencias este mes: <b class="neg">'+money(fs)+'</b></p>':'';})()+'<p class="muted">Saldo inicial '+money(S.acc[cv].start)+' el '+new Date(S.acc[cv].since).toLocaleDateString('es-US',{day:'numeric',month:'long'})+'.</p><button class="btn2 full" id="cadj">Ajustar al banco</button>';
+ $('ccard').innerHTML='<p class="muted" style="margin:0">Debería tener</p><div class="big'+(r.bal<0?' neg':'')+'">'+money(r.bal)+'</div>'+(r.pend?'<p class="muted">+'+money(r.pend)+' de propina por llegar mañana.</p>':'')+(()=>{const p=period('month'),fs=S.moves.filter(m=>m.kind==='transfer'&&m.from===cv&&fin(m.fee)&&inP(m.date,p)).reduce((a,m)=>a+m.fee,0);return fs?'<p class="muted">Comisiones de transferencias este mes: <b class="neg">'+money(fs)+'</b></p>':'';})()+(cv==='ahorro'?(()=>{const g=ahGap();return '<p class="muted">Reserva de desgaste de tus turnos desde entonces: <b>'+money(g.rv)+'</b> · pasaste al ahorro: <b>'+money(g.inn)+'</b>. '+(g.d>0?'<b class="neg">Te falta apartar '+money(g.d)+'.</b>':'Vas al día ✓')+'</p>';})():'')+'<p class="muted">Saldo inicial '+money(S.acc[cv].start)+' el '+new Date(S.acc[cv].since).toLocaleDateString('es-US',{day:'numeric',month:'long'})+'.</p><button class="btn2 full" id="cadj">Ajustar al banco</button>';
  const now=Date.now();$('clist').innerHTML='<h2>Movimientos</h2>'+(r.moves.length?r.moves.slice(0,60).map(m=>'<div class="row mrow"><div>'+esc(m.txt)+'<small>'+df(m.date)+(new Date(m.date).getTime()>now?' · por llegar':'')+'</small></div><div><b class="'+(m.amount>0?'pos':'')+'">'+(m.amount>0?'+':'')+money(m.amount)+'</b>'+(m.ref.k==='m'?' <button class="x" data-l="Borrar" data-mv="'+m.ref.id+'">Borrar</button>':'')+'</div></div>').join(''):'<p class="muted">Aún no hay movimientos desde el saldo inicial.</p>');
  $('clist').querySelectorAll('[data-mv]').forEach(b=>arm(b,()=>{S.moves=S.moves.filter(x=>x.id!==b.dataset.mv);save();rAll();toast('Movimiento borrado');}));
  $('cadj').onclick=()=>{const v=prompt('¿Cuánto dice tu banco que tienes en '+ACC[cv]+'?',r.bal.toFixed(2));if(v===null)return;const n=num(String(v).replace(/^-/,''));if(n===null)return toast('Pon un monto válido');const bank=String(v).trim().startsWith('-')?-n:n,d=r2(bank-r.bal);
   if(!d)return toast('Ya coincide con el banco');S.moves.push({id:uid(),date:new Date().toISOString(),kind:'adjust',acct:cv,amount:d});save();rAll();toast('Ajustado: '+(d>0?'+':'')+money(d));};}
-$('c_save').onclick=()=>{let ch=0;const now=new Date().toISOString();{const fp=num($('c_fpct').value),fm=num($('c_fmin').value);if(fp===null||fp>10)return toast('La comisión va de 0 a 10%');if(fm===null)return toast('Revisa la comisión mínima');if(fp!==S.set.fee.pct||fm!==S.set.fee.min){S.set.fee.pct=fp;S.set.fee.min=fm;ch++;}}for(const k of ['spark','pers']){const t=$('c_'+k).value.trim();if(t===''){continue;}const n=num(t);if(n===null)return toast('Revisa el saldo de '+ACC[k]);if(!fin(S.acc[k].start)||S.acc[k].start!==n){S.acc[k]={start:n,since:now};ch++;}}
+$('c_save').onclick=()=>{let ch=0;const now=new Date().toISOString();{const fp=num($('c_fpct').value),fm=num($('c_fmin').value);if(fp===null||fp>10)return toast('La comisión va de 0 a 10%');if(fm===null)return toast('Revisa la comisión mínima');if(fp!==S.set.fee.pct||fm!==S.set.fee.min){S.set.fee.pct=fp;S.set.fee.min=fm;ch++;}}for(const k of ACCK){const t=$('c_'+k).value.trim();if(t===''){continue;}const n=num(t);if(n===null)return toast('Revisa el saldo de '+ACC[k]);if(!fin(S.acc[k].start)||S.acc[k].start!==n){S.acc[k]={start:n,since:now};ch++;}}
  if(!ch)return toast('No hay cambios');save();rAll();goBack();toast('Cuentas guardadas');};
 // Transferencia: si sale de Spark (One) puede ser instantánea con comisión; se muestra antes de guardar cuánto sale y cuánto llega.
-function tPrev(){const f=$('t_from').value,inst=f==='spark'&&$('t_inst').checked,a=num($('t_amt').value);$('t_instw').hidden=f!=='spark';$('t_feebox').hidden=!inst;
+function tPrev(){const f=$('t_from').value,ext=f==='spark'&&$('t_to').value!=='ahorro',inst=ext&&$('t_inst').checked,a=num($('t_amt').value);$('t_instw').hidden=!ext;$('t_feebox').hidden=!inst;
  if(!inst)return;const fe=S.set.fee;if(a===null||a<=0){$('t_prev').innerHTML='<p class="muted">Comisión: '+fe.pct+'% (mínimo '+money(fe.min)+')</p>';return;}
  const c=feeOf(S,a),resta=$('t_mode').value==='resta';$('t_prev').innerHTML='<p class="muted">Comisión <b>'+money(c)+'</b> · Sale de Spark <b>'+money(resta?a:a+c)+'</b> · Llega a '+ACC[$('t_to').value]+' <b>'+money(resta?a-c:a)+'</b></p>';}
 ['t_amt','t_inst','t_mode','t_to'].forEach(i=>{$(i).oninput=tPrev;$(i).onchange=tPrev;});
-$('t_from').onchange=()=>{$('t_to').value=$('t_from').value==='spark'?'pers':'spark';tPrev();};
+$('t_from').onchange=()=>{const f=$('t_from').value;if($('t_to').value===f)$('t_to').value=f==='spark'?'pers':'spark';tPrev();};
 function openTransfer(){$('t_amt').value='';$('t_inst').checked=S.set.fee.inst;$('t_mode').value=S.set.fee.mode;tPrev();go('transfer',true);}
 $('t_save').onclick=()=>{const f=$('t_from').value,t=$('t_to').value,a=num($('t_amt').value);if(f===t)return toast('Elige dos cuentas distintas');if(a===null||a<=0)return toast('Pon un monto mayor a 0');
- const inst=f==='spark'&&$('t_inst').checked,m={id:uid(),date:new Date().toISOString(),kind:'transfer',from:f,to:t,amount:a};
- if(f==='spark')S.set.fee.inst=inst;if(inst){const c=feeOf(S,a);if(c>=a&&$('t_mode').value==='resta')return toast('La comisión es mayor que el monto');m.fee=c;m.feeMode=$('t_mode').value;S.set.fee.mode=m.feeMode;}
+ const inst=f==='spark'&&t!=='ahorro'&&$('t_inst').checked,m={id:uid(),date:new Date().toISOString(),kind:'transfer',from:f,to:t,amount:a};
+ if(f==='spark'&&t!=='ahorro')S.set.fee.inst=inst;if(inst){const c=feeOf(S,a);if(c>=a&&$('t_mode').value==='resta')return toast('La comisión es mayor que el monto');m.fee=c;m.feeMode=$('t_mode').value;S.set.fee.mode=m.feeMode;}
  S.moves.push(m);save();rAll();goBack();toast('Transferido '+money(a)+' de '+ACC[f]+' a '+ACC[t]+(m.fee?' · comisión '+money(m.fee):''));};
 // ---------- Apartados ----------
 const APN={tax:'Impuestos',emer:'Emergencias',veh:'Vehículo'};
