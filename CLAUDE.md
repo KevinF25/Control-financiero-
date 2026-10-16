@@ -2,7 +2,7 @@
 
 App web instalable (PWA) en un solo archivo: `index.html` (HTML, CSS y JS juntos), `sw.js` (funciona sin conexión), `manifest.webmanifest` e iconos. Los datos viven en `localStorage` del teléfono (clave `sd_tracker_v1`).
 
-Datos guardados (todo en `sd_tracker_v1`): `shifts` (turnos), `fills` (llenadas), `personal` (gastos e ingresos, `type`), `apart` (apartados que el dueño marcó a mano: `day`, `fund` = tax/emer/veh, `amount`), `set.reserva` ($/milla) y `set.ap` (configuración de apartados; viene apagada). `norm()` debe conservar cualquier campo nuevo o se pierde al cargar.
+Datos guardados (todo en `sd_tracker_v1`): `shifts` (turnos), `fills` (llenadas), `personal` (gastos e ingresos, `type`), `apart` (apartados que el dueño marcó a mano: `day`, `fund` = tax/emer/veh, `amount`), `set.reserva` ($/milla) y `set.ap` (configuración de apartados; viene apagada). Cuentas: `acc.spark`/`acc.pers` = `{start, since}` (saldo inicial y desde cuándo cuenta), `moves` (transferencias `kind:'transfer'` y ajustes `kind:'adjust'`), y en los registros `acct` (cuenta con que se pagó) y `tip` en turnos (propina; ya está incluida en `earned`, solo cambia cuándo entra a la cuenta: al día siguiente). El saldo solo usa datos reales, nunca estimaciones. `norm()` debe conservar cualquier campo nuevo o se pierde al cargar.
 
 ## Preferencias del dueño (tener en cuenta en todo cambio)
 - Todo en **español**: textos, mensajes, commits y PRs.

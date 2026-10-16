@@ -91,6 +91,10 @@ main>.card:last-child,main>div>.card:last-child{margin-bottom:0}.pair>div{min-wi
 .apday{border-top:1px solid var(--border);padding:8px 0 4px}.apday:first-of-type{border-top:0}.apday h3{font-size:14px;font-weight:600;margin:4px 0;color:var(--muted)}
 .ck{display:flex;align-items:center;gap:12px;width:100%;background:none;border:0;padding:8px 0;font:inherit;color:var(--text);text-align:left;cursor:pointer}.ck i{width:24px;height:24px;border-radius:50%;border:2px solid var(--muted);flex-shrink:0;display:grid;place-items:center}.ck.on i{background:var(--accent);border-color:var(--accent)}.ck.on i::after{content:"";width:6px;height:11px;border:solid var(--onaccent);border-width:0 2.5px 2.5px 0;transform:rotate(45deg) translate(-1px,-1px)}.ck span{flex:1}.ck b{font-weight:600}.ck.on b{color:var(--accent)}.ck small{display:block;color:var(--muted);font-size:12px}
 .apsal{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}.apsal .k b{font-size:16px}.apsal .k b small{font-weight:400}
+.sel{position:relative;display:block}.sel::after{content:"";position:absolute;right:14px;top:50%;width:7px;height:7px;margin-top:-6px;border:solid var(--muted);border-width:0 2px 2px 0;transform:rotate(45deg);pointer-events:none}
+select{width:100%;-webkit-appearance:none;appearance:none;font:inherit;color:var(--text);background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 32px 9px 10px;min-height:42px}select:focus{outline:2px solid var(--accent);outline-offset:1px}
+.arow{display:flex;justify-content:space-between;align-items:center;gap:12px;width:100%;background:none;border:0;border-top:1px solid var(--border);padding:12px 0;font:inherit;color:var(--text);text-align:left;cursor:pointer}.arow:first-of-type{border-top:0}.arow b{font-size:20px;font-weight:600;display:block;text-align:right}.arow small{display:block;color:var(--muted);font-size:13px}.arow .r{display:flex;align-items:center;gap:6px}.arow svg{width:18px;height:18px;color:var(--muted)}.arow b.neg{color:var(--bad)}
+.mrow b.pos{color:var(--accent)}
 .pair{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
 </style></head><body>
 <nav class="tabs" aria-label="Secciones"><button data-t="work" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 8-2 2-1.5-3.7A2 2 0 0 0 15.644 5H8.4a2 2 0 0 0-1.903 1.257L5 10 3 8"/><path d="M7 14h.01"/><path d="M17 14h.01"/><rect width="18" height="8" x="3" y="10" rx="2"/><path d="M5 18v2"/><path d="M19 18v2"/></svg>Trabajo</button><button data-t="pers"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></svg>Personal</button></nav>
@@ -102,24 +106,34 @@ main>.card:last-child,main>div>.card:last-child{margin-bottom:0}.pair>div{min-wi
 <section class="card" id="stats"></section>
 </main>
 <main id="pers" hidden>
+<section class="card" id="acard"></section>
 <section class="card" id="psum"></section>
 <section class="card" id="apcard" hidden></section>
 </main>
 <main id="menuv" hidden>
 <p class="grp">Historial</p><section class="card list"><button class="mi" data-go="turnos"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 8-2 2-1.5-3.7A2 2 0 0 0 15.644 5H8.4a2 2 0 0 0-1.903 1.257L5 10 3 8"/><path d="M7 14h.01"/><path d="M17 14h.01"/><rect width="18" height="8" x="3" y="10" rx="2"/><path d="M5 18v2"/><path d="M19 18v2"/></svg></span><span><b>Turnos</b><small id="ms-turnos"></small></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button><button class="mi" data-go="llenadas"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 22h12"/><path d="M4 9h10"/><path d="M14 22V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v18"/><path d="M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 2 2a2 2 0 0 0 2-2V9.83a2 2 0 0 0-.59-1.42L18 5"/></svg></span><span><b>Llenadas de gasolina</b><small id="ms-llenadas"></small></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button><button class="mi" data-go="gastos"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></svg></span><span><b>Gastos personales</b><small id="ms-gastos"></small></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button></section>
-<p class="grp">Ajustes</p><section class="card list"><button class="mi" data-go="apconf"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 17h3v2a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1v-3a3.16 3.16 0 0 0 2-2h1a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1h-1a5 5 0 0 0-2-4V3a4 4 0 0 0-3.2 1.6l-.3.4H11a6 6 0 0 0-6 6v1a5 5 0 0 0 2 4v3a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1z"/><path d="M16 10h.01"/><path d="M2 8v1a2 2 0 0 0 2 2h1"/></svg></span><span><b>Apartados</b><small id="ms-apconf"></small></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button><button class="mi" data-go="reserva"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span><span><b>Reserva por milla</b><small id="ms-reserva"></small></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button><button class="mi" data-go="copia"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/></svg></span><span><b>Copia de seguridad</b><small id="ms-copia"></small></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button></section>
+<p class="grp">Ajustes</p><section class="card list"><button class="mi" data-go="cuentas"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="14" x="2" y="5" rx="2"/><path d="M2 10h20"/></svg></span><span><b>Cuentas</b><small id="ms-cuentas"></small></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button><button class="mi" data-go="apconf"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 17h3v2a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1v-3a3.16 3.16 0 0 0 2-2h1a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1h-1a5 5 0 0 0-2-4V3a4 4 0 0 0-3.2 1.6l-.3.4H11a6 6 0 0 0-6 6v1a5 5 0 0 0 2 4v3a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1z"/><path d="M16 10h.01"/><path d="M2 8v1a2 2 0 0 0 2 2h1"/></svg></span><span><b>Apartados</b><small id="ms-apconf"></small></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button><button class="mi" data-go="reserva"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span><span><b>Reserva por milla</b><small id="ms-reserva"></small></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button><button class="mi" data-go="copia"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/></svg></span><span><b>Copia de seguridad</b><small id="ms-copia"></small></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button></section>
 </main>
 <main id="v-gastos" hidden><div id="plh"></div></main>
 <main id="v-empezar" hidden><section class="card"><label for="so">Odómetro al salir de casa</label><input id="so" inputmode="decimal" autocomplete="off" placeholder="Ej. 84250"><button class="btn" id="go">Empezar turno</button><p class="muted">La hora de inicio se guarda sola al tocar el botón.</p></section></main>
 <main id="v-terminar" hidden><section class="card" id="tcard"></section></main>
+<main id="v-cuentas" hidden><section class="card"><p class="muted" style="margin-top:0">Pon cuánto tienes <b>hoy</b> en cada tarjeta de débito (lo que dice tu banco). Desde ahora la app suma tus ganancias de Spark y resta tu gasolina, gastos y transferencias para decirte cuánto deberías tener.</p>
+<label for="c_spark">Débito Spark (donde Spark deposita)</label><input id="c_spark" inputmode="decimal" autocomplete="off" placeholder="Ej. 250.00">
+<label for="c_pers">Débito Personal</label><input id="c_pers" inputmode="decimal" autocomplete="off" placeholder="Ej. 400.00">
+<button class="btn" id="c_save">Guardar</button><p class="muted">Lo que registraste antes de hoy no cambia estos saldos. Si después no coincide con el banco, usa "Ajustar al banco" en la cuenta.</p></section></main>
+<main id="v-cuenta" hidden><section class="card" id="ccard"></section><section class="card" id="clist"></section></main>
+<main id="v-transfer" hidden><section class="card"><div class="pair"><div><label for="t_from">Desde</label><span class="sel"><select id="t_from"><option value="spark">Débito Spark</option><option value="pers">Débito Personal</option></select></span></div><div><label for="t_to">Hacia</label><span class="sel"><select id="t_to"><option value="pers">Débito Personal</option><option value="spark">Débito Spark</option></select></span></div></div>
+<label for="t_amt">Monto ($)</label><input id="t_amt" inputmode="decimal" autocomplete="off"><button class="btn" id="t_save">Transferir</button><p class="muted">Una transferencia no es un gasto: el dinero solo cambia de cuenta.</p></section></main>
 <main id="v-llenada" hidden><div class="hero fi" id="fillinfo"></div><section class="card">
 <label for="fo">Odómetro</label><input id="fo" inputmode="decimal" autocomplete="off">
 <div class="pair"><div><label for="fg">Galones</label><input id="fg" inputmode="decimal" autocomplete="off"></div><div><label for="fp">Cuánto pagaste ($)</label><input id="fp" inputmode="decimal" autocomplete="off"></div></div>
+<label for="fa">Pagado con</label><span class="sel"><select id="fa"><option value="spark">Débito Spark</option><option value="pers">Débito Personal</option></select></span>
 <label class="chk"><input type="checkbox" id="ff" checked> Llené el tanque completo</label>
 <button class="btn" id="addf">Guardar llenada</button>
 <p class="muted">El cálculo usa ciclos entre llenadas completas. Si fue parcial, desmarca la casilla.</p></section></main>
 <main id="v-gasto" hidden><section class="card"><label for="pa">Monto ($)</label><input id="pa" inputmode="decimal" autocomplete="off">
-<label for="pn">En qué (luz, mercado, tarjeta...)</label><input id="pn" autocomplete="off">
+<label for="pacc">Pagado con</label><span class="sel"><select id="pacc"><option value="spark">Débito Spark</option><option value="pers">Débito Personal</option></select></span>
+<label for="pn">En qué (luz, mercado, renta...)</label><input id="pn" autocomplete="off">
 <button class="btn" id="addp">Agregar gasto</button><p class="muted">No anotes aquí la gasolina del carro: ya se cuenta en Trabajo.</p></section></main>
 <main id="v-editar" hidden><section class="card" id="edc"></section></main>
 <main id="v-turnos" hidden><div id="list"></div></main>
@@ -181,8 +195,26 @@ function norm(raw){const o=raw&&typeof raw==='object'?raw:{},A=a=>Array.isArray(
  fills:A(o.fills).filter(ob).map(f=>({...f,id:f.id||uid(),full:f.full!==false})),
  personal:A(o.personal).filter(ob).map(p=>({...p,id:p.id||uid(),type:p.type==='ingreso'?'ingreso':'gasto'})),
  apart:A(o.apart).filter(ob).map(x=>({...x,id:x.id||uid()})), // apartados que TÚ marcaste (nunca se crean solos)
+ moves:A(o.moves).filter(ob).map(x=>({...x,id:x.id||uid()})), // transferencias entre cuentas y ajustes al banco
+ acc:{spark:normAcc(ob(o.acc)?o.acc.spark:null),pers:normAcc(ob(o.acc)?o.acc.pers:null),last:ob(o.acc)&&o.acc.last==='spark'?'spark':'pers'},
  range:['day','week','month'].includes(o.range)?o.range:'week',
  set:{reserva:fin(st.reserva)&&st.reserva>=0&&st.reserva<=5?st.reserva:null,ap:normAp(st.ap)}};}
+// Cuenta de débito: saldo que tenías en el banco ("start") en el momento "since". Sin configurar = null.
+function normAcc(a){return a&&typeof a==='object'&&fin(a.start)&&a.since&&okd(a.since)?{start:a.start,since:a.since}:{start:null,since:null};}
+const ACC={spark:'Spark',pers:'Personal'};
+// Movimientos de una cuenta desde que se puso su saldo inicial. Solo usa datos reales (no estimaciones):
+// pago base de Spark (al terminar el turno), propina (al día siguiente), gasolina pagada, gastos, transferencias y ajustes.
+function acctMoves(D,k){const a=D.acc[k];if(!fin(a.start))return[];const t0=new Date(a.since).getTime(),M=[],add=(date,amount,txt,ref)=>{if(new Date(date).getTime()>=t0&&amount)M.push({date,amount,txt,ref});};
+ if(k==='spark')D.shifts.filter(vs).forEach(s=>{const tip=fin(s.tip)&&s.tip>0&&s.tip<=s.earned?s.tip:0,next=new Date(s.end);next.setHours(24,0,0,0);
+  add(s.end,s.earned-tip,'Spark'+(tip?' (pago base)':''),{k:'s',id:s.id});if(tip)add(next.toISOString(),tip,'Spark (propina)',{k:'s',id:s.id});});
+ D.fills.filter(f=>vf(f)&&f.acct===k).forEach(f=>add(f.date,-f.paid,'Gasolina',{k:'f',id:f.id}));
+ D.personal.filter(p=>fin(p.amount)&&okd(p.date)&&p.acct===k).forEach(p=>add(p.date,p.type==='ingreso'?p.amount:-p.amount,p.note||(p.type==='ingreso'?'Ingreso':'Gasto'),{k:'p',id:p.id}));
+ D.moves.filter(m=>fin(m.amount)&&okd(m.date)).forEach(m=>{if(m.kind==='transfer'){if(m.from===k)add(m.date,-m.amount,'Transferencia a '+ACC[m.to],{k:'m',id:m.id});if(m.to===k)add(m.date,m.amount,'Transferencia de '+ACC[m.from],{k:'m',id:m.id});}
+  else if(m.kind==='adjust'&&m.acct===k)add(m.date,m.amount,'Ajuste al banco',{k:'m',id:m.id});});
+ return M.sort((x,y)=>new Date(y.date)-new Date(x.date));}
+// "Debería tener" = saldo inicial + movimientos que ya ocurrieron. Lo que aún no llega (propina de hoy) va aparte.
+function acctBal(D,k,now){const a=D.acc[k];if(!fin(a.start))return null;const t=(now||new Date()).getTime(),M=acctMoves(D,k);
+ return{bal:a.start+M.filter(m=>new Date(m.date).getTime()<=t).reduce((x,m)=>x+m.amount,0),pend:M.filter(m=>new Date(m.date).getTime()>t).reduce((x,m)=>x+m.amount,0),moves:M};}
 // Configuración de apartados: viene apagada. "since" = día en que se activó (lo sugerido cuenta desde ahí).
 function normAp(a){a=a&&typeof a==='object'?a:{};const pc=(v,d)=>fin(v)&&v>=0&&v<=60?v:d;
  return{on:a.on===true,since:a.since&&okd(a.since)?a.since:null,tax:pc(a.tax,25),emer:pc(a.emer,10),goal:fin(a.goal)&&a.goal>=0?a.goal:1000,veh:a.veh!==false};}
@@ -205,11 +237,12 @@ function loadState(st){let D,raw=null,noId=false;
  return D;}
 // Huella por contenido: detecta el mismo registro aunque venga con otro id (copias viejas sin id, o importar dos veces).
 const tmin=d=>{const t=new Date(d).getTime();return Number.isFinite(t)?Math.round(t/6e4):'x';};
-const FP={apart:m=>m.day+'|'+m.fund,shifts:s=>tmin(s.start)+'|'+s.startOdo,fills:f=>f.odo+'|'+f.gal+'|'+f.paid,personal:p=>tmin(p.date)+'|'+p.amount+'|'+(p.note||'')+'|'+p.type};
-function mergeIn(D,raw){const N=norm(raw),add={shifts:0,fills:0,personal:0,apart:0},dup={shifts:0,fills:0,personal:0,apart:0};
- ['shifts','fills','personal','apart'].forEach(k=>{const ids=new Set(D[k].map(x=>x.id)),fps=new Set(D[k].map(FP[k]));N[k].forEach(x=>{const f=FP[k](x);if(ids.has(x.id)||fps.has(f)){dup[k]++;return;}D[k].push(x);ids.add(x.id);fps.add(f);add[k]++;});});
+const FP={moves:m=>m.kind+'|'+tmin(m.date)+'|'+m.amount+'|'+(m.from||m.acct||'')+'|'+(m.to||''),apart:m=>m.day+'|'+m.fund,shifts:s=>tmin(s.start)+'|'+s.startOdo,fills:f=>f.odo+'|'+f.gal+'|'+f.paid,personal:p=>tmin(p.date)+'|'+p.amount+'|'+(p.note||'')+'|'+p.type};
+function mergeIn(D,raw){const N=norm(raw),add={shifts:0,fills:0,personal:0,apart:0,moves:0},dup={shifts:0,fills:0,personal:0,apart:0,moves:0};
+ ['shifts','fills','personal','apart','moves'].forEach(k=>{const ids=new Set(D[k].map(x=>x.id)),fps=new Set(D[k].map(FP[k]));N[k].forEach(x=>{const f=FP[k](x);if(ids.has(x.id)||fps.has(f)){dup[k]++;return;}D[k].push(x);ids.add(x.id);fps.add(f);add[k]++;});});
 
  if(D.set&&D.set.reserva===null&&N.set)D.set.reserva=N.set.reserva;
+ ['spark','pers'].forEach(k=>{if(!fin(D.acc[k].start)&&fin(N.acc[k].start))D.acc[k]=N.acc[k];});
  if(!D.active&&N.active)D.active=N.active;return{add,dup};} // cuántos se agregaron y cuántos ya existían
 //LOGIC-END
 const $=id=>document.getElementById(id);
@@ -231,13 +264,14 @@ $('gostart').onclick=()=>{go('empezar',true);try{$('so').focus();}catch(e){}};$(
 const info='Empezó a las '+tf(a.start)+' · <span class="el"></span> · salió con '+a.startOdo+' mi';
 $('shift').innerHTML='<h2><span class="dot" aria-hidden="true"></span>Turno en curso</h2><p class="muted">'+info+'</p><button class="btn" id="goend">Terminar turno</button>';
 $('goend').onclick=()=>{go('terminar',true);try{$('eo').focus();}catch(e){}};
-$('tcard').innerHTML='<p class="muted" style="margin:0 0 4px">'+info+'</p><label for="eo">Odómetro al llegar a casa</label><input id="eo" inputmode="decimal" autocomplete="off"><label for="ea">Ganancia del día ($)</label><input id="ea" inputmode="decimal" autocomplete="off"><button class="btn" id="fin">Terminar turno</button><button class="link del" id="can" data-l="Cancelar turno">Cancelar turno</button>';tick();
+$('tcard').innerHTML='<p class="muted" style="margin:0 0 4px">'+info+'</p><label for="eo">Odómetro al llegar a casa</label><input id="eo" inputmode="decimal" autocomplete="off"><label for="ea">Ganancia del día ($)</label><input id="ea" inputmode="decimal" autocomplete="off"><label for="etip">De eso, propina ($) <span style="opacity:.7">· opcional</span></label><input id="etip" inputmode="decimal" autocomplete="off" placeholder="Llega al día siguiente"><button class="btn" id="fin">Terminar turno</button><button class="link del" id="can" data-l="Cancelar turno">Cancelar turno</button>';tick();
 $('fin').onclick=()=>{const o=numO($('eo').value),e=num($('ea').value);
 // Turno olvidado abierto: si duraría más de 16 h, se pide la hora real de fin en lugar de guardar horas falsas.
 let end=new Date();if($('fe')){end=dtVal('fe');if(!end)return toast('Elige la hora en que terminaste');if(end<=new Date(a.start))return toast('La hora de fin debe ser después del inicio ('+tf(a.start)+')');if(end>new Date())return toast('La hora de fin no puede ser en el futuro');if((end-new Date(a.start))/36e5>24)return toast('Un turno no puede durar más de 24 horas');}
 else if((end-new Date(a.start))/36e5>16){const d=new Date(a.start);d.setHours(d.getHours()+8);$('fin').insertAdjacentHTML('beforebegin','<div class="hero fi" id="fwarn"><p class="muted">Este turno lleva '+Math.round((end-new Date(a.start))/36e5)+' horas abierto. ¿A qué hora terminaste de verdad?</p></div>'+dtField('fe','Hora en que terminaste',d.toISOString()));dtBind($('tcard'));return toast('Elige la hora real de fin y toca Terminar turno otra vez',6000);}
 if(o===null||o<=a.startOdo)return toast('El odómetro final debe ser mayor al inicial');if(o-a.startOdo>1000)return toast('Más de 1,000 millas en un turno: revisa el odómetro');if(e===null||e<0)return toast('Pon lo que ganaste (0 o más)');
-const g=gas(S.fills);S.shifts.push({id:uid(),start:a.start,end:end.toISOString(),startOdo:a.startOdo,endOdo:o,earned:e,cpm:g.pending?null:g.cpm,mpg:g.pending?null:g.mpg,reserve:(o-a.startOdo)*rate(S)});S.active=null;save();rAll();goBack();const ap=apToday();toast(ap>0?'Turno guardado. Para apartar hoy: '+money(ap)+' (en Personal)':'Turno guardado',ap>0?6000:3500);};
+const tt=$('etip').value.trim(),tip=tt===''?null:num(tt);if(tt!==''&&(tip===null||tip>e))return toast('La propina debe estar entre 0 y lo que ganaste');
+const g=gas(S.fills),ns={id:uid(),start:a.start,end:end.toISOString(),startOdo:a.startOdo,endOdo:o,earned:e,cpm:g.pending?null:g.cpm,mpg:g.pending?null:g.mpg,reserve:(o-a.startOdo)*rate(S)};if(tip)ns.tip=tip;S.shifts.push(ns);S.active=null;save();rAll();goBack();const ap=apToday();toast(ap>0?'Turno guardado. Para apartar hoy: '+money(ap)+' (en Personal)':'Turno guardado',ap>0?6000:3500);};
 arm($('can'),()=>{S.active=null;save();rAll();goBack();toast('Turno cancelado');});}
 // Empezar turno: mismas validaciones que antes.
 $('go').onclick=()=>{const o=numO($('so').value);if(o===null||o<0)return toast('Pon un odómetro válido');const me=Math.max(0,...S.shifts.filter(vs).map(s=>s.endOdo));if(o<me)return toast('El odómetro es menor al del último turno ('+me+')');S.active={start:new Date().toISOString(),startOdo:o};$('so').value='';save();rAll();goBack();toast('Turno empezado');};
@@ -262,36 +296,38 @@ const dl=i=>{const d=new Date(i);d.setMinutes(d.getMinutes()-d.getTimezoneOffset
 const dtTxt=d=>d.toLocaleDateString('es-US',{day:'numeric',month:'long',year:'numeric'})+', '+d.toLocaleTimeString('es-US',{hour:'numeric',minute:'2-digit'});
 // Campo de fecha y hora con el texto siempre en español.
 function dtField(id,lab,iso){return '<label for="'+id+'">'+lab+'</label><div class="dtw"><span class="dtx" id="'+id+'_t" aria-hidden="true">'+dtTxt(new Date(iso))+'</span><input type="datetime-local" class="dti" id="'+id+'" value="'+dl(iso)+'"></div>';}
-function dtVal(id){const v=$(id).value,d=v?new Date(v):null;return d&&okd(d)?d:null;}
+function dtVal(id,orig){const v=$(id).value;if(orig&&v===dl(orig))return new Date(orig); // sin cambios: conserva la fecha exacta (con segundos)
+ const d=v?new Date(v):null;return d&&okd(d)?d:null;}
 function dtBind(root){root.querySelectorAll('.dti').forEach(i=>i.oninput=i.onchange=()=>{const d=dtVal(i.id);$(i.id+'_t').textContent=d?dtTxt(d):'Elige fecha y hora';});}
 const fld=(id,l,v)=>'<label for="'+id+'">'+l+'</label><input id="'+id+'" inputmode="decimal" autocomplete="off" value="'+esc(v)+'">';
 const edBtns='<button class="btn" id="e_ok">Guardar cambios</button><button class="link del" id="e_del" data-l="Borrar este registro">Borrar este registro</button></div>';
-function edPers(i){return '<div id="e_form">'+dtField('e_dt','Fecha',i.date)+fld('e_pa','Monto ($)',i.amount)+'<label for="e_pn">En qué</label><input id="e_pn" autocomplete="off" value="'+esc(i.note||'')+'">'+edBtns;}
+function edPers(i){return '<div id="e_form">'+dtField('e_dt','Fecha',i.date)+fld('e_pa','Monto ($)',i.amount)+'<label for="e_pac">Pagado con</label>'+'<span class="sel"><select id="e_pac"><option value="">Sin cuenta</option><option value="spark"'+(i.acct==='spark'?' selected':'')+'>Débito Spark</option><option value="pers"'+(i.acct==='pers'?' selected':'')+'>Débito Personal</option></select></span>'+'<label for="e_pn">En qué</label><input id="e_pn" autocomplete="off" value="'+esc(i.note||'')+'">'+edBtns;}
 const EDK={s:'shifts',f:'fills',p:'personal'},EDT={s:'Editar turno',f:'Editar llenada',p:'Editar gasto'};
 function openEd(k,id){const it=S[EDK[k]].find(x=>x.id===id);if(!it)return;ed={k,id,from:view,t:k==='p'&&it.type==='ingreso'?'Editar ingreso':EDT[k]};fw=null;$('edc').innerHTML=(k==='s'?edShift:k==='f'?edFill:edPers)(it);bindEdit();dtBind($('edc'));go('editar',true);}
-function edShift(s){return '<div id="e_form">'+dtField('e_st','Inicio',s.start)+dtField('e_en','Fin',s.end)+'<div class="pair"><div>'+fld('e_so','Odómetro inicial',s.startOdo)+'</div><div>'+fld('e_eo','Odómetro final',s.endOdo)+'</div></div>'+fld('e_ea','Ganancia ($)',s.earned)+edBtns;}
-function edFill(x){return '<div id="e_form">'+dtField('e_dt','Fecha',x.date)+fld('e_fo','Odómetro',x.odo)+'<div class="pair"><div>'+fld('e_fg','Galones',x.gal)+'</div><div>'+fld('e_fp','Cuánto pagaste ($)',x.paid)+'</div></div><label class="chk"><input type="checkbox" id="e_ff"'+(x.full!==false?' checked':'')+'> Llené el tanque completo</label>'+edBtns;}
+function edShift(s){return '<div id="e_form">'+dtField('e_st','Inicio',s.start)+dtField('e_en','Fin',s.end)+'<div class="pair"><div>'+fld('e_so','Odómetro inicial',s.startOdo)+'</div><div>'+fld('e_eo','Odómetro final',s.endOdo)+'</div></div>'+fld('e_ea','Ganancia ($)',s.earned)+fld('e_tip','De eso, propina ($) · opcional',fin(s.tip)?s.tip:'')+edBtns;}
+function edFill(x){return '<div id="e_form">'+dtField('e_dt','Fecha',x.date)+fld('e_fo','Odómetro',x.odo)+'<div class="pair"><div>'+fld('e_fg','Galones',x.gal)+'</div><div>'+fld('e_fp','Cuánto pagaste ($)',x.paid)+'</div></div><label for="e_fa">Pagado con</label>'+'<span class="sel"><select id="e_fa"><option value="">Sin cuenta</option><option value="spark"'+(x.acct==='spark'?' selected':'')+'>Débito Spark</option><option value="pers"'+(x.acct==='pers'?' selected':'')+'>Débito Personal</option></select></span>'+'<label class="chk"><input type="checkbox" id="e_ff"'+(x.full!==false?' checked':'')+'> Llené el tanque completo</label>'+edBtns;}
 function bindEdit(){const k=ed.k,key=EDK[k],it=S[key].find(x=>x.id===ed.id);if(!it)return;
  arm($('e_del'),()=>{S[key]=S[key].filter(x=>x.id!==it.id);save();rAll();goBack();toast('Registro borrado');});
  $('e_ok').onclick=()=>{
-  if(k==='s'){const st=dtVal('e_st'),en=dtVal('e_en'),o1=numO($('e_so').value),o2=numO($('e_eo').value),e=num($('e_ea').value);
+  if(k==='s'){const st=dtVal('e_st',it.start),en=dtVal('e_en',it.end),o1=numO($('e_so').value),o2=numO($('e_eo').value),e=num($('e_ea').value);
    if(!st||!en)return toast('Revisa la fecha y la hora');
    if(en<st)return toast('El fin debe ser después del inicio');if((en-st)/36e5>24)return toast('Un turno no puede durar más de 24 horas');
    if(o1===null||o2===null||o2<=o1)return toast('El odómetro final debe ser mayor al inicial');if(o2-o1>1000)return toast('Más de 1,000 millas en un turno: revisa el odómetro');
    if(e===null||e<0)return toast('Pon lo que ganaste (0 o más)');
+   const tt=$('e_tip').value.trim(),tip=tt===''?null:num(tt);if(tt!==''&&(tip===null||tip>e))return toast('La propina debe estar entre 0 y lo que ganaste');
    const om=it.endOdo-it.startOdo,pm=fin(it.reserve)&&om>0?it.reserve/om:rate(S); // conserva la reserva por milla que tenía el turno
-   Object.assign(it,{start:st.toISOString(),end:en.toISOString(),startOdo:o1,endOdo:o2,earned:e,reserve:(o2-o1)*pm});}
-  else if(k==='p'){const dt=dtVal('e_dt'),a=num($('e_pa').value);
+   Object.assign(it,{start:st.toISOString(),end:en.toISOString(),startOdo:o1,endOdo:o2,earned:e,reserve:(o2-o1)*pm});if(tip)it.tip=tip;else delete it.tip;}
+  else if(k==='p'){const dt=dtVal('e_dt',it.date),a=num($('e_pa').value);
    if(!dt)return toast('Revisa la fecha y la hora');if(a===null||a<=0)return toast('Pon un monto mayor a 0');
-   Object.assign(it,{date:dt.toISOString(),amount:a,note:$('e_pn').value.trim()});}
-  else{const dt=dtVal('e_dt'),o=numO($('e_fo').value),gl=num($('e_fg').value),p=num($('e_fp').value),full=$('e_ff').checked;
+   Object.assign(it,{date:dt.toISOString(),amount:a,note:$('e_pn').value.trim()});if($('e_pac').value)it.acct=$('e_pac').value;else delete it.acct;}
+  else{const dt=dtVal('e_dt',it.date),o=numO($('e_fo').value),gl=num($('e_fg').value),p=num($('e_fp').value),full=$('e_ff').checked;
    if(!dt)return toast('Revisa la fecha y la hora');
    if(o===null||o<0||gl===null||gl<=0||p===null||p<0)return toast('Llena odómetro, galones y lo que pagaste');
    const pg=p/gl;if(pg<0.5||pg>15)return toast('Revisa galones y monto: el precio por galón sale raro');
    const others=S.fills.filter(x=>x.id!==it.id);if(others.some(x=>x.odo===o))return toast('Ya hay una llenada con ese odómetro');
    const nf={...it,date:dt.toISOString(),odo:o,gal:gl,paid:p,full},w=checkFill(others,nf),sig='e|'+[o,gl,p,full].join('|');
    if(w&&fw!==sig){fw=sig;return toast(w+' Si es correcto, toca Guardar otra vez.',9000);}
-   fw=null;Object.assign(it,nf);migrate(S);}
+   fw=null;Object.assign(it,nf);if($('e_fa').value)it.acct=$('e_fa').value;else delete it.acct;migrate(S);}
   save();rAll();goBack();toast('Cambios guardados');};}
 function rHist(){const l=S.shifts.filter(vs).sort((a,b)=>new Date(b.start)-new Date(a.start)),f=[...S.fills].filter(vf).sort((a,b)=>b.odo-a.odo),g=gas(S.fills),cw=period('week')[0].getTime();
 const W=[];l.forEach(s=>{const k=period('week',s.start)[0].getTime();let w=W[W.length-1];if(!w||w.k!==k)W.push(w={k,s:[]});w.s.push(s);});
@@ -321,6 +357,28 @@ $('plh').innerHTML=M.length?M.map(m=>{const t=m.i.filter(i=>i.type!=='ingreso').
 ['plh'].forEach(c=>$(c).querySelectorAll('[data-e]').forEach(b=>b.onclick=()=>openEd('p',b.dataset.e)));
 $('ms-gastos').textContent=money(pt)+' este mes';}
 let fw=null;
+// ---------- Cuentas (saldo tipo chequera) ----------
+let cv='spark'; // cuenta abierta en la página de detalle
+const CHV='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>';
+function rAcc(){const conf=['spark','pers'].some(k=>fin(S.acc[k].start));
+ $('ms-cuentas').textContent=conf?['spark','pers'].filter(k=>fin(S.acc[k].start)).map(k=>ACC[k]+' '+money(acctBal(S,k).bal)).join(' · '):'Sin configurar';
+ $('c_spark').value=fin(S.acc.spark.start)?S.acc.spark.start:'';$('c_pers').value=fin(S.acc.pers.start)?S.acc.pers.start:'';
+ if(!conf){$('acard').innerHTML='<h2>Cuentas</h2><p class="muted">Pon el saldo de tus tarjetas de débito y la app te dirá cuánto deberías tener en cada una.</p><button class="btn2 full" id="acfg">Configurar cuentas</button>';$('acfg').onclick=()=>go('cuentas',true);}
+ else{$('acard').innerHTML='<h2 class="wk">Cuentas<small>Debería tener (según lo que registraste)</small></h2>'+['spark','pers'].map(k=>{const r=acctBal(S,k);if(!r)return '<button class="arow" data-acc="'+k+'"><span>'+ACC[k]+'<small>Sin saldo inicial</small></span><span class="r">'+CHV+'</span></button>';
+  return '<button class="arow" data-acc="'+k+'"><span>'+ACC[k]+(r.pend?'<small>+'+money(r.pend)+' propina por llegar</small>':'<small>Débito</small>')+'</span><span class="r"><b'+(r.bal<0?' class="neg"':'')+'>'+money(r.bal)+'</b>'+CHV+'</span></button>';}).join('')+'<button class="btn2 full" id="atr">Transferir entre cuentas</button>';
+  $('acard').querySelectorAll('[data-acc]').forEach(b=>b.onclick=()=>{cv=b.dataset.acc;if(!fin(S.acc[cv].start))return go('cuentas',true);rCuenta();go('cuenta',true);});$('atr').onclick=()=>{$('t_amt').value='';go('transfer',true);};}
+ if(view==='cuenta')rCuenta();}
+function rCuenta(){const r=acctBal(S,cv);if(!r)return;TTL.cuenta='Cuenta '+ACC[cv];
+ $('ccard').innerHTML='<p class="muted" style="margin:0">Debería tener</p><div class="big'+(r.bal<0?' neg':'')+'">'+money(r.bal)+'</div>'+(r.pend?'<p class="muted">+'+money(r.pend)+' de propina por llegar mañana.</p>':'')+'<p class="muted">Saldo inicial '+money(S.acc[cv].start)+' el '+new Date(S.acc[cv].since).toLocaleDateString('es-US',{day:'numeric',month:'long'})+'.</p><button class="btn2 full" id="cadj">Ajustar al banco</button>';
+ const now=Date.now();$('clist').innerHTML='<h2>Movimientos</h2>'+(r.moves.length?r.moves.slice(0,60).map(m=>'<div class="row mrow"><div>'+esc(m.txt)+'<small>'+df(m.date)+(new Date(m.date).getTime()>now?' · por llegar':'')+'</small></div><div><b class="'+(m.amount>0?'pos':'')+'">'+(m.amount>0?'+':'')+money(m.amount)+'</b>'+(m.ref.k==='m'?' <button class="x" data-l="Borrar" data-mv="'+m.ref.id+'">Borrar</button>':'')+'</div></div>').join(''):'<p class="muted">Aún no hay movimientos desde el saldo inicial.</p>');
+ $('clist').querySelectorAll('[data-mv]').forEach(b=>arm(b,()=>{S.moves=S.moves.filter(x=>x.id!==b.dataset.mv);save();rAll();toast('Movimiento borrado');}));
+ $('cadj').onclick=()=>{const v=prompt('¿Cuánto dice tu banco que tienes en '+ACC[cv]+'?',r.bal.toFixed(2));if(v===null)return;const n=num(String(v).replace(/^-/,''));if(n===null)return toast('Pon un monto válido');const bank=String(v).trim().startsWith('-')?-n:n,d=r2(bank-r.bal);
+  if(!d)return toast('Ya coincide con el banco');S.moves.push({id:uid(),date:new Date().toISOString(),kind:'adjust',acct:cv,amount:d});save();rAll();toast('Ajustado: '+(d>0?'+':'')+money(d));};}
+$('c_save').onclick=()=>{let ch=0;const now=new Date().toISOString();for(const k of ['spark','pers']){const t=$('c_'+k).value.trim();if(t===''){continue;}const n=num(t);if(n===null)return toast('Revisa el saldo de '+ACC[k]);if(!fin(S.acc[k].start)||S.acc[k].start!==n){S.acc[k]={start:n,since:now};ch++;}}
+ if(!ch)return toast('Pon al menos un saldo');save();rAll();goBack();toast('Cuentas guardadas');};
+$('t_save').onclick=()=>{const f=$('t_from').value,t=$('t_to').value,a=num($('t_amt').value);if(f===t)return toast('Elige dos cuentas distintas');if(a===null||a<=0)return toast('Pon un monto mayor a 0');
+ S.moves.push({id:uid(),date:new Date().toISOString(),kind:'transfer',from:f,to:t,amount:a});save();rAll();goBack();toast('Transferido '+money(a)+' de '+ACC[f]+' a '+ACC[t]);};
+$('t_from').onchange=()=>{$('t_to').value=$('t_from').value==='spark'?'pers':'spark';};
 // ---------- Apartados ----------
 const APN={tax:'Impuestos',emer:'Emergencias',veh:'Vehículo'};
 const apMark=(day,f)=>S.apart.find(m=>m.day===day&&m.fund===f);
@@ -354,26 +412,27 @@ $('addf').onclick=()=>{const o=numO($('fo').value),gl=num($('fg').value),p=num($
 if(o===null||o<0||gl===null||gl<=0||p===null||p<0)return toast('Llena odómetro, galones y lo que pagaste');
 const pg=p/gl;if(pg<0.5||pg>15)return toast('Revisa galones y monto: el precio por galón sale raro');
 if(S.fills.some(f=>f.odo===o))return toast('Ya hay una llenada con ese odómetro');
-const nf={id:uid(),date:new Date().toISOString(),odo:o,gal:gl,paid:p,full:$('ff').checked},w=checkFill(S.fills,nf),sig=[o,gl,p,nf.full].join('|');
+const nf={id:uid(),date:new Date().toISOString(),odo:o,gal:gl,paid:p,full:$('ff').checked,acct:$('fa').value},w=checkFill(S.fills,nf),sig=[o,gl,p,nf.full].join('|');
 if(w&&fw!==sig){fw=sig;return toast(w+' Si es correcto, toca Guardar llenada otra vez.',9000);}
-fw=null;S.fills.push(nf);['fo','fg','fp'].forEach(i=>$(i).value='');$('ff').checked=true;migrate(S);save();rAll();goBack();toast('Llenada guardada');};
-$('addp').onclick=()=>{const a=num($('pa').value);if(a===null||a<=0)return toast('Pon un monto mayor a 0');S.personal.push({id:uid(),date:new Date().toISOString(),amount:a,note:$('pn').value.trim()});$('pa').value='';$('pn').value='';save();rAll();goBack();toast('Gasto guardado');};
+fw=null;S.fills.push(nf);['fo','fg','fp'].forEach(i=>$(i).value='');$('ff').checked=true;$('fa').value='spark';migrate(S);save();rAll();goBack();toast('Llenada guardada');};
+$('addp').onclick=()=>{const a=num($('pa').value);if(a===null||a<=0)return toast('Pon un monto mayor a 0');S.personal.push({id:uid(),date:new Date().toISOString(),amount:a,note:$('pn').value.trim(),acct:$('pacc').value});S.acc.last=$('pacc').value;$('pa').value='';$('pn').value='';save();rAll();goBack();toast('Gasto guardado');};
 $('exp').onclick=()=>{const b=new Blob([JSON.stringify(S,null,2)],{type:'application/json'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download='gastos-spark-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),2000);};
 $('impb').onclick=()=>$('imp').click();
 $('imp').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const j=JSON.parse(r.result);if(!j||typeof j!=='object'||!['shifts','fills','personal'].some(k=>Array.isArray(j[k])))throw 0;const res=mergeIn(S,j),T=o=>o.shifts+o.fills+o.personal,na=T(res.add),nd=T(res.dup);migrate(S);save();rAll();toast(na?'Importado: '+res.add.shifts+' turno(s), '+res.add.fills+' llenada(s), '+res.add.personal+' gasto(s) nuevos'+(nd?'. '+nd+' ya existían.':'.'):'No había nada nuevo: los '+nd+' registro(s) ya existían.',6000);}catch(x){toast('Archivo no válido');}e.target.value='';};r.readAsText(f);};
 $('saver').onclick=()=>{const t=$('rs').value.trim();if(t==='')S.set.reserva=null;else{const r=num(t);if(r===null||r<0||r>5)return toast('Pon un valor entre 0 y 5 $ por milla');S.set.reserva=r;}save();rAll();toast('Reserva guardada');};
 // Navegación: Trabajo y Personal son pestañas; el menú y sus páginas usan el historial del navegador para que el gesto de "atrás" funcione.
-const HV={'':'work','#personal':'pers','#menu':'menu','#turnos':'turnos','#llenadas':'llenadas','#reserva':'reserva','#copia':'copia','#gastos':'gastos','#llenada':'llenada','#gasto':'gasto','#editar':'editar','#apartados-ajustes':'apconf','#apartados':'apart','#empezar':'empezar','#terminar':'terminar'};
-const VID={work:'work',pers:'pers',menu:'menuv',turnos:'v-turnos',llenadas:'v-llenadas',reserva:'v-reserva',copia:'v-copia',gastos:'v-gastos',llenada:'v-llenada',gasto:'v-gasto',editar:'v-editar',apconf:'v-apconf',apart:'v-apart',empezar:'v-empezar',terminar:'v-terminar'};
-const TTL={menu:'Menú',turnos:'Historial de turnos',llenadas:'Llenadas de gasolina',reserva:'Reserva por milla',copia:'Copia de seguridad',gastos:'Gastos personales',llenada:'Registrar llenada',gasto:'Nuevo gasto',editar:'Editar',apconf:'Apartados',apart:'Apartados',empezar:'Empezar turno',terminar:'Terminar turno'};
+const HV={'':'work','#personal':'pers','#menu':'menu','#turnos':'turnos','#llenadas':'llenadas','#reserva':'reserva','#copia':'copia','#gastos':'gastos','#llenada':'llenada','#gasto':'gasto','#editar':'editar','#apartados-ajustes':'apconf','#apartados':'apart','#empezar':'empezar','#terminar':'terminar','#cuentas':'cuentas','#cuenta':'cuenta','#transferir':'transfer'};
+const VID={work:'work',pers:'pers',menu:'menuv',turnos:'v-turnos',llenadas:'v-llenadas',reserva:'v-reserva',copia:'v-copia',gastos:'v-gastos',llenada:'v-llenada',gasto:'v-gasto',editar:'v-editar',apconf:'v-apconf',apart:'v-apart',empezar:'v-empezar',terminar:'v-terminar',cuentas:'v-cuentas',cuenta:'v-cuenta',transfer:'v-transfer'};
+const TTL={menu:'Menú',turnos:'Historial de turnos',llenadas:'Llenadas de gasolina',reserva:'Reserva por milla',copia:'Copia de seguridad',gastos:'Gastos personales',llenada:'Registrar llenada',gasto:'Nuevo gasto',editar:'Editar',apconf:'Apartados',apart:'Apartados',empezar:'Empezar turno',terminar:'Terminar turno',cuentas:'Cuentas',cuenta:'Cuenta',transfer:'Transferir'};
 const fromHash=()=>{const v=HV[location.hash]||'work';return v==='editar'&&!ed?'menu':(v==='terminar'&&!S.active)||(v==='empezar'&&S.active)?'work':v;}; // sin registro elegido (p. ej. al recargar) no hay nada que editar
-const parentOf=v=>v==='empezar'||v==='terminar'?'work':v==='menu'||v==='llenada'?lastTab:v==='gasto'||v==='apart'?'pers':v==='editar'?(ed&&ed.from)||'menu':'menu';
+const parentOf=v=>v==='empezar'||v==='terminar'?'work':v==='menu'||v==='llenada'?lastTab:v==='gasto'||v==='apart'||v==='cuenta'||v==='transfer'?'pers':v==='editar'?(ed&&ed.from)||'menu':'menu';
 function goBack(){if(history.state&&history.state.p)history.back();else go(parentOf(view),false);}
 const UIK=KEY+'_tab',getTab=()=>{try{return localStorage.getItem(UIK)==='pers'?'pers':'work';}catch(e){return 'work';}},putTab=v=>{try{localStorage.setItem(UIK,v);}catch(e){}};
-let view=location.hash?fromHash():getTab(),lastTab=view==='pers'?'pers':(TTL[view]?getTab():'work');
-const vurl=v=>v==='work'?location.pathname+location.search:'#'+({pers:'personal',apconf:'apartados-ajustes',apart:'apartados'}[v]||v);
+let view=location.hash?(location.hash==='#cuenta'?'pers':fromHash()):getTab(), // al recargar no se sabe qué cuenta estaba abierta
+ lastTab=view==='pers'?'pers':(TTL[view]?getTab():'work');
+const vurl=v=>v==='work'?location.pathname+location.search:'#'+({pers:'personal',apconf:'apartados-ajustes',apart:'apartados',transfer:'transferir'}[v]||v);
 if(!location.hash&&view==='pers')history.replaceState(null,'',vurl('pers'));
-if(['#editar','#empezar','#terminar'].includes(location.hash)&&HV[location.hash]!==view)history.replaceState(null,'',vurl(view));
+if(['#editar','#empezar','#terminar','#cuenta'].includes(location.hash)&&HV[location.hash]!==view)history.replaceState(null,'',vurl(view));
 function anim(c){const el=$(VID[view]);el.classList.remove('enter','back');void el.offsetWidth;el.classList.add(c);}
 function go(v,push){if(v==='work'||v==='pers'){lastTab=v;putTab(v);}if(push)history.pushState({p:1},'',vurl(v));else history.replaceState(null,'',vurl(v));const prev=view;view=v;rView();$('app').scrollTo(0,0);if(TTL[v]&&(push||!TTL[prev]))anim('enter');else if(TTL[prev])anim('back');}
 function rView(){const sub=!!TTL[view];Object.keys(VID).forEach(k=>$(VID[k]).hidden=k!==view);
@@ -384,11 +443,11 @@ document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>go(b.dataset.
 document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go,true));
 $('menub').onclick=()=>go('menu',true);
 $('back').onclick=goBack;
-$('actb').onclick=()=>{fw=null;go(view==='pers'?'gasto':'llenada',true);};
+$('actb').onclick=()=>{fw=null;$('pacc').value=S.acc.last;go(view==='pers'?'gasto':'llenada',true);};
 window.addEventListener('popstate',()=>{view=fromHash();if(view==='work'||view==='pers'){lastTab=view;putTab(view);}rView();anim('back');});
 $('app').addEventListener('scroll',()=>$('top').classList.toggle('sc',$('app').scrollTop>4),{passive:true});
 if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost'))navigator.serviceWorker.register('sw.js').catch(()=>{});
-function rAll(){rShift();rStats();rFill();rHist();rPers();rAp();rView();}
+function rAll(){rShift();rStats();rFill();rHist();rPers();rAp();rAcc();rView();}
 $('today').textContent=new Date().toLocaleDateString('es-US',{weekday:'long',day:'numeric',month:'long'});
 rAll();
 </script></body></html>
