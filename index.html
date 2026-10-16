@@ -56,6 +56,7 @@ input:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:
 .row small{color:var(--muted);display:block}
 .x{background:none;border:1px solid transparent;border-radius:6px;color:var(--muted);font:inherit;font-size:13px;padding:6px 8px;min-height:36px}.x.armed,.link.armed{color:var(--bad);border-color:var(--bad)}.link.armed{text-decoration:none;padding:6px 10px;border-radius:6px;border:1px solid}
 .neg{color:var(--bad)}
+#dcard .arow:first-child,#updcard .arow:first-child{border-top:0;padding-top:0}#dcard .arow:last-child,#updcard .arow:last-child{padding-bottom:0}#dcard .arow b{font-size:19px;font-weight:700}#dcard b.ok,#dlist b.ok{color:var(--accent)}#dcard .tip{font-size:13px;margin-top:2px}.tip.ok{color:var(--accent)}
 .chk{display:flex;align-items:center;gap:10px;font-size:15px;color:var(--text);margin-top:12px}.chk input{width:auto;min-height:0;accent-color:var(--accent)}
 .two{display:flex;gap:8px}
 .tabs{position:fixed;left:0;right:0;bottom:0;max-width:640px;margin:0 auto;z-index:5;display:flex;background:var(--glass2);-webkit-backdrop-filter:saturate(180%) blur(16px);backdrop-filter:saturate(180%) blur(16px);border-top:1px solid var(--border);padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px))}
@@ -121,9 +122,10 @@ select{width:100%;-webkit-appearance:none;appearance:none;font:inherit;color:var
 <section class="card" id="stats"></section>
 </main>
 <main id="pers" hidden>
+<section class="card" id="dcard"></section>
+<section class="card" id="updcard" hidden></section>
 <section class="card" id="bkcard" hidden></section>
 <section class="card" id="acard"></section>
-<section class="card" id="dcard"></section>
 <section class="card" id="ccal" hidden></section>
 <section class="card" id="psum"></section>
 <section class="card" id="apcard" hidden></section>
@@ -153,7 +155,7 @@ select{width:100%;-webkit-appearance:none;appearance:none;font:inherit;color:var
 <button class="btn" id="r_save">Guardar</button><button class="link del" id="r_del" data-l="Borrar este pago">Borrar este pago</button>
 <p class="muted">La app te avisa el día del cobro y tú confirmas con un toque. Nada se registra solo.</p></section></main>
 <main id="v-deudas" hidden><div id="dlist"></div><button class="btn2 full" id="dadd" style="margin-bottom:12px">+ Agregar deuda</button></main>
-<main id="v-deuda" hidden><section class="card" id="dhead"></section><section class="card" id="dplanc" hidden></section><section class="card" id="dmov"></section></main>
+<main id="v-deuda" hidden><section class="card" id="dhead"></section><section class="card" id="dsim" hidden></section><section class="card" id="dplanc" hidden></section><section class="card" id="dmov"></section></main>
 <main id="v-dedit" hidden><section class="card"><label for="d_name">Nombre</label><input id="d_name" autocomplete="off">
 <label for="d_kind">Tipo</label><span class="sel"><select id="d_kind"><option value="card">Tarjeta de crédito</option><option value="affirm">Pagos a plazos (Affirm)</option></select></span>
 <label for="d_bal">Cuánto debes hoy ($)</label><input id="d_bal" inputmode="decimal" autocomplete="off" placeholder="Lo que dice la app del banco"><p class="muted" id="d_balh">Desde hoy la app suma tus compras con esta tarjeta y resta tus pagos.</p>
@@ -185,7 +187,7 @@ select{width:100%;-webkit-appearance:none;appearance:none;font:inherit;color:var
 <main id="v-gasto" hidden><section class="card"><label for="pa">Monto ($)</label><input id="pa" inputmode="decimal" autocomplete="off">
 <label for="pacc">Pagado con</label><span class="sel"><select id="pacc"></select></span>
 <label for="pcat">Categoría</label><span class="sel"><select id="pcat"></select></span>
-<label for="pn">En qué (luz, mercado, renta...)</label><input id="pn" autocomplete="off">
+<label for="pn">En qué (opcional)</label><input id="pn" autocomplete="off">
 <button class="btn" id="addp">Agregar gasto</button><p class="muted">No anotes aquí la gasolina del carro: ya se cuenta en Trabajo.</p></section></main>
 <main id="v-editar" hidden><section class="card" id="edc"></section></main>
 <main id="v-turnos" hidden><div id="list"></div></main>
@@ -437,6 +439,7 @@ $('fills').innerHTML=f.length?f.map(x=>'<div class="row"><div>'+df(x.date)+'<sma
 $('rs').value=fin(S.set.reserva)?S.set.reserva:'';
 $('rnow').textContent='Ahora: '+money(rate(S))+' por milla. Aplica solo a turnos nuevos; los anteriores conservan la suya.';
 $('rtot').textContent='Reserva acumulada de todos los turnos: '+money(resTotal(S));}
+let PL={left:null,mes:''}; // balance del mes (lo calcula rPers, lo muestra el resumen de arriba)
 function rPers(){const p=period('month'),x=sumP(S,p),P=S.personal.filter(i=>fin(i.amount)&&okd(i.date)&&inP(i.date,p));
 const G=P.filter(i=>i.type!=='ingreso'),I=P.filter(i=>i.type==='ingreso'),pt=G.reduce((a,i)=>a+i.amount,0),pi=I.reduce((a,i)=>a+i.amount,0);
 // Balance del mes = dinero que entró − dinero que salió de tus cuentas en el mes (débito/efectivo). Las compras con tarjeta
@@ -453,6 +456,7 @@ const isCard=a=>typeof a==='string'&&a.startsWith('debt:'),
  resv=estRv+toAh,costs=S.moves.filter(m=>m.kind==='transfer'&&fin(m.fee)&&okd(m.date)&&inP(m.date,p)).reduce((a,m)=>a+m.fee,0), // comisiones de transferencias (salen de la cuenta)
  any=x.n||P.length||gasPaid||pays,left=any?x.e+pi-gasPaid-resv-ptCash-pays-costs:null,
  avK=['spark','pers'].filter(k=>fin(S.acc[k].start)),avail=avK.reduce((a,k)=>a+acctBal(S,k).bal,0),mes=p[0].toLocaleDateString('es-US',{month:'long'});
+PL={left,mes};
 const K=(l,v,c)=>'<div class="k'+(c?' '+c:'')+'"><span>'+l+'</span><b'+(String(v)[0]==='-'?' class="neg"':'')+'>'+v+'</b></div>';
 $('psum').innerHTML='<h2>Resumen de '+p[0].toLocaleDateString('es-US',{month:'long',year:'numeric'})+'</h2><div class="grid">'+K('Ganado (Spark)',money(x.e))+K('Gasolina pagada',money(gasPaid))+K(hasAh?'Reserva del carro':'Reserva (est.)',x.n===0&&!toAh?'—':money(resv))+'<button class="k tap" id="gk" aria-label="Ver gastos personales"><span>Gastos personales<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></span><b>'+money(ptCash)+'</b></button>'+(pi?K('Otros ingresos',money(pi),'wide'):'')+(pays?K('Pagos a deudas',money(pays),'wide'):'')+(costs?K('Comisiones',money(costs),'wide'):'')+
  K('Balance de '+mes,left!==null?money(left):'—','hi wide')+(avK.length?K('Disponible hoy ('+avK.map(k=>ACC[k]).join(' + ')+')',money(avail),'wide'):'')+
@@ -477,7 +481,7 @@ function catBind(sel){let prev=sel.value;sel.onchange=()=>{if(sel.id==='pcat')pa
 // ---------- Pagado con (débitos y tarjetas de crédito) ----------
 const payOpts=(v,none)=>(none?'<option value="">Sin cuenta</option>':'')+'<option value="spark"'+(v==='spark'?' selected':'')+'>Débito Spark</option><option value="pers"'+(v==='pers'?' selected':'')+'>Débito Personal</option><option value="ahorro"'+(v==='ahorro'?' selected':'')+'>Ahorro</option>'+S.debts.map(d=>'<option value="debt:'+d.id+'"'+(v==='debt:'+d.id?' selected':'')+'>'+(d.kind==='affirm'?'':'Crédito ')+esc(d.name)+'</option>').join('');
 function fillSels(){const fa=$('fa').value||'spark';$('fa').innerHTML=payOpts(fa);$('fa').value=[...$('fa').options].some(o=>o.value===fa)?fa:'spark';
- const pa=S.acc.last;$('pacc').innerHTML=payOpts(pa);if(![...$('pacc').options].some(o=>o.value===pa))$('pacc').value='pers';
+ const pa='pers';$('pacc').innerHTML=payOpts(pa);if(![...$('pacc').options].some(o=>o.value===pa))$('pacc').value='pers';
  const lc=S.cats.includes(S.acc.lastCat)&&!isDebtName(S.acc.lastCat)?S.acc.lastCat:S.cats.find(c=>!isDebtName(c))||'';$('pcat').innerHTML=catOpts(lc,false,true);$('pcat').value=lc;catBind($('pcat'));payMode();}
 // Categoría "Pago a <deuda>": el botón dice "Registrar pago" y el campo "En qué" no hace falta
 function payMode(){const pay=$('pcat').value.startsWith('pay:');$('addp').textContent=pay?'Registrar pago':'Agregar gasto';}
@@ -551,21 +555,60 @@ function nextDue(d){if(d.kind==='affirm'){const n=d.plan.filter(x=>!x.paid).sort
  if(!fin(d.due))return null;const t=new Date();t.setHours(12,0,0,0);let x=new Date(t.getFullYear(),t.getMonth(),Math.min(d.due,28)===d.due?d.due:Math.min(d.due,new Date(t.getFullYear(),t.getMonth()+1,0).getDate()),12);if(x<t)x=new Date(t.getFullYear(),t.getMonth()+1,Math.min(d.due,new Date(t.getFullYear(),t.getMonth()+2,0).getDate()),12);return{date:x.toISOString(),amount:fin(d.min)?d.min:null};}
 function dInfo(d,r){const bits=[];if(fin(d.limit)&&d.limit>0)bits.push(Math.round(r.bal/d.limit*100)+'% del límite');const n=nextDue(d);if(n)bits.push('próximo pago '+(n.amount?money(n.amount)+' ':'')+'el '+fd(n.date));
  if(fin(d.apr)&&d.apr>0&&r.bal>0)bits.push('≈ '+money(r.bal*d.apr/100/12)+' de interés al mes');return bits;}
+// Deuda en una fecha pasada: saldo de hoy menos lo que pasó después (solo desde su saldo inicial)
+function debtAt(d,t){const r=debtBal(S,d);if(!r||new Date(d.since).getTime()>t)return null;return r.bal-r.moves.filter(m=>new Date(m.date).getTime()>t).reduce((a,m)=>a+m.amount,0);}
+function debtTotAt(t){const C=S.debts.filter(d=>fin(d.start));if(!C.length)return null;let s=0;for(const d of C){const v=debtAt(d,t);if(v===null)return null;s+=v;}return s;}
+// Recordatorio suave: actualizar cada tarjeta con el banco desde 3 días antes de su día de pago (si no se actualizó en 20 días)
+function updDue(){const now=Date.now(),t=new Date();t.setHours(12,0,0,0);
+ return S.debts.filter(d=>d.kind==='card'&&fin(d.start)&&fin(d.due)).map(d=>{const n=nextDue(d);if(!n)return null;const days=Math.round((new Date(n.date)-t)/864e5),
+  last=Math.max(new Date(d.since).getTime(),d.upd&&okd(d.upd)?new Date(d.upd).getTime():0,...S.moves.filter(m=>m.kind==='dadj'&&m.debt===d.id&&okd(m.date)).map(m=>new Date(m.date).getTime()));
+  return days<=3&&now-last>20*864e5?{d,n,days}:null;}).filter(Boolean);}
+// Simulador: meses e interés total pagando "pay" al mes (sin compras nuevas). null = el pago no alcanza ni para el interés.
+function simPay(bal,apr,pay){const r=apr/1200;let b=bal,n=0,int=0;while(b>0.005&&n<600){const i=b*r;if(pay<=i+0.005)return null;int+=i;b=b+i-pay;n++;}return{n,int};}
+const mesesTxt=n=>n+(n===1?' mes':' meses')+(n>=12?' (≈ '+(n/12).toFixed(1).replace('.0','')+' años)':''),
+ finTxt=n=>{const d=new Date();d.setMonth(d.getMonth()+n);return d.toLocaleDateString('es-US',{month:'long',year:'numeric'});};
 function rDebts(){const conf=S.debts.filter(d=>fin(d.start)),tot=conf.reduce((a,d)=>a+debtBal(S,d).bal,0);
- $('dcard').innerHTML='<button class="arow" id="dgo" style="padding:0"><span>'+(conf.length?'Debo en total':'Deudas')+'<small>'+(conf.length?conf.map(d=>esc(d.name)).join(' · '):'Pon el saldo de tus tarjetas y Affirm')+'</small></span><span class="r">'+(conf.length?'<b class="neg">'+money(tot)+'</b>':'')+CHV+'</span></button>';$('dgo').onclick=()=>go('deudas',true);
- $('dlist').innerHTML=(conf.length?'<section class="card"><p class="muted" style="margin:0">Debo en total</p><div class="big neg">'+money(tot)+'</div>'+(S.debts.some(d=>fin(d.apr)&&d.apr>0)?'<p class="muted">Paga primero la de interés (APR) más alto: es la que más te cuesta.</p>':'<p class="muted">Pon el APR de cada tarjeta para saber cuál te cuesta más.</p>')+'</section>':'')+
+ const m0=new Date();m0.setDate(1);m0.setHours(0,0,0,0);const prev=conf.length?debtTotAt(m0.getTime()-1):null,dif=prev===null?0:r2(prev-tot),
+  m0t=new Date(m0.getTime()-1).toLocaleDateString('es-US',{day:'numeric',month:'short'}),
+  tip=dif>=1?'<div class="tip ok">Vas bajando: '+money(dif)+' menos que el '+m0t+'</div>':dif<=-1?'<div class="tip neg">Subió '+money(-dif)+' desde el '+m0t+'</div>':'',
+  avK=ACCK.filter(k=>fin(S.acc[k].start)),have=avK.reduce((a,k)=>a+acctBal(S,k).bal,0),L=PL.left;
+ $('dcard').innerHTML='<button class="arow" id="dgo"><span>'+(conf.length?'Debo en total':'Deudas')+'<small>'+(conf.length?conf.map(d=>esc(d.name)).join(' · '):'Pon el saldo de tus tarjetas y Affirm')+'</small>'+tip+'</span><span class="r">'+(conf.length?'<b class="neg">'+money(tot)+'</b>':'')+CHV+'</span></button>'+
+  (L!==null?'<button class="arow" id="sgo"><span>'+(L<0?'Vas en rojo en '+PL.mes:'Te sobra en '+PL.mes)+'<small>Lo que entró menos todo lo que salió · ver detalle</small></span><span class="r"><b class="'+(L<0?'neg':'ok')+'">'+money(L)+'</b>'+CHV+'</span></button>':'')+
+  (avK.length&&conf.length?'<div class="arow"><span>Patrimonio<small>Tienes '+money(have)+' − debes '+money(tot)+'</small></span><b class="'+(have-tot<0?'neg':'ok')+'">'+money(have-tot)+'</b></div>':'');
+ $('dgo').onclick=()=>go('deudas',true);if($('sgo'))$('sgo').onclick=()=>$('psum').scrollIntoView({behavior:'smooth',block:'start'});
+ const U=updDue(),uc=$('updcard');uc.hidden=!U.length;
+ uc.innerHTML=U.map(u=>'<button class="arow" data-ud="'+u.d.id+'"><span>Actualiza el saldo de '+esc(u.d.name)+' con tu banco<small>'+(u.days>0?'Su pago es el '+fd(u.n.date):'Su pago es hoy')+' · toca para anotar intereses y cargos</small></span>'+CHV+'</button>').join('');
+ uc.querySelectorAll('[data-ud]').forEach(b=>b.onclick=()=>{dv=b.dataset.ud;rDebt();go('deuda',true);setTimeout(()=>$('dupd').click(),350);});
+ // Deudas: total, siguiente paso (con tus números), evolución e intereses pagados
+ const W=conf.map(d=>({d,bal:debtBal(S,d).bal})).filter(x=>x.bal>0.005),A=W.filter(x=>fin(x.d.apr)&&x.d.apr>0).sort((a,b)=>b.d.apr-a.d.apr||a.bal-b.bal);let coach='';
+ if(A.length){const t=A[0],tie=A.filter(x=>x.d.apr===t.d.apr);
+  coach=tie.length>1?tie.map(x=>esc(x.d.name)).join(' y ')+' tienen el mismo interés ('+t.d.apr+'%): paga primero <b>'+esc(t.d.name)+'</b>, la de saldo más chico, para quitártela rápido.'
+   :'Ataca primero <b>'+esc(t.d.name)+'</b>: tiene el interés más alto ('+t.d.apr+'% · ≈ '+money(t.bal*t.d.apr/1200)+' al mes). En las demás paga solo el mínimo.'
+  const noA=W.filter(x=>x.d.kind==='card'&&!(fin(x.d.apr)&&x.d.apr>0));if(noA.length)coach+=' '+noA.map(x=>esc(x.d.name)).join(' y ')+(noA.length>1?' no tienen':' no tiene')+' APR anotado: ponlo en "Editar datos" para compararla.';}
+ else if(W.length)coach='Pon el APR de cada tarjeta para saber cuál te cuesta más.';
+ const s0=conf.length?Math.max(...conf.map(d=>new Date(d.since).getTime())):0,m3=new Date(m0);m3.setMonth(m3.getMonth()-3);const ref=Math.max(s0,m3.getTime()),rT=conf.length?debtTotAt(ref):null,
+  rD=new Date(ref).toLocaleDateString('es-US',{day:'numeric',month:'short'}),evo=rT===null?'':Math.abs(rT-tot)<0.01?'Empezaste a contar el '+rD+' con '+money(rT)+'. Aquí verás cómo baja.':'El '+rD+': '+money(rT)+' → hoy: '+money(tot)+' <b class="'+(tot<rT?'ok':'neg')+'">('+(tot<rT?'bajó ':'subió ')+money(Math.abs(tot-rT))+')</b>',
+  fees=conf.reduce((a,d)=>a+debtBal(S,d).fees,0);
+ $('dlist').innerHTML=(conf.length?'<section class="card"><p class="muted" style="margin:0">Debo en total</p><div class="big neg">'+money(tot)+'</div>'+(coach?'<div class="hero" style="margin-top:10px"><p class="muted">'+coach+'</p></div>':'')+(evo?'<p class="muted">'+evo+'</p>':'')+(fees>0?'<p class="muted">Has pagado <b class="neg">'+money(fees)+'</b> de intereses y cargos desde el '+new Date(Math.min(...conf.map(d=>new Date(d.since).getTime()))).toLocaleDateString('es-US',{day:'numeric',month:'short'})+'. Es dinero perdido.</p>':'')+'</section>':'')+
   S.debts.map(d=>{const r=debtBal(S,d);if(!r)return '<section class="card"><button class="dcard" style="background:none;border:0;padding:0" data-dv="'+d.id+'"><div class="dtop"><h2>'+esc(d.name)+'</h2><span class="muted">Poner saldo ›</span></div></button></section>';
   const pct=fin(d.limit)&&d.limit>0?Math.min(100,r.bal/d.limit*100):null;
   return '<section class="card"><button class="dcard" style="background:none;border:0;padding:0" data-dv="'+d.id+'"><div class="dtop"><h2>'+esc(d.name)+'</h2><b>'+money(r.bal)+'</b></div>'+(pct!==null?'<div class="cbar"><i class="'+(pct<30?'ok':'')+'" style="width:'+Math.max(2,pct)+'%"></i></div>':'')+'<p class="muted">'+dInfo(d,r).join(' · ')+'</p></button></section>';}).join('');
  $('dlist').querySelectorAll('[data-dv]').forEach(b=>b.onclick=()=>{dv=b.dataset.dv;const d=S.debts.find(x=>x.id===dv);if(!fin(d.start)){openDEdit(d);return;}rDebt();go('deuda',true);});
  if(view==='deuda')rDebt();}
 function rDebt(){const d=S.debts.find(x=>x.id===dv);if(!d)return;const r=debtBal(S,d);if(!r)return;TTL.deuda=d.name;
- $('dhead').innerHTML='<p class="muted" style="margin:0">Debes</p><div class="big neg">'+money(r.bal)+'</div><p class="muted">'+dInfo(d,r).join(' · ')+'</p>'+(r.fees?'<p class="muted">Intereses y cargos anotados: <b class="neg">'+money(r.fees)+'</b></p>':'')+
+ $('dhead').innerHTML='<p class="muted" style="margin:0">Debes</p><div class="big neg">'+money(r.bal)+'</div><p class="muted">'+dInfo(d,r).join(' · ')+'</p>'+(r.fees?'<p class="muted">Has pagado <b class="neg">'+money(r.fees)+'</b> de intereses y cargos desde el '+fd(d.since)+'. Es dinero perdido.</p>':'')+
   '<div class="btnrow"><button class="btn" id="dpay">Pagar</button><button class="btn2" id="dupd">Actualizar con el banco</button></div>'+(d.kind==='affirm'?'<button class="btn2 full" id="dbuy">+ Agregar compra a Affirm</button>':'')+'<button class="link" id="dedit">Editar datos</button>';
  $('dpay').onclick=()=>openPay(d,null);$('dedit').onclick=()=>openDEdit(d);
+ const sc2=$('dsim');sc2.hidden=!(fin(d.apr)&&r.bal>0.005);
+ if(!sc2.hidden){sc2.innerHTML='<h2 class="wk">¿Y si pago más?<small>Cuánto tardas en terminarla y cuánto pagas de interés (sin compras nuevas).</small></h2><label for="s_amt">Si pago al mes ($)</label><input id="s_amt" inputmode="decimal" autocomplete="off" value="'+(fin(d.min)?d.min:'')+'"><p class="muted" id="s_out"></p>';
+  const out=()=>{const pay=num($('s_amt').value),o=$('s_out');if(pay===null||pay<=0){o.innerHTML='Escribe cuánto pagarías al mes.';return;}const x=simPay(r.bal,d.apr,pay);
+   if(!x){o.innerHTML='<b class="neg">Con '+money(pay)+' al mes nunca la terminas: el interés (≈ '+money(r.bal*d.apr/1200)+' al mes) se come el pago.</b>';return;}
+   let t='La terminas en <b>'+mesesTxt(x.n)+'</b>, para '+finTxt(x.n)+', y pagas <b class="neg">'+money(x.int)+'</b> de interés.';
+   if(fin(d.min)&&d.min>0&&Math.abs(pay-d.min)>0.005){const y=simPay(r.bal,d.apr,d.min);t+=y?' Con el mínimo ('+money(d.min)+'): '+mesesTxt(y.n)+' y '+money(y.int)+' de interés'+(y.int>x.int?' → te ahorras <b>'+money(y.int-x.int)+'</b>.':'.'):' Con el mínimo ('+money(d.min)+') nunca la terminarías.';}
+   o.innerHTML=t;};$('s_amt').oninput=out;out();}
  if($('dbuy'))$('dbuy').onclick=()=>{fw=null;fillSels();$('pacc').value='debt:'+d.id;go('gasto',true);};
- $('dupd').onclick=()=>{const v=prompt('¿Cuánto dice la app del banco que debes en '+d.name+'?',r.bal.toFixed(2));if(v===null)return;const n=num(v);if(n===null)return toast('Pon un monto válido');const x=r2(n-r.bal);
-  if(!x)return toast('Ya coincide con el banco');S.moves.push({id:uid(),date:new Date().toISOString(),kind:'dadj',debt:d.id,amount:x});save();rAll();toast(x>0?'Anotado: '+money(x)+' de intereses y cargos':'Anotado: '+money(-x)+' de crédito del banco');};
+ $('dupd').onclick=()=>{const v=prompt('¿Cuánto dice la app del banco que debes en '+d.name+'?',r.bal.toFixed(2));if(v===null)return;const n=num(v);if(n===null)return toast('Pon un monto válido');const x=r2(n-r.bal);d.upd=new Date().toISOString(); // quita el recordatorio hasta el próximo pago
+  if(!x){save();rAll();return toast('Ya coincide con el banco');}S.moves.push({id:uid(),date:new Date().toISOString(),kind:'dadj',debt:d.id,amount:x});save();rAll();toast(x>0?'Anotado: '+money(x)+' de intereses y cargos':'Anotado: '+money(-x)+' de crédito del banco');};
  const pc=$('dplanc');pc.hidden=d.kind!=='affirm';
  if(d.kind==='affirm'){const pl=d.plan.slice().sort((a,b)=>a.date<b.date?-1:1),pend=pl.filter(x=>!x.paid),done=pl.filter(x=>x.paid).slice(-5);
   pc.innerHTML='<h2 class="wk">Próximos pagos<small>'+(pend.length?pend.length+' pendiente(s) · '+money(pend.reduce((a,x)=>a+x.amount,0)):'Ninguno anotado')+'</small></h2>'+pend.concat(done).map(x=>'<div class="plan'+(x.paid?' done':'')+'"><span>'+new Date(x.date+'T12:00:00').toLocaleDateString('es-US',{weekday:'short',day:'numeric',month:'short'})+'<small>'+(x.paid?'Pagado':'Pendiente')+'</small></span><span class="r"><b>'+money(x.amount)+'</b> '+(x.paid?'':'<button class="x" data-pp="'+x.id+'">Pagado ✓</button><button class="x" data-l="Quitar" data-pd="'+x.id+'">Quitar</button>')+'</span></div>').join('')+'<button class="btn2 full" id="dpladd">+ Agregar pago programado</button>';
