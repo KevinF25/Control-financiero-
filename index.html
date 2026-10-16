@@ -467,15 +467,17 @@ $('pcats').hidden=!cs.length;$('pcats').innerHTML='<h2 class="wk">En qué gastas
 $('ms-gastos').textContent=money(pt)+' este mes';}
 let fw=null;
 // ---------- Categorías ----------
-const catOpts=(v,none,pay)=>(none?'<option value="">Sin categoría</option>':'')+S.cats.map(c=>'<option'+(c===v?' selected':'')+'>'+esc(c)+'</option>').join('')+'<option value="__new">+ Nueva categoría…</option>'
+const isDebtName=c=>S.debts.some(d=>d.name.trim().toLowerCase()===c.trim().toLowerCase());
+const catOpts=(v,none,pay)=>(none?'<option value="">Sin categoría</option>':'')+S.cats.filter(c=>!pay||!isDebtName(c)).map(c=>'<option'+(c===v?' selected':'')+'>'+esc(c)+'</option>').join('')+'<option value="__new">+ Nueva categoría…</option>'
  +(pay&&S.debts.length?'<optgroup label="Pago a deuda (baja la deuda, no es gasto)">'+S.debts.map(d=>'<option value="pay:'+d.id+'">Pago a '+esc(d.name)+'</option>').join('')+'</optgroup>':''); // en "Agregar gasto": elegir la deuda registra un pago
 function catBind(sel){let prev=sel.value;sel.onchange=()=>{if(sel.id==='pcat')payMode();if(sel.value!=='__new'){prev=sel.value;return;}const n=(prompt('Nombre de la nueva categoría')||'').trim();
- if(!n){sel.value=prev;return;}let c=S.cats.find(x=>x.toLowerCase()===n.toLowerCase());if(!c){S.cats.push(n);c=n;save();}sel.innerHTML=catOpts(c,sel.id==='e_cat',sel.id==='pcat');sel.value=c;prev=c;if(sel.id==='pcat')payMode();toast('Categoría "'+c+'" lista');};}
+ if(!n){sel.value=prev;return;}const dd=sel.id==='pcat'&&S.debts.find(d=>d.name.trim().toLowerCase()===n.toLowerCase());
+ if(dd){sel.value='pay:'+dd.id;prev=sel.value;payMode();return toast('Ya existe: "Pago a '+dd.name+'"');}let c=S.cats.find(x=>x.toLowerCase()===n.toLowerCase());if(!c){S.cats.push(n);c=n;save();}sel.innerHTML=catOpts(c,sel.id==='e_cat',sel.id==='pcat');sel.value=c;prev=c;if(sel.id==='pcat')payMode();toast('Categoría "'+c+'" lista');};}
 // ---------- Pagado con (débitos y tarjetas de crédito) ----------
 const payOpts=(v,none)=>(none?'<option value="">Sin cuenta</option>':'')+'<option value="spark"'+(v==='spark'?' selected':'')+'>Débito Spark</option><option value="pers"'+(v==='pers'?' selected':'')+'>Débito Personal</option><option value="ahorro"'+(v==='ahorro'?' selected':'')+'>Ahorro</option>'+S.debts.map(d=>'<option value="debt:'+d.id+'"'+(v==='debt:'+d.id?' selected':'')+'>'+(d.kind==='affirm'?'':'Crédito ')+esc(d.name)+'</option>').join('');
 function fillSels(){const fa=$('fa').value||'spark';$('fa').innerHTML=payOpts(fa);$('fa').value=[...$('fa').options].some(o=>o.value===fa)?fa:'spark';
  const pa=S.acc.last;$('pacc').innerHTML=payOpts(pa);if(![...$('pacc').options].some(o=>o.value===pa))$('pacc').value='pers';
- const lc=S.cats.includes(S.acc.lastCat)?S.acc.lastCat:S.cats[0]||'';$('pcat').innerHTML=catOpts(lc,false,true);$('pcat').value=lc;catBind($('pcat'));payMode();}
+ const lc=S.cats.includes(S.acc.lastCat)&&!isDebtName(S.acc.lastCat)?S.acc.lastCat:S.cats.find(c=>!isDebtName(c))||'';$('pcat').innerHTML=catOpts(lc,false,true);$('pcat').value=lc;catBind($('pcat'));payMode();}
 // Categoría "Pago a <deuda>": el botón dice "Registrar pago" y el campo "En qué" no hace falta
 function payMode(){const pay=$('pcat').value.startsWith('pay:');$('addp').textContent=pay?'Registrar pago':'Agregar gasto';}
 // ---------- Calculadora de ofertas ----------
