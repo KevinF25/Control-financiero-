@@ -119,6 +119,7 @@ select{width:100%;-webkit-appearance:none;appearance:none;font:inherit;color:var
 <section class="card" id="stats"></section>
 </main>
 <main id="pers" hidden>
+<section class="card" id="bkcard" hidden></section>
 <section class="card" id="acard"></section>
 <section class="card" id="dcard"></section>
 <section class="card" id="ccal" hidden></section>
@@ -159,10 +160,14 @@ select{width:100%;-webkit-appearance:none;appearance:none;font:inherit;color:var
 <main id="v-cuentas" hidden><section class="card"><p class="muted" style="margin-top:0">Pon cuánto tienes <b>hoy</b> en cada tarjeta de débito (lo que dice tu banco). Desde ahora la app suma tus ganancias de Spark y resta tu gasolina, gastos y transferencias para decirte cuánto deberías tener.</p>
 <label for="c_spark">Débito Spark (donde Spark deposita)</label><input id="c_spark" inputmode="decimal" autocomplete="off" placeholder="Ej. 250.00">
 <label for="c_pers">Débito Personal</label><input id="c_pers" inputmode="decimal" autocomplete="off" placeholder="Ej. 400.00">
+<div class="pair"><div><label for="c_fpct">Comisión instantánea (%)</label><input id="c_fpct" inputmode="decimal" autocomplete="off"></div><div><label for="c_fmin">Comisión mínima ($)</label><input id="c_fmin" inputmode="decimal" autocomplete="off"></div></div>
 <button class="btn" id="c_save">Guardar</button><p class="muted">Lo que registraste antes de hoy no cambia estos saldos. Si después no coincide con el banco, usa "Ajustar al banco" en la cuenta.</p></section></main>
 <main id="v-cuenta" hidden><section class="card" id="ccard"></section><section class="card" id="clist"></section></main>
 <main id="v-transfer" hidden><section class="card"><div class="pair"><div><label for="t_from">Desde</label><span class="sel"><select id="t_from"><option value="spark">Débito Spark</option><option value="pers">Débito Personal</option></select></span></div><div><label for="t_to">Hacia</label><span class="sel"><select id="t_to"><option value="pers">Débito Personal</option><option value="spark">Débito Spark</option></select></span></div></div>
-<label for="t_amt">Monto ($)</label><input id="t_amt" inputmode="decimal" autocomplete="off"><button class="btn" id="t_save">Transferir</button><p class="muted">Una transferencia no es un gasto: el dinero solo cambia de cuenta.</p></section></main>
+<label for="t_amt">Monto ($)</label><input id="t_amt" inputmode="decimal" autocomplete="off">
+<label class="swrow" for="t_inst" id="t_instw" style="margin-top:14px">Transferencia instantánea<input type="checkbox" class="sw" id="t_inst"></label>
+<div id="t_feebox"><span class="sel"><select id="t_mode"><option value="aparte">One cobra la comisión aparte</option><option value="resta">One la resta de lo que llega</option></select></span><div class="hero fi" style="margin:10px 0 0" id="t_prev"></div></div>
+<button class="btn" id="t_save">Transferir</button><p class="muted">Una transferencia no es un gasto: el dinero solo cambia de cuenta.</p></section></main>
 <main id="v-llenada" hidden><div class="hero fi" id="fillinfo"></div><section class="card">
 <label for="fo">Odómetro</label><input id="fo" inputmode="decimal" autocomplete="off">
 <div class="pair"><div><label for="fg">Galones</label><input id="fg" inputmode="decimal" autocomplete="off"></div><div><label for="fp">Cuánto pagaste ($)</label><input id="fp" inputmode="decimal" autocomplete="off"></div></div>
@@ -187,7 +192,10 @@ select{width:100%;-webkit-appearance:none;appearance:none;font:inherit;color:var
 <button class="btn" id="ap_save">Guardar</button></section></main>
 <main id="v-apart" hidden><section class="card" id="apsum"></section><div id="aplist"></div></main>
 <main id="v-reserva" hidden><section class="card"><label for="rs">Dólares por milla para mantenimiento, llantas y reparaciones</label><input id="rs" inputmode="decimal" placeholder="Ej. 0.15"><button class="btn" id="saver">Guardar</button><p class="muted" id="rnow"></p><p class="muted" id="rtot"></p></section></main>
-<main id="v-copia" hidden><section class="card"><div class="two"><button class="btn2" id="exp">Exportar</button><button class="btn2" id="impb">Importar</button></div><input type="file" id="imp" accept="application/json,.json" hidden><p class="muted">Importar suma lo que falte; nunca borra lo que ya tienes.</p></section></main>
+<main id="v-copia" hidden><section class="card"><p class="muted" style="margin:0">Última copia</p><div class="big" id="bklast" style="font-size:26px"></div>
+<p class="muted">Tus datos solo viven en este teléfono. Si se pierde o se borra la app, se pierden. Guarda una copia cada semana.</p>
+<button class="btn" id="exp">Guardar copia</button><p class="muted">En el iPhone se abre el menú de compartir: elige <b>Guardar en Archivos → iCloud Drive</b> (o mándatela por correo).</p></section>
+<section class="card"><h2>Restaurar una copia</h2><button class="btn2 full" id="impb">Elegir archivo de copia</button><input type="file" id="imp" accept="application/json,.json" hidden><p class="muted">Antes de importar te muestra qué se va a agregar. Importar solo suma lo que falta; nunca borra ni cambia lo que ya tienes.</p></section></main>
 </div></div>
 <script>
 //LOGIC-START
@@ -241,7 +249,10 @@ function norm(raw){const o=raw&&typeof raw==='object'?raw:{},A=a=>Array.isArray(
  recs:A(o.recs).filter(ob).map(r=>({...r,id:r.id||uid(),freq:['week','month','year'].includes(r.freq)?r.freq:'month'})), // pagos recurrentes (suscripciones y facturas)
  debts:Array.isArray(o.debts)?o.debts.filter(ob).map(d=>({...d,id:d.id||uid(),kind:d.kind==='affirm'?'affirm':'card',name:String(d.name||'Deuda'),plan:A(d.plan).filter(ob).map(x=>({...x,id:x.id||uid()}))})):DEBTS0(), // deudas (tarjetas de crédito y Affirm)
  range:['day','week','month'].includes(o.range)?o.range:'week',
- set:{reserva:fin(st.reserva)&&st.reserva>=0&&st.reserva<=5?st.reserva:null,ap:normAp(st.ap)}};}
+ set:{reserva:fin(st.reserva)&&st.reserva>=0&&st.reserva<=5?st.reserva:null,ap:normAp(st.ap),lastBackup:st.lastBackup&&okd(st.lastBackup)?st.lastBackup:null,
+  fee:{pct:ob(st.fee)&&fin(st.fee.pct)&&st.fee.pct>=0&&st.fee.pct<=10?st.fee.pct:1.75,min:ob(st.fee)&&fin(st.fee.min)&&st.fee.min>=0?st.fee.min:0.25,mode:ob(st.fee)&&st.fee.mode==='resta'?'resta':'aparte',inst:!(ob(st.fee)&&st.fee.inst===false)}}};}
+// Comisión de transferencia instantánea desde One (Spark): % del monto con un mínimo. Editable en Ajustes → Cuentas.
+const feeOf=(D,a)=>Math.round(Math.max(D.set.fee.min,a*D.set.fee.pct/100)*100)/100;
 // Calendario de cobros: suscripciones, día de pago de tarjetas y pagos de Affirm entre "from" y "to" (días locales, "to" excluido).
 // Nada se registra solo: una suscripción está "hecha" cuando el dueño confirmó el gasto; una tarjeta, cuando hay un pago cerca de la fecha.
 const dim=(y,m)=>new Date(y,m+1,0).getDate();
@@ -274,7 +285,9 @@ function acctMoves(D,k){const a=D.acc[k];if(!fin(a.start))return[];const t0=new 
   add(s.end,s.earned-tip,'Spark'+(tip?' (pago base)':''),{k:'s',id:s.id});if(tip)add(next.toISOString(),tip,'Spark (propina)',{k:'s',id:s.id});});
  D.fills.filter(f=>vf(f)&&f.acct===k).forEach(f=>add(f.date,-f.paid,'Gasolina',{k:'f',id:f.id}));
  D.personal.filter(p=>fin(p.amount)&&okd(p.date)&&p.acct===k).forEach(p=>add(p.date,p.type==='ingreso'?p.amount:-p.amount,p.note||(p.type==='ingreso'?'Ingreso':'Gasto'),{k:'p',id:p.id}));
- D.moves.filter(m=>fin(m.amount)&&okd(m.date)).forEach(m=>{if(m.kind==='transfer'){if(m.from===k)add(m.date,-m.amount,'Transferencia a '+ACC[m.to],{k:'m',id:m.id});if(m.to===k)add(m.date,m.amount,'Transferencia de '+ACC[m.from],{k:'m',id:m.id});}
+ D.moves.filter(m=>fin(m.amount)&&okd(m.date)).forEach(m=>{if(m.kind==='transfer'){const fee=fin(m.fee)&&m.fee>0?m.fee:0,resta=m.feeMode==='resta'; // "amount" = lo que sale de la cuenta de origen
+   if(m.from===k){add(m.date,-m.amount,'Transferencia a '+ACC[m.to],{k:'m',id:m.id});if(fee&&!resta)add(m.date,-fee,'Comisión transferencia instantánea',{k:'m',id:m.id});}
+   if(m.to===k)add(m.date,m.amount-(resta?fee:0),'Transferencia de '+ACC[m.from]+(fee&&resta?' (menos comisión)':''),{k:'m',id:m.id});}
   else if(m.kind==='adjust'&&m.acct===k)add(m.date,m.amount,'Ajuste al banco',{k:'m',id:m.id});
   else if(m.kind==='pay'&&m.from===k){const d=D.debts.find(x=>x.id===m.debt);add(m.date,-m.amount,'Pago '+(d?d.name:'deuda'),{k:'m',id:m.id});}});
  return M.sort((x,y)=>new Date(y.date)-new Date(x.date));}
@@ -410,7 +423,6 @@ $('fsum').innerHTML=$('fillinfo').innerHTML;
 $('ms-turnos').textContent=l.length?l.length+' turno(s)':'Sin turnos';
 $('ms-llenadas').textContent=g.pending?(f.length?f.length+' llenada(s)':'Sin llenadas'):g.mpg.toFixed(1)+' MPG · '+money(g.cpm)+' por milla';
 $('ms-reserva').textContent=money(rate(S))+' por milla · '+money(resTotal(S))+' acumulado';
-$('ms-copia').textContent='Exportar o importar tus datos';
 $('fills').innerHTML=f.length?f.map(x=>'<div class="row"><div>'+df(x.date)+'<small>'+x.odo+' mi · '+x.gal+' gal'+(x.full===false?' · parcial':'')+'</small></div><div><b>'+money(x.paid)+'</b> <button class="x" data-e="'+x.id+'">Editar</button></div></div>').join(''):'<p class="muted">Aún no hay llenadas.</p>';
 [['list','s'],['fills','f']].forEach(([c,k])=>$(c).querySelectorAll('[data-e]').forEach(b=>b.onclick=()=>openEd(k,b.dataset.e)));
 $('rs').value=fin(S.set.reserva)?S.set.reserva:'';
@@ -545,23 +557,31 @@ let cv='spark'; // cuenta abierta en la página de detalle
 const CHV='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>';
 function rAcc(){const conf=['spark','pers'].some(k=>fin(S.acc[k].start));
  $('ms-cuentas').textContent=conf?['spark','pers'].filter(k=>fin(S.acc[k].start)).map(k=>ACC[k]+' '+money(acctBal(S,k).bal)).join(' · '):'Sin configurar';
- $('c_spark').value=fin(S.acc.spark.start)?S.acc.spark.start:'';$('c_pers').value=fin(S.acc.pers.start)?S.acc.pers.start:'';
+ $('c_fpct').value=S.set.fee.pct;$('c_fmin').value=S.set.fee.min;$('c_spark').value=fin(S.acc.spark.start)?S.acc.spark.start:'';$('c_pers').value=fin(S.acc.pers.start)?S.acc.pers.start:'';
  if(!conf){$('acard').innerHTML='<h2>Cuentas</h2><p class="muted">Pon el saldo de tus tarjetas de débito y la app te dirá cuánto deberías tener en cada una.</p><button class="btn2 full" id="acfg">Configurar cuentas</button>';$('acfg').onclick=()=>go('cuentas',true);}
  else{$('acard').innerHTML='<h2 class="wk">Cuentas<small>Debería tener (según lo que registraste)</small></h2>'+['spark','pers'].map(k=>{const r=acctBal(S,k);if(!r)return '<button class="arow" data-acc="'+k+'"><span>'+ACC[k]+'<small>Sin saldo inicial</small></span><span class="r">'+CHV+'</span></button>';
   return '<button class="arow" data-acc="'+k+'"><span>'+ACC[k]+(r.pend?'<small>+'+money(r.pend)+' propina por llegar</small>':'<small>Débito</small>')+'</span><span class="r"><b'+(r.bal<0?' class="neg"':'')+'>'+money(r.bal)+'</b>'+CHV+'</span></button>';}).join('')+'<button class="btn2 full" id="atr">Transferir entre cuentas</button>';
-  $('acard').querySelectorAll('[data-acc]').forEach(b=>b.onclick=()=>{cv=b.dataset.acc;if(!fin(S.acc[cv].start))return go('cuentas',true);rCuenta();go('cuenta',true);});$('atr').onclick=()=>{$('t_amt').value='';go('transfer',true);};}
+  $('acard').querySelectorAll('[data-acc]').forEach(b=>b.onclick=()=>{cv=b.dataset.acc;if(!fin(S.acc[cv].start))return go('cuentas',true);rCuenta();go('cuenta',true);});$('atr').onclick=openTransfer;}
  if(view==='cuenta')rCuenta();}
 function rCuenta(){const r=acctBal(S,cv);if(!r)return;TTL.cuenta='Cuenta '+ACC[cv];
- $('ccard').innerHTML='<p class="muted" style="margin:0">Debería tener</p><div class="big'+(r.bal<0?' neg':'')+'">'+money(r.bal)+'</div>'+(r.pend?'<p class="muted">+'+money(r.pend)+' de propina por llegar mañana.</p>':'')+'<p class="muted">Saldo inicial '+money(S.acc[cv].start)+' el '+new Date(S.acc[cv].since).toLocaleDateString('es-US',{day:'numeric',month:'long'})+'.</p><button class="btn2 full" id="cadj">Ajustar al banco</button>';
+ $('ccard').innerHTML='<p class="muted" style="margin:0">Debería tener</p><div class="big'+(r.bal<0?' neg':'')+'">'+money(r.bal)+'</div>'+(r.pend?'<p class="muted">+'+money(r.pend)+' de propina por llegar mañana.</p>':'')+(()=>{const p=period('month'),fs=S.moves.filter(m=>m.kind==='transfer'&&m.from===cv&&fin(m.fee)&&inP(m.date,p)).reduce((a,m)=>a+m.fee,0);return fs?'<p class="muted">Comisiones de transferencias este mes: <b class="neg">'+money(fs)+'</b></p>':'';})()+'<p class="muted">Saldo inicial '+money(S.acc[cv].start)+' el '+new Date(S.acc[cv].since).toLocaleDateString('es-US',{day:'numeric',month:'long'})+'.</p><button class="btn2 full" id="cadj">Ajustar al banco</button>';
  const now=Date.now();$('clist').innerHTML='<h2>Movimientos</h2>'+(r.moves.length?r.moves.slice(0,60).map(m=>'<div class="row mrow"><div>'+esc(m.txt)+'<small>'+df(m.date)+(new Date(m.date).getTime()>now?' · por llegar':'')+'</small></div><div><b class="'+(m.amount>0?'pos':'')+'">'+(m.amount>0?'+':'')+money(m.amount)+'</b>'+(m.ref.k==='m'?' <button class="x" data-l="Borrar" data-mv="'+m.ref.id+'">Borrar</button>':'')+'</div></div>').join(''):'<p class="muted">Aún no hay movimientos desde el saldo inicial.</p>');
  $('clist').querySelectorAll('[data-mv]').forEach(b=>arm(b,()=>{S.moves=S.moves.filter(x=>x.id!==b.dataset.mv);save();rAll();toast('Movimiento borrado');}));
  $('cadj').onclick=()=>{const v=prompt('¿Cuánto dice tu banco que tienes en '+ACC[cv]+'?',r.bal.toFixed(2));if(v===null)return;const n=num(String(v).replace(/^-/,''));if(n===null)return toast('Pon un monto válido');const bank=String(v).trim().startsWith('-')?-n:n,d=r2(bank-r.bal);
   if(!d)return toast('Ya coincide con el banco');S.moves.push({id:uid(),date:new Date().toISOString(),kind:'adjust',acct:cv,amount:d});save();rAll();toast('Ajustado: '+(d>0?'+':'')+money(d));};}
-$('c_save').onclick=()=>{let ch=0;const now=new Date().toISOString();for(const k of ['spark','pers']){const t=$('c_'+k).value.trim();if(t===''){continue;}const n=num(t);if(n===null)return toast('Revisa el saldo de '+ACC[k]);if(!fin(S.acc[k].start)||S.acc[k].start!==n){S.acc[k]={start:n,since:now};ch++;}}
- if(!ch)return toast('Pon al menos un saldo');save();rAll();goBack();toast('Cuentas guardadas');};
+$('c_save').onclick=()=>{let ch=0;const now=new Date().toISOString();{const fp=num($('c_fpct').value),fm=num($('c_fmin').value);if(fp===null||fp>10)return toast('La comisión va de 0 a 10%');if(fm===null)return toast('Revisa la comisión mínima');if(fp!==S.set.fee.pct||fm!==S.set.fee.min){S.set.fee.pct=fp;S.set.fee.min=fm;ch++;}}for(const k of ['spark','pers']){const t=$('c_'+k).value.trim();if(t===''){continue;}const n=num(t);if(n===null)return toast('Revisa el saldo de '+ACC[k]);if(!fin(S.acc[k].start)||S.acc[k].start!==n){S.acc[k]={start:n,since:now};ch++;}}
+ if(!ch)return toast('No hay cambios');save();rAll();goBack();toast('Cuentas guardadas');};
+// Transferencia: si sale de Spark (One) puede ser instantánea con comisión; se muestra antes de guardar cuánto sale y cuánto llega.
+function tPrev(){const f=$('t_from').value,inst=f==='spark'&&$('t_inst').checked,a=num($('t_amt').value);$('t_instw').hidden=f!=='spark';$('t_feebox').hidden=!inst;
+ if(!inst)return;const fe=S.set.fee;if(a===null||a<=0){$('t_prev').innerHTML='<p class="muted">Comisión: '+fe.pct+'% (mínimo '+money(fe.min)+')</p>';return;}
+ const c=feeOf(S,a),resta=$('t_mode').value==='resta';$('t_prev').innerHTML='<p class="muted">Comisión <b>'+money(c)+'</b> · Sale de Spark <b>'+money(resta?a:a+c)+'</b> · Llega a '+ACC[$('t_to').value]+' <b>'+money(resta?a-c:a)+'</b></p>';}
+['t_amt','t_inst','t_mode','t_to'].forEach(i=>{$(i).oninput=tPrev;$(i).onchange=tPrev;});
+$('t_from').onchange=()=>{$('t_to').value=$('t_from').value==='spark'?'pers':'spark';tPrev();};
+function openTransfer(){$('t_amt').value='';$('t_inst').checked=S.set.fee.inst;$('t_mode').value=S.set.fee.mode;tPrev();go('transfer',true);}
 $('t_save').onclick=()=>{const f=$('t_from').value,t=$('t_to').value,a=num($('t_amt').value);if(f===t)return toast('Elige dos cuentas distintas');if(a===null||a<=0)return toast('Pon un monto mayor a 0');
- S.moves.push({id:uid(),date:new Date().toISOString(),kind:'transfer',from:f,to:t,amount:a});save();rAll();goBack();toast('Transferido '+money(a)+' de '+ACC[f]+' a '+ACC[t]);};
-$('t_from').onchange=()=>{$('t_to').value=$('t_from').value==='spark'?'pers':'spark';};
+ const inst=f==='spark'&&$('t_inst').checked,m={id:uid(),date:new Date().toISOString(),kind:'transfer',from:f,to:t,amount:a};
+ if(f==='spark')S.set.fee.inst=inst;if(inst){const c=feeOf(S,a);if(c>=a&&$('t_mode').value==='resta')return toast('La comisión es mayor que el monto');m.fee=c;m.feeMode=$('t_mode').value;S.set.fee.mode=m.feeMode;}
+ S.moves.push(m);save();rAll();goBack();toast('Transferido '+money(a)+' de '+ACC[f]+' a '+ACC[t]+(m.fee?' · comisión '+money(m.fee):''));};
 // ---------- Apartados ----------
 const APN={tax:'Impuestos',emer:'Emergencias',veh:'Vehículo'};
 const apMark=(day,f)=>S.apart.find(m=>m.day===day&&m.fund===f);
@@ -599,9 +619,29 @@ const nf={id:uid(),date:new Date().toISOString(),odo:o,gal:gl,paid:p,full:$('ff'
 if(w&&fw!==sig){fw=sig;return toast(w+' Si es correcto, toca Guardar llenada otra vez.',9000);}
 fw=null;S.fills.push(nf);['fo','fg','fp'].forEach(i=>$(i).value='');$('ff').checked=true;$('fa').value='spark';migrate(S);save();rAll();goBack();toast('Llenada guardada');};
 $('addp').onclick=()=>{const a=num($('pa').value);if(a===null||a<=0)return toast('Pon un monto mayor a 0');const cat=$('pcat').value&&$('pcat').value!=='__new'?$('pcat').value:'';S.personal.push({id:uid(),date:new Date().toISOString(),amount:a,note:$('pn').value.trim(),acct:$('pacc').value,...(cat?{cat}:{})});S.acc.last=$('pacc').value;S.acc.lastCat=cat;$('pa').value='';$('pn').value='';save();rAll();goBack();toast('Gasto guardado');};
-$('exp').onclick=()=>{const b=new Blob([JSON.stringify(S,null,2)],{type:'application/json'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download='gastos-spark-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),2000);};
+// ---------- Copias de seguridad ----------
+const daysAgo=iso=>Math.floor((Date.now()-new Date(iso).getTime())/864e5);
+const hasData=()=>S.shifts.length+S.fills.length+S.personal.length>0;
+function bkTxt(){const l=S.set.lastBackup;if(!l)return 'Nunca';const d=daysAgo(l);return d===0?'Hoy':d===1?'Ayer':'Hace '+d+' días';}
+function markBackup(){S.set.lastBackup=new Date().toISOString();save();rAll();toast('Copia guardada');}
+// En iPhone abre el menú de compartir (Guardar en Archivos / iCloud); si no se puede, descarga el archivo.
+function doBackup(){const name='mis-cuentas-'+dk(new Date())+'.json',txt=JSON.stringify(S,null,2);
+ try{const file=new File([txt],name,{type:'application/json'});if(navigator.canShare&&navigator.canShare({files:[file]})){navigator.share({files:[file],title:'Copia de Mis cuentas'}).then(markBackup).catch(e=>{if(e&&e.name==='AbortError')toast('Copia cancelada');else dlFile(txt,name);});return;}}catch(e){}
+ dlFile(txt,name);}
+function dlFile(txt,name){const b=new Blob([txt],{type:'application/json'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),2000);markBackup();}
+function rBackup(){$('bklast').textContent=bkTxt();$('ms-copia').textContent='Última copia: '+bkTxt().toLowerCase();
+ const due=hasData()&&(!S.set.lastBackup||daysAgo(S.set.lastBackup)>=7),c=$('bkcard');c.hidden=!due;
+ if(due){c.innerHTML='<h2 class="wk">Haz una copia de seguridad<small>'+(S.set.lastBackup?'Tu última copia fue '+bkTxt().toLowerCase()+'.':'Aún no has guardado ninguna copia.')+' Tus datos solo están en este teléfono.</small></h2><button class="btn" id="bknow">Guardar copia ahora</button>';$('bknow').onclick=doBackup;}}
+$('exp').onclick=doBackup;
+try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();}catch(e){} // pide al navegador no borrar los datos
 $('impb').onclick=()=>$('imp').click();
-$('imp').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const j=JSON.parse(r.result);if(!j||typeof j!=='object'||!['shifts','fills','personal'].some(k=>Array.isArray(j[k])))throw 0;const res=mergeIn(S,j),T=o=>o.shifts+o.fills+o.personal,na=T(res.add),nd=T(res.dup);migrate(S);save();rAll();toast(na?'Importado: '+res.add.shifts+' turno(s), '+res.add.fills+' llenada(s), '+res.add.personal+' gasto(s) nuevos'+(nd?'. '+nd+' ya existían.':'.'):'No había nada nuevo: los '+nd+' registro(s) ya existían.',6000);}catch(x){toast('Archivo no válido');}e.target.value='';};r.readAsText(f);};
+// Restaurar: primero se simula sobre una copia para mostrar qué se agregaría; solo si confirmas se importa.
+$('imp').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{let j;try{j=JSON.parse(r.result);}catch(x){e.target.value='';return toast('Ese archivo no es una copia válida (no se pudo leer)');}
+ e.target.value='';if(!j||typeof j!=='object'||!['shifts','fills','personal'].some(k=>Array.isArray(j[k])))return toast('Ese archivo no es una copia de Mis cuentas');
+ const sim=mergeIn(norm(JSON.parse(JSON.stringify(S))),j),A=sim.add,otros=A.apart+A.moves+A.recs,na=A.shifts+A.fills+A.personal+otros,nd=Object.values(sim.dup).reduce((a,b)=>a+b,0);
+ if(!na)return toast('No hay nada nuevo en esa copia: los '+nd+' registro(s) ya están en la app.',6000);
+ if(!confirm('Esta copia agrega:\n• '+A.shifts+' turno(s)\n• '+A.fills+' llenada(s)\n• '+A.personal+' gasto(s)\n• '+otros+' otro(s) (transferencias, pagos, apartados, recurrentes)\n\n'+nd+' registro(s) ya existen y no se tocan. ¿Importar?'))return toast('Importación cancelada');
+ mergeIn(S,j);migrate(S);save();rAll();toast('Importado: '+na+' registro(s) nuevo(s)'+(nd?'. '+nd+' ya existían.':'.'),6000);};r.readAsText(f);};
 $('saver').onclick=()=>{const t=$('rs').value.trim();if(t==='')S.set.reserva=null;else{const r=num(t);if(r===null||r<0||r>5)return toast('Pon un valor entre 0 y 5 $ por milla');S.set.reserva=r;}save();rAll();toast('Reserva guardada');};
 // Navegación: Trabajo y Personal son pestañas; el menú y sus páginas usan el historial del navegador para que el gesto de "atrás" funcione.
 const HV={'':'work','#personal':'pers','#menu':'menu','#turnos':'turnos','#llenadas':'llenadas','#reserva':'reserva','#copia':'copia','#gastos':'gastos','#llenada':'llenada','#gasto':'gasto','#editar':'editar','#apartados-ajustes':'apconf','#apartados':'apart','#empezar':'empezar','#terminar':'terminar','#cuentas':'cuentas','#cuenta':'cuenta','#transferir':'transfer','#deudas':'deudas','#deuda':'deuda','#editar-deuda':'dedit','#pagar':'dpay','#pago-programado':'dplan','#calendario':'cal','#recurrente':'recedit'};
@@ -631,7 +671,7 @@ $('actb').onclick=()=>{fw=null;fillSels();go(view==='pers'?'gasto':'llenada',tru
 window.addEventListener('popstate',()=>{view=fromHash();if(view==='work'||view==='pers'){lastTab=view;putTab(view);}rView();anim('back');});
 $('app').addEventListener('scroll',()=>$('top').classList.toggle('sc',$('app').scrollTop>4),{passive:true});
 if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost'))navigator.serviceWorker.register('sw.js').catch(()=>{});
-function rAll(){fillSels();rShift();rStats();rFill();rHist();rPers();rAp();rAcc();rDebts();rCal();rView();}
+function rAll(){fillSels();rShift();rStats();rFill();rHist();rPers();rAp();rAcc();rDebts();rCal();rBackup();rView();}
 $('today').textContent=new Date().toLocaleDateString('es-US',{weekday:'long',day:'numeric',month:'long'});
 rAll();
 </script></body></html>
