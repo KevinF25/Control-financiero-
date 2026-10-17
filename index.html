@@ -357,6 +357,14 @@ let tt;function toast(t,ms){clearTimeout(tt);$('msg').textContent=t;tt=setTimeou
 function arm(b,fn){let a=false;b.onclick=()=>{if(a){fn();return;}a=true;b.textContent='¿Seguro?';b.classList.add('armed');setTimeout(()=>{a=false;b.textContent=b.dataset.l;b.classList.remove('armed');},2500);};}
 function tick(){if(!S.active)return;const m=Math.max(0,Math.floor((Date.now()-new Date(S.active.start))/6e4));document.querySelectorAll('.el').forEach(e=>e.textContent=Math.floor(m/60)+' h '+(m%60)+' min');}
 setInterval(tick,20000);
+// Propinas: Spark confirma las propinas al día siguiente. Cada turno guarda la propina de ese día (estimada, tp=1) y se corrige
+// con lo que Spark confirma: al terminar el turno siguiente ("Propinas confirmadas") o con "Confirmar" en el historial.
+const tipPrev=()=>S.shifts.filter(x=>vs(x)&&x.tp).sort((a,b)=>new Date(b.end)-new Date(a.end))[0]||null;
+function tipConfirm(s,c){const old=fin(s.tip)?s.tip:0;s.earned=r2(Math.max(0,s.earned-old+c));if(c>0)s.tip=c;else delete s.tip;delete s.tp;}
+function tPrevw(){const o=$('tprev');if(!o)return;const T=num($('ea').value),C=num($('econf').value)||0,P=num($('etip').value)||0,pv=tipPrev();
+ if(T===null||C>T){o.innerHTML='';return;}const e=r2(T-C+P),d=x=>new Date(x).toLocaleDateString('es-US',{weekday:'short',day:'numeric',month:'short'});
+ o.innerHTML='Ganado hoy: <b>'+money(e)+'</b>'+(C||P?' ('+money(T)+(C?' − '+money(C):'')+(P?' + '+money(P):'')+')':'')+
+  (C>0?(pv?'<br>Tu turno del '+d(pv.start)+' pasa de '+money(pv.earned)+' a '+money(r2(pv.earned-(fin(pv.tip)?pv.tip:0)+C))+' (propina confirmada).':'<br>Las propinas confirmadas son de un turno anterior: no se suman a hoy.'):'');}
 // Trabajo: la tarjeta del turno solo muestra el estado y un botón. Los campos están en las páginas Empezar/Terminar turno.
 function rShift(){const a=S.active;
 if(!a){$('shift').innerHTML='<h2>Turno</h2><p class="muted">No tienes un turno abierto.</p><button class="btn" id="gostart">Empezar turno</button><button class="btn2 full" id="gooffer">Evaluar oferta</button>';$('gooffer').onclick=openOffer;
@@ -364,14 +372,16 @@ $('gostart').onclick=()=>{go('empezar',true);try{$('so').focus();}catch(e){}};$(
 const info='Empezó a las '+tf(a.start)+' · <span class="el"></span> · salió con '+a.startOdo+' mi';
 $('shift').innerHTML='<h2><span class="dot" aria-hidden="true"></span>Turno en curso</h2><p class="muted">'+info+'</p><button class="btn" id="goend">Terminar turno</button><button class="btn2 full" id="gooffer">Evaluar oferta</button>';$('gooffer').onclick=openOffer;
 $('goend').onclick=()=>{go('terminar',true);try{$('eo').focus();}catch(e){}};
-$('tcard').innerHTML='<p class="muted" style="margin:0 0 4px">'+info+'</p><label for="eo">Odómetro al llegar a casa</label><input id="eo" inputmode="decimal" autocomplete="off"><label for="ea">Ganancia del día ($)</label><input id="ea" inputmode="decimal" autocomplete="off"><label for="etip">De eso, propina ($) <span style="opacity:.7">· opcional</span></label><input id="etip" inputmode="decimal" autocomplete="off" placeholder="Llega al día siguiente"><button class="btn" id="fin">Terminar turno</button><button class="link del" id="can" data-l="Cancelar turno">Cancelar turno</button>';tick();
-$('fin').onclick=()=>{const o=numO($('eo').value),e=num($('ea').value);
+$('tcard').innerHTML='<p class="muted" style="margin:0 0 4px">'+info+'</p><label for="eo">Odómetro al llegar a casa</label><input id="eo" inputmode="decimal" autocomplete="off"><p class="muted" style="margin:14px 0 0">Copia de Spark → Ganancias → el día de hoy:</p><label for="ea">Total del día ($)</label><input id="ea" inputmode="decimal" autocomplete="off" placeholder="El número azul del día"><label for="econf">Propinas confirmadas ($)</label><input id="econf" inputmode="decimal" autocomplete="off" placeholder="Son de tu turno anterior · 0 si no hay"><label for="etip">Propinas no confirmadas ($) <span style="opacity:.7">· opcional</span></label><input id="etip" inputmode="decimal" autocomplete="off" placeholder="Las de hoy · mañana se corrigen solas"><p class="muted" id="tprev"></p><button class="btn" id="fin">Terminar turno</button><button class="link del" id="can" data-l="Cancelar turno">Cancelar turno</button>';tick();
+['ea','econf','etip'].forEach(k=>$(k).oninput=tPrevw);tPrevw();
+$('fin').onclick=()=>{const o=numO($('eo').value),T=num($('ea').value),ct=$('econf').value.trim(),C=ct===''?null:num(ct);
 // Turno olvidado abierto: si duraría más de 16 h, se pide la hora real de fin en lugar de guardar horas falsas.
 let end=new Date();if($('fe')){end=dtVal('fe');if(!end)return toast('Elige la hora en que terminaste');if(end<=new Date(a.start))return toast('La hora de fin debe ser después del inicio ('+tf(a.start)+')');if(end>new Date())return toast('La hora de fin no puede ser en el futuro');if((end-new Date(a.start))/36e5>24)return toast('Un turno no puede durar más de 24 horas');}
 else if((end-new Date(a.start))/36e5>16){const d=new Date(a.start);d.setHours(d.getHours()+8);$('fin').insertAdjacentHTML('beforebegin','<div class="hero fi" id="fwarn"><p class="muted">Este turno lleva '+Math.round((end-new Date(a.start))/36e5)+' horas abierto. ¿A qué hora terminaste de verdad?</p></div>'+dtField('fe','Hora en que terminaste',d.toISOString()));dtBind($('tcard'));return toast('Elige la hora real de fin y toca Terminar turno otra vez',6000);}
-if(o===null||o<=a.startOdo)return toast('El odómetro final debe ser mayor al inicial');if(o-a.startOdo>1000)return toast('Más de 1,000 millas en un turno: revisa el odómetro');if(e===null||e<0)return toast('Pon lo que ganaste (0 o más)');
-const tt=$('etip').value.trim(),tip=tt===''?null:num(tt);if(tt!==''&&(tip===null||tip>e))return toast('La propina debe estar entre 0 y lo que ganaste');
-const g=gas(S.fills),ns={id:uid(),start:a.start,end:end.toISOString(),startOdo:a.startOdo,endOdo:o,earned:e,cpm:g.pending?null:g.cpm,mpg:g.pending?null:g.mpg,reserve:(o-a.startOdo)*rate(S)};if(tip)ns.tip=tip;S.shifts.push(ns);S.active=null;save();rAll();goBack();const ap=apToday(),gd=fin(S.acc.ahorro.start)?ahGap().d:0; // con cuenta Ahorro: recordar pasar la reserva
+if(o===null||o<=a.startOdo)return toast('El odómetro final debe ser mayor al inicial');if(o-a.startOdo>1000)return toast('Más de 1,000 millas en un turno: revisa el odómetro');if(T===null||T<0)return toast('Pon el total del día que dice Spark (0 o más)');if(C===null||C<0)return toast('Pon las propinas confirmadas (0 si no hay)');if(C>T)return toast('Las propinas confirmadas no pueden ser más que el total del día');
+const tt=$('etip').value.trim(),tip=tt===''?0:num(tt);if(tip===null||tip<0)return toast('Revisa las propinas no confirmadas');
+const pv=tipPrev();if(C>0&&pv)tipConfirm(pv,C); // las propinas que Spark confirmó hoy son del turno anterior: lo corrige
+const e=r2(T-C+tip),g=gas(S.fills),ns={id:uid(),start:a.start,end:end.toISOString(),startOdo:a.startOdo,endOdo:o,earned:e,cpm:g.pending?null:g.cpm,mpg:g.pending?null:g.mpg,reserve:(o-a.startOdo)*rate(S),tp:1};if(tip)ns.tip=tip;S.shifts.push(ns);S.active=null;save();rAll();goBack();const ap=apToday(),gd=fin(S.acc.ahorro.start)?ahGap().d:0; // con cuenta Ahorro: recordar pasar la reserva
  toast(ap>0?'Turno guardado. Para apartar hoy: '+money(ap)+' (en Personal)':gd>=1?'Turno guardado. Pasa '+money(gd)+' de Spark al Ahorro (reserva del carro)':'Turno guardado',ap>0||gd>=1?6000:3500);};
 arm($('can'),()=>{S.active=null;save();rAll();goBack();toast('Turno cancelado');});}
 // Empezar turno: mismas validaciones que antes.
@@ -417,6 +427,7 @@ function bindEdit(){const k=ed.k,key=EDK[k],it=S[key].find(x=>x.id===ed.id);if(!
    if(e===null||e<0)return toast('Pon lo que ganaste (0 o más)');
    const tt=$('e_tip').value.trim(),tip=tt===''?null:num(tt);if(tt!==''&&(tip===null||tip>e))return toast('La propina debe estar entre 0 y lo que ganaste');
    const om=it.endOdo-it.startOdo,pm=fin(it.reserve)&&om>0?it.reserve/om:rate(S); // conserva la reserva por milla que tenía el turno
+   if((tip||0)!==(fin(it.tip)?it.tip:0))delete it.tp; // propina corregida a mano = confirmada
    Object.assign(it,{start:st.toISOString(),end:en.toISOString(),startOdo:o1,endOdo:o2,earned:e,reserve:(o2-o1)*pm});if(tip)it.tip=tip;else delete it.tip;}
   else if(k==='p'){const dt=dtVal('e_dt',it.date),a=num($('e_pa').value);
    if(!dt)return toast('Revisa la fecha y la hora');if(a===null||a<=0)return toast('Pon un monto mayor a 0');
@@ -434,7 +445,10 @@ function rHist(){const l=S.shifts.filter(vs).sort((a,b)=>new Date(b.start)-new D
 const W=[];l.forEach(s=>{const k=period('week',s.start)[0].getTime();let w=W[W.length-1];if(!w||w.k!==k)W.push(w={k,s:[]});w.s.push(s);});
 $('list').innerHTML=W.length?W.map(w=>{const C=w.s.map(sc),e=C.reduce((a,c)=>a+c.e,0),ok=C.every(c=>c.net!==null),net=C.reduce((a,c)=>a+(c.net||0),0);
  return '<section class="card"><h2 class="wk">'+(w.k===cw?'Esta semana':'Semana del '+new Date(w.k).toLocaleDateString('es-US',{day:'numeric',month:'short'}))+'<small>'+w.s.length+' turno(s) · '+money(e)+(ok?' · resultado '+money(net):'')+'</small></h2>'+
- w.s.map((s,i)=>{const c=C[i];return '<div class="row"><div>'+df(s.start)+'<small>'+c.mi+' mi · '+c.h.toFixed(1)+' h · '+(c.net!==null?'resultado '+money(c.net):'resultado pendiente')+'</small></div><div><b>'+money(s.earned)+'</b> <button class="x" data-e="'+s.id+'">Editar</button></div></div>';}).join('')+'</section>';}).join(''):'<section class="card"><p class="muted">Aún no hay turnos.</p></section>';
+ w.s.map((s,i)=>{const c=C[i];return '<div class="row"><div>'+df(s.start)+'<small>'+c.mi+' mi · '+c.h.toFixed(1)+' h · '+(c.net!==null?'resultado '+money(c.net):'resultado pendiente')+(s.tp?' · propina por confirmar':'')+'</small></div><div><b>'+money(s.earned)+'</b> '+(s.tp?'<button class="x" data-tc="'+s.id+'">Confirmar</button> ':'')+'<button class="x" data-e="'+s.id+'">Editar</button></div></div>';}).join('')+'</section>';}).join(''):'<section class="card"><p class="muted">Aún no hay turnos.</p></section>';
+$('list').querySelectorAll('[data-tc]').forEach(b=>b.onclick=()=>{const s=S.shifts.find(x=>x.id===b.dataset.tc);if(!s)return;
+ const v=prompt('¿Cuánto confirmó Spark de propinas de este turno? (Ganancias → el día siguiente → Propinas Confirmadas)',fin(s.tip)?s.tip:'');if(v===null)return;const c=num(v);if(c===null||c<0)return toast('Pon un monto válido');
+ const was=s.earned;tipConfirm(s,c);save();rAll();toast('Propina confirmada: el turno pasa de '+money(was)+' a '+money(s.earned));});
 $('fsum').innerHTML=$('fillinfo').innerHTML;
 $('ms-turnos').textContent=l.length?l.length+' turno(s)':'Sin turnos';
 $('ms-llenadas').textContent=g.pending?(f.length?f.length+' llenada(s)':'Sin llenadas'):g.mpg.toFixed(1)+' MPG · '+money(g.cpm)+' por milla';
