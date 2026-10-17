@@ -296,7 +296,7 @@ const ACC={spark:'Spark',pers:'Personal',ahorro:'Ahorro'},ACCK=Object.keys(ACC);
 // Movimientos de una cuenta desde que se puso su saldo inicial. Solo usa datos reales (no estimaciones):
 // pago base de Spark (al terminar el turno), propina (al día siguiente), gasolina pagada, gastos, transferencias y ajustes.
 function acctMoves(D,k){const a=D.acc[k];if(!fin(a.start))return[];const t0=new Date(a.since).getTime(),M=[],add=(date,amount,txt,ref)=>{if(new Date(date).getTime()>=t0&&amount)M.push({date,amount,txt,ref});};
- if(k==='spark')D.shifts.filter(vs).forEach(s=>{const tip=fin(s.tip)&&s.tip>0&&s.tip<=s.earned?s.tip:0,next=new Date(new Date(s.end).getTime()+864e5); /* Spark confirma la propina 24 h después */
+ if(k==='spark')D.shifts.filter(vs).forEach(s=>{const tip=fin(s.tip)&&s.tip>0&&s.tip<=s.earned?s.tip:0,next=new Date((new Date(s.start).getTime()+new Date(s.end).getTime())/2+864e5); /* Spark confirma cada propina 24 h después de la entrega: se usa la mitad del turno */
   add(s.end,s.earned-tip,'Spark'+(tip?' (pago base)':''),{k:'s',id:s.id});if(tip)add(next.toISOString(),tip,'Spark (propina)',{k:'s',id:s.id});});
  D.fills.filter(f=>vf(f)&&f.acct===k).forEach(f=>add(f.date,-f.paid,'Gasolina',{k:'f',id:f.id}));
  D.personal.filter(p=>fin(p.amount)&&okd(p.date)&&p.acct===k).forEach(p=>add(p.date,p.type==='ingreso'?p.amount:-p.amount,p.note||(p.type==='ingreso'?'Ingreso':'Gasto'),{k:'p',id:p.id}));
