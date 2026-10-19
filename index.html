@@ -179,7 +179,7 @@ select{width:100%;-webkit-appearance:none;appearance:none;font:inherit;color:var
 <main id="v-cuentas" hidden><section class="card" id="caclist"></section></main>
 <main id="v-acedit" hidden><section class="card"><label for="a_name">Nombre</label><input id="a_name" autocomplete="off" maxlength="30"><label for="a_bal">Saldo de hoy ($)</label><input id="a_bal" inputmode="decimal" autocomplete="off" placeholder="Lo que dice tu banco hoy">
 <div id="a_feew"><div class="pair"><div><label for="a_fpct">Comisión instantánea (%)</label><input id="a_fpct" inputmode="decimal" autocomplete="off"></div><div><label for="a_fmin">Comisión mínima ($)</label><input id="a_fmin" inputmode="decimal" autocomplete="off"></div></div></div>
-<button class="btn" id="a_save">Guardar</button><p class="muted" id="a_note"></p></section></main>
+<button class="btn" id="a_save">Guardar</button><button class="link del" id="a_del" data-l="Borrar esta cuenta">Borrar esta cuenta</button><p class="muted" id="a_note"></p></section></main>
 <main id="v-cuenta" hidden><section class="card" id="ccard"></section><section class="card" id="clist"></section></main>
 <main id="v-transfer" hidden><section class="card"><div class="pair"><div><label for="t_from">Desde</label><span class="sel"><select id="t_from"><option value="spark">Débito Spark</option><option value="pers">Débito Personal</option><option value="ahorro">Ahorro</option></select></span></div><div><label for="t_to">Hacia</label><span class="sel"><select id="t_to"><option value="pers">Débito Personal</option><option value="spark">Débito Spark</option><option value="ahorro">Ahorro</option></select></span></div></div>
 <label for="t_amt">Monto ($)</label><input id="t_amt" inputmode="decimal" autocomplete="off">
@@ -263,7 +263,9 @@ function norm(raw){const o=raw&&typeof raw==='object'?raw:{},A=a=>Array.isArray(
  personal:A(o.personal).filter(ob).map(p=>({...p,id:p.id||uid(),type:p.type==='ingreso'?'ingreso':'gasto'})),
  apart:A(o.apart).filter(ob).map(x=>({...x,id:x.id||uid()})), // apartados que TÚ marcaste (nunca se crean solos)
  moves:A(o.moves).filter(ob).map(x=>({...x,id:x.id||uid()})), // transferencias entre cuentas y ajustes al banco
- acc:{spark:normAcc(ob(o.acc)?o.acc.spark:null),pers:normAcc(ob(o.acc)?o.acc.pers:null),ahorro:normAcc(ob(o.acc)?o.acc.ahorro:null),last:ob(o.acc)&&typeof o.acc.last==='string'&&o.acc.last?o.acc.last:'pers',lastCat:ob(o.acc)&&typeof o.acc.lastCat==='string'?o.acc.lastCat:''},
+ acc:{spark:normAcc(ob(o.acc)?o.acc.spark:null),pers:normAcc(ob(o.acc)?o.acc.pers:null),ahorro:normAcc(ob(o.acc)?o.acc.ahorro:null),
+  ...(()=>{const ids=ob(o.acc)&&Array.isArray(o.acc.ids)?[...new Set(o.acc.ids.filter(x=>typeof x==='string'&&/^a_[a-z0-9]+$/.test(x)))]:[],r={ids};ids.forEach(id=>r[id]=normAcc(o.acc[id]));return r;})(), // cuentas que el dueño agregó
+ last:ob(o.acc)&&typeof o.acc.last==='string'&&o.acc.last?o.acc.last:'pers',lastCat:ob(o.acc)&&typeof o.acc.lastCat==='string'?o.acc.lastCat:''},
  cats:Array.isArray(o.cats)?[...new Set(o.cats.filter(c=>typeof c==='string'&&c.trim()).map(c=>c.trim()))]:CATS0.slice(), // categorías de gastos (editables)
  recs:A(o.recs).filter(ob).map(r=>({...r,id:r.id||uid(),freq:['week','month','year'].includes(r.freq)?r.freq:'month'})), // pagos recurrentes (suscripciones y facturas)
  incs:A(o.incs).filter(ob).map(r=>({...r,id:r.id||uid(),freq:['week','2week','semi','month'].includes(r.freq)?r.freq:'2week'})), // ingresos fijos (sueldo): {id,name,amount,freq,next,acct}
@@ -304,7 +306,7 @@ function debtBal(D,d){if(!fin(d.start)||!d.since)return null;const t0=new Date(d
 // Cuenta de débito: saldo que tenías en el banco ("start") en el momento "since". Sin configurar = null.
 function normAcc(a){const nm=a&&typeof a==='object'&&typeof a.name==='string'&&a.name.trim()?{name:a.name.trim().slice(0,30)}:{};return a&&typeof a==='object'&&fin(a.start)&&a.since&&okd(a.since)?{start:a.start,since:a.since,...nm}:{start:null,since:null,...nm};}
 const ACC0={spark:'Spark',pers:'Personal',ahorro:'Ahorro'},ACC={...ACC0},ACCK=Object.keys(ACC);
-const accSync=D=>ACCK.forEach(k=>ACC[k]=D.acc[k].name||ACC0[k]); // nombre que el dueño le puso a cada cuenta // Ahorro = cuenta de ahorro dentro de One (ahí va la reserva)
+const accSync=D=>{ACCK.length=0;ACCK.push('spark','pers','ahorro',...(D.acc.ids||[]));Object.keys(ACC).forEach(k=>{if(!ACCK.includes(k))delete ACC[k];});ACCK.forEach(k=>ACC[k]=D.acc[k].name||ACC0[k]||'Cuenta');}; // nombre que el dueño le puso a cada cuenta // Ahorro = cuenta de ahorro dentro de One (ahí va la reserva)
 // Movimientos de una cuenta desde que se puso su saldo inicial. Solo usa datos reales (no estimaciones):
 // pago base de Spark (al terminar el turno), propina (al día siguiente), gasolina pagada, gastos, transferencias y ajustes.
 function acctMoves(D,k){const a=D.acc[k];if(!fin(a.start))return[];const t0=new Date(a.since).getTime(),M=[],add=(date,amount,txt,ref)=>{if(new Date(date).getTime()>=t0&&amount)M.push({date,amount,txt,ref});};
@@ -348,6 +350,7 @@ function mergeIn(D,raw){const N=norm(raw),add={shifts:0,fills:0,personal:0,apart
  ['shifts','fills','personal','apart','moves','recs','incs'].forEach(k=>{const ids=new Set(D[k].map(x=>x.id)),fps=new Set(D[k].map(FP[k]));N[k].forEach(x=>{const f=FP[k](x);if(ids.has(x.id)||fps.has(f)){dup[k]++;return;}D[k].push(x);ids.add(x.id);fps.add(f);add[k]++;});});
 
  if(D.set&&D.set.reserva===null&&N.set)D.set.reserva=N.set.reserva;
+ (N.acc.ids||[]).forEach(id=>{if(!D.acc.ids.includes(id)){D.acc.ids.push(id);D.acc[id]=N.acc[id];}});accSync(D);
  ACCK.forEach(k=>{if(!fin(D.acc[k].start)&&fin(N.acc[k].start))D.acc[k]=N.acc[k];});
  N.cats.forEach(c=>{if(!D.cats.some(x=>x.toLowerCase()===c.toLowerCase()))D.cats.push(c);});
  N.debts.forEach(n=>{const l=D.debts.find(x=>x.id===n.id)||D.debts.find(x=>x.name.toLowerCase()===n.name.toLowerCase());
@@ -366,7 +369,7 @@ let S;
 try{S=loadState(localStorage);}catch(e){S=norm(null);migrate(S);}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){toast('No se pudo guardar en este navegador');}}
 let tt;function toast(t,ms){clearTimeout(tt);$('msg').textContent=t;tt=setTimeout(()=>{$('msg').textContent='';},ms||3500);}
-function arm(b,fn){let a=false;b.onclick=()=>{if(a){fn();return;}a=true;b.textContent='¿Seguro?';b.classList.add('armed');setTimeout(()=>{a=false;b.textContent=b.dataset.l;b.classList.remove('armed');},2500);};}
+function arm(b,fn){let a=false;b.onclick=()=>{if(a){a=false;b.textContent=b.dataset.l;b.classList.remove('armed');fn();return;}a=true;b.textContent='¿Seguro?';b.classList.add('armed');setTimeout(()=>{a=false;b.textContent=b.dataset.l;b.classList.remove('armed');},2500);};}
 function tick(){if(!S.active)return;const m=Math.max(0,Math.floor((Date.now()-new Date(S.active.start))/6e4));document.querySelectorAll('.el').forEach(e=>e.textContent=Math.floor(m/60)+' h '+(m%60)+' min');}
 setInterval(tick,20000);
 // Propinas: Spark confirma las propinas al día siguiente. Cada turno guarda la propina de ese día (estimada, tp=1) y se corrige
@@ -540,7 +543,7 @@ const isCard=a=>typeof a==='string'&&a.startsWith('debt:'),
  toAh=S.moves.filter(m=>m.kind==='transfer'&&m.to==='ahorro'&&fin(m.amount)&&inP(m.date,p)&&new Date(m.date).getTime()>=t0).reduce((a,m)=>a+m.amount-(m.feeMode==='resta'&&fin(m.fee)?m.fee:0),0),
  resv=estRv+toAh,costs=S.moves.filter(m=>m.kind==='transfer'&&fin(m.fee)&&okd(m.date)&&inP(m.date,p)).reduce((a,m)=>a+m.fee,0), // comisiones de transferencias (salen de la cuenta)
  any=x.n||P.length||gasPaid||pays,left=any?x.e+pi-gasPaid-resv-ptCash-pays-costs:null,
- avK=['spark','pers'].filter(k=>fin(S.acc[k].start)),avail=avK.reduce((a,k)=>a+acctBal(S,k).bal,0),mes=p[0].toLocaleDateString('es-US',{month:'long'});
+ avK=ACCK.filter(k=>k!=='ahorro'&&fin(S.acc[k].start)),avail=avK.reduce((a,k)=>a+acctBal(S,k).bal,0),mes=p[0].toLocaleDateString('es-US',{month:'long'});
 PL={left,mes};
 const K=(l,v,c)=>'<div class="k'+(c?' '+c:'')+'"><span>'+l+'</span><b'+(String(v)[0]==='-'?' class="neg"':'')+'>'+v+'</b></div>';
 const gkb=id=>'<button class="k tap" id="'+id+'" aria-label="Ver gastos personales"><span>Gastos personales<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></span><b>'+money(ptCash)+'</b></button>',
@@ -579,7 +582,7 @@ function catBind(sel){let prev=sel.value;sel.onchange=()=>{if(sel.id==='pcat')pa
  if(!n){sel.value=prev;return;}const dd=sel.id==='pcat'&&S.debts.find(d=>d.name.trim().toLowerCase()===n.toLowerCase());
  if(dd){sel.value='pay:'+dd.id;prev=sel.value;payMode();return toast('Ya existe: "Pago a '+dd.name+'"');}let c=S.cats.find(x=>x.toLowerCase()===n.toLowerCase());if(!c){S.cats.push(n);c=n;save();}sel.innerHTML=catOpts(c,sel.id==='e_cat',sel.id==='pcat');sel.value=c;prev=c;if(sel.id==='pcat')payMode();toast('Categoría "'+c+'" lista');};}
 // ---------- Pagado con (débitos y tarjetas de crédito) ----------
-const accLbl=k=>S.acc[k].name||{spark:'Débito Spark',pers:'Débito Personal',ahorro:'Ahorro'}[k];
+const accLbl=k=>S.acc[k]&&S.acc[k].name||{spark:'Débito Spark',pers:'Débito Personal',ahorro:'Ahorro'}[k]||'Cuenta';
 const payOpts=(v,none)=>(none?'<option value="">Sin cuenta</option>':'')+ACCK.map(k=>'<option value="'+k+'"'+(v===k?' selected':'')+'>'+esc(accLbl(k))+'</option>').join('')+S.debts.map(d=>'<option value="debt:'+d.id+'"'+(v==='debt:'+d.id?' selected':'')+'>'+(d.kind==='affirm'?'':'Crédito ')+esc(d.name)+'</option>').join('');
 function fillSels(){const fa=$('fa').value||'spark';$('fa').innerHTML=payOpts(fa);$('fa').value=[...$('fa').options].some(o=>o.value===fa)?fa:'spark';
  const pa='pers';$('pacc').innerHTML=payOpts(pa);if(![...$('pacc').options].some(o=>o.value===pa))$('pacc').value='pers';
@@ -761,12 +764,12 @@ function rAcc(){const conf=ACCK.some(k=>fin(S.acc[k].start));
  $('ms-cuentas').textContent=conf?ACCK.filter(k=>fin(S.acc[k].start)).map(k=>ACC[k]+' '+money(acctBal(S,k).bal)).join(' · '):'Sin configurar';
  const DESC={spark:'Aquí deposita Spark',pers:'Para tus gastos',ahorro:'Donde guardas la reserva del carro'};
  $('caclist').innerHTML='<h2 class="wk">Tus cuentas<small>Toca una cuenta para ver sus movimientos, ajustarla al banco o cambiarle el nombre.</small></h2>'+ACCK.filter(k=>S.set.job!=='fijo'||k!=='spark'||fin(S.acc[k].start)).map(k=>{const r=acctBal(S,k);
-  return '<button class="arow" data-cac="'+k+'"><span>'+esc(ACC[k])+'<small>'+(r?DESC[k]:'Sin saldo · toca para ponerlo')+'</small></span><span class="r">'+(r?'<b'+(r.bal<0?' class="neg"':'')+'>'+money(r.bal)+'</b>':'')+CHV+'</span></button>';}).join('');
+  return '<button class="arow" data-cac="'+k+'"><span>'+esc(ACC[k])+'<small>'+(r?DESC[k]||'Cuenta':'Sin saldo · toca para ponerlo')+'</small></span><span class="r">'+(r?'<b'+(r.bal<0?' class="neg"':'')+'>'+money(r.bal)+'</b>':'')+CHV+'</span></button>';}).join('')+'<button class="btn2 full" id="caadd">+ Agregar cuenta</button>';$('caadd').onclick=()=>openAcc(null);
  $('caclist').querySelectorAll('[data-cac]').forEach(b=>b.onclick=()=>{cv=b.dataset.cac;if(!fin(S.acc[cv].start))return openAcc(cv);rCuenta();go('cuenta',true);});
  if(!conf){$('acard').innerHTML='<h2>Cuentas</h2><p class="muted">Pon el saldo de tus tarjetas de débito y la app te dirá cuánto deberías tener en cada una.</p><button class="btn2 full" id="acfg">Configurar cuentas</button>';$('acfg').onclick=()=>go('cuentas',true);}
  else{$('acard').innerHTML='<h2 class="wk">Cuentas<small>Debería tener (según lo que registraste)</small></h2>'+ACCK.map(k=>{const r=acctBal(S,k);if(!r&&S.set.job==='fijo')return ''; // trabajo fijo: no mostrar cuentas sin configurar (p. ej. Spark)
   if(!r)return '<button class="arow" data-acc="'+k+'"><span>'+ACC[k]+'<small>Sin saldo inicial</small></span><span class="r">'+CHV+'</span></button>';
-  return '<button class="arow" data-acc="'+k+'"><span>'+ACC[k]+(r.pend?'<small>+'+money(r.pend)+' propina por llegar</small>':k==='ahorro'&&S.set.job==='fijo'?'<small>Ahorro</small>':k==='ahorro'?(()=>{const g=ahGap();return g.d>0?'<small class="neg">Te falta apartar '+money(g.d)+'</small>':'<small>Reserva del carro · al día</small>';})():'<small>Débito</small>')+'</span><span class="r"><b'+(r.bal<0?' class="neg"':'')+'>'+money(r.bal)+'</b>'+CHV+'</span></button>';}).join('')+'<button class="btn2 full" id="atr">Transferir entre cuentas</button>';
+  return '<button class="arow" data-acc="'+k+'"><span>'+ACC[k]+(r.pend?'<small>+'+money(r.pend)+' propina por llegar</small>':k==='ahorro'&&S.set.job==='fijo'?'<small>Ahorro</small>':k==='ahorro'?(()=>{const g=ahGap();return g.d>0?'<small class="neg">Te falta apartar '+money(g.d)+'</small>':'<small>Reserva del carro · al día</small>';})():'<small>'+(k==='spark'||k==='pers'?'Débito':'Cuenta')+'</small>')+'</span><span class="r"><b'+(r.bal<0?' class="neg"':'')+'>'+money(r.bal)+'</b>'+CHV+'</span></button>';}).join('')+'<button class="btn2 full" id="atr">Transferir entre cuentas</button>';
   $('acard').querySelectorAll('[data-acc]').forEach(b=>b.onclick=()=>{cv=b.dataset.acc;if(!fin(S.acc[cv].start))return openAcc(cv);rCuenta();go('cuenta',true);});$('atr').onclick=openTransfer;}
  if(view==='cuenta')rCuenta();}
 // Reserva de desgaste generada desde que pusiste el saldo del Ahorro vs. lo que transferiste al Ahorro.
@@ -782,16 +785,21 @@ function rCuenta(){const r=acctBal(S,cv);if(!r)return;TTL.cuenta=ACC[cv];
  $('cadj').onclick=()=>{const v=prompt('¿Cuánto dice tu banco que tienes en '+ACC[cv]+'?',r.bal.toFixed(2));if(v===null)return;const n=num(String(v).replace(/^-/,''));if(n===null)return toast('Pon un monto válido');const bank=String(v).trim().startsWith('-')?-n:n,d=r2(bank-r.bal);
   if(!d)return toast('Ya coincide con el banco');S.moves.push({id:uid(),date:new Date().toISOString(),kind:'adjust',acct:cv,amount:d});save();rAll();toast('Ajustado: '+(d>0?'+':'')+money(d));};}
 // Editar cuenta: nombre propio, saldo de hoy (si cambia, la cuenta empieza a contar desde ahora) y, en la de Spark, la comisión instantánea
-let acv=null;function openAcc(k){acv=k;const r=acctBal(S,k);$('a_name').value=S.acc[k].name||'';$('a_name').placeholder=ACC0[k];$('a_bal').value=r?r.bal.toFixed(2):'';
+let acv=null;function openAcc(k){acv=k;const r=k?acctBal(S,k):null;$('a_name').value=k?S.acc[k].name||'':'';$('a_name').placeholder=k?ACC0[k]||'Nombre de la cuenta':'Ej. Efectivo, Chase, Cash App';$('a_del').hidden=!k||!/^a_/.test(k);$('a_bal').value=r?r.bal.toFixed(2):'';
  $('a_feew').hidden=k!=='spark';$('a_fpct').value=S.set.fee.pct;$('a_fmin').value=S.set.fee.min;
  $('a_note').textContent=r?'Si cambias el saldo, la cuenta empieza a contar desde hoy con ese saldo (lo de antes ya queda incluido).':'Pon cuánto tienes hoy en esta cuenta (lo que dice tu banco). Desde ahora la app suma y resta lo que registres.';
- TTL.acedit=r?'Editar '+ACC[k]:'Configurar '+ACC[k];go('acedit',true);}
-$('a_save').onclick=()=>{const k=acv;if(!k)return;const nm=$('a_name').value.trim().slice(0,30),bt=$('a_bal').value.trim(),n=bt===''?null:num(bt),r=acctBal(S,k);
+ TTL.acedit=!k?'Nueva cuenta':r?'Editar '+ACC[k]:'Configurar '+ACC[k];go('acedit',true);}
+$('a_save').onclick=()=>{let k=acv;const nm=$('a_name').value.trim().slice(0,30),bt=$('a_bal').value.trim(),n=bt===''?null:num(bt);
+ if(!k){if(!nm)return toast('Pon el nombre de la cuenta');if(n===null)return toast('Pon el saldo de hoy');k='a_'+uid().toLowerCase().replace(/[^a-z0-9]/g,'');S.acc.ids.push(k);S.acc[k]={start:null,since:null};acv=k;}
+ const r=acctBal(S,k);
  if(bt!==''&&n===null)return toast('Revisa el saldo');if(!r&&n===null)return toast('Pon el saldo de hoy');
  if(k==='spark'){const fp=num($('a_fpct').value),fm=num($('a_fmin').value);if(fp===null||fp<0||fp>10)return toast('La comisión va de 0 a 10%');if(fm===null||fm<0)return toast('Revisa la comisión mínima');S.set.fee.pct=fp;S.set.fee.min=fm;}
- if(nm&&nm!==ACC0[k])S.acc[k].name=nm;else delete S.acc[k].name;
+ if(nm&&nm!==ACC0[k])S.acc[k].name=nm;else if(ACC0[k])delete S.acc[k].name;
  if(n!==null&&(!r||r2(n)!==r2(r.bal)))Object.assign(S.acc[k],{start:n,since:new Date().toISOString()});
  save();rAll();goBack();toast('Cuenta guardada');};
+// Borrar una cuenta agregada: solo si no tiene movimientos, para no descuadrar ningún otro saldo
+arm($('a_del'),()=>{const k=acv;if(!k||!/^a_/.test(k))return;const used=S.personal.some(x=>x.acct===k)||S.fills.some(x=>x.acct===k)||S.moves.some(m=>m.from===k||m.to===k||m.acct===k)||S.incs.some(x=>x.acct===k)||S.recs.some(x=>x.acct===k);
+ if(used)return toast('Esta cuenta tiene movimientos: no se puede borrar sin descuadrar tus saldos',5000);S.acc.ids=S.acc.ids.filter(x=>x!==k);delete S.acc[k];if(S.acc.last===k)S.acc.last='pers';save();rAll();if(history.state&&history.state.p){btnBack=true;history.go(-2);}else goBack();toast('Cuenta borrada');});
 // Transferencia: si sale de Spark (One) puede ser instantánea con comisión; se muestra antes de guardar cuánto sale y cuánto llega.
 function tPrev(){const f=$('t_from').value,ext=f==='spark'&&$('t_to').value!=='ahorro',inst=ext&&$('t_inst').checked,a=num($('t_amt').value);$('t_instw').hidden=!ext;$('t_feebox').hidden=!inst;
  if(!inst)return;const fe=S.set.fee;if(a===null||a<=0){$('t_prev').innerHTML='<p class="muted">Comisión: '+fe.pct+'% (mínimo '+money(fe.min)+')</p>';return;}
@@ -841,7 +849,7 @@ if(w&&fw!==sig){fw=sig;return toast(w+' Si es correcto, toca Guardar llenada otr
 fw=null;S.fills.push(nf);['fo','fg','fp'].forEach(i=>$(i).value='');$('ff').checked=true;$('fa').value='spark';migrate(S);save();rAll();goBack();toast('Llenada guardada');};
 $('addp').onclick=()=>{const a=num($('pa').value);if(a===null||a<=0)return toast('Pon un monto mayor a 0');
  if($('pcat').value.startsWith('pay:')){const d=S.debts.find(x=>'pay:'+x.id===$('pcat').value),from=$('pacc').value;if(!d)return;
-  if(!ACCK.includes(from))return toast('Elige de qué cuenta salió el pago: Spark, Personal o Ahorro');
+  if(!ACCK.includes(from))return toast('Elige de qué cuenta salió el pago (una de tus cuentas, no una tarjeta)');
   const m={id:uid(),date:new Date().toISOString(),kind:'pay',debt:d.id,from,amount:a};S.moves.push(m);
   const x=d.plan.filter(y=>!y.paid&&Math.abs(y.amount-a)<0.01).sort((y,z)=>y.date<z.date?-1:1)[0];if(x)x.paid=m.id; // Affirm: marca la cuota de ese monto
   S.acc.last=from;$('pa').value='';$('pn').value='';save();rAll();goBack();return toast('Pago de '+money(a)+' a '+d.name+' registrado');}
@@ -900,7 +908,7 @@ $('actb').onclick=()=>{fw=null;fillSels();go(view==='pers'?'gasto':'llenada',tru
 window.addEventListener('popstate',()=>{view=fromHash();if(view==='work'||view==='pers'){lastTab=view;putTab(view);}rView();if(btnBack)anim('back');btnBack=false;});
 $('app').addEventListener('scroll',()=>$('top').classList.toggle('sc',$('app').scrollTop>4),{passive:true});
 if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost'))navigator.serviceWorker.register('sw.js').catch(()=>{});
-function rAll(){accSync(S);['t_from','t_to','p_from'].forEach(id=>[...$(id).options].forEach(o=>o.textContent=accLbl(o.value))); // nombres propios de las cuentas
+function rAll(){accSync(S);['t_from','t_to','p_from'].forEach(id=>{const v=$(id).value;$(id).innerHTML=ACCK.map(k=>'<option value="'+k+'">'+esc(accLbl(k))+'</option>').join('');if(ACCK.includes(v))$(id).value=v;}); // nombres propios de las cuentas
  $('o_mm').value=S.set.offer.minMile;$('o_mh').value=fin(S.set.offer.minHour)?S.set.offer.minHour:'';rOffer();fillSels();rShift();rStats();rFill();rHist();rPers();rAp();rAcc();rDebts();rCal();rCats();rMeta();rJob();rBackup();rView();}
 $('today').textContent=new Date().toLocaleDateString('es-US',{weekday:'long',day:'numeric',month:'long'});
 rAll();
