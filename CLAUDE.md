@@ -9,7 +9,7 @@ Datos guardados (todo en `sd_tracker_v1`): `shifts` (turnos), `fills` (llenadas)
 - El dueño usa la app en **iPhone**, como app instalada en la pantalla de inicio.
 - **El diseño visual actual le gusta**: colores verdes, letra Instrument Sans, tarjetas redondeadas, iconos de línea en el verde de la app. No cambiarlo sin que lo pida.
 - **Las opciones e interacciones deben comportarse como en una app de iPhone**: pantallas nuevas con "‹ Atrás" en lugar de desplegables, gesto de atrás, sin efecto rebote, sin barra de scroll visible, selectores nativos.
-- Mantener las pantallas principales (Trabajo y Personal) limpias; lo secundario va en el menú ☰ (grupos Historial y Ajustes).
+- Mantener las pantallas principales (Trabajo y Personal) limpias; lo secundario va en el menú (botón ··· arriba a la derecha; grupos Historial y Ajustes). Barra de abajo: Trabajo · (+) · Personal; el (+) del centro abre Registrar llenada en Trabajo y Nuevo gasto en Personal (en modo Trabajo fijo solo queda el (+) flotando).
 - Antes de cambios grandes de diseño o de navegación, **proponer y discutir primero**. Los arreglos pequeños se pueden hacer directo.
 
 ## Cómo trabajar
