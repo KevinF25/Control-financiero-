@@ -612,14 +612,14 @@ $('o_mh').onchange=()=>{const t=$('o_mh').value.trim(),v=t===''?null:num(t);if(t
 let calM=(()=>{const t=new Date();return new Date(t.getFullYear(),t.getMonth(),1);})(),calSel=dk(new Date()),rv=null;
 const EVT={rec:'Suscripción / factura',card:'Pago de tarjeta',affirm:'Pago a cuotas',inc:'Sueldo'};
 function evHtml(e,showDay){const st=e.done?'Registrado ✓':(e.late?'Pendiente':(e.day===dk(new Date())?'Hoy':''));
- const btn=e.done?'<button class="mini ok" data-ev="'+e.type+'|'+e.id+'|'+e.day+'|'+(e.plan||'')+'">✓</button>':'<button class="mini" data-ev="'+e.type+'|'+e.id+'|'+e.day+'|'+(e.plan||'')+'">'+(e.type==='card'?'Pagar':e.type==='affirm'?'Pagado ✓':e.type==='inc'?'Me llegó ✓':'Se cobró ✓')+'</button>';
+ const btn=e.done?'<button class="mini ok" data-ev="'+e.type+'|'+e.id+'|'+e.day+'|'+(e.plan||'')+'">✓</button>':'<button class="mini" data-ev="'+e.type+'|'+e.id+'|'+e.day+'|'+(e.plan||'')+'">'+(e.type==='card'?'Pagar':e.type==='affirm'?'Pagado ✓':e.type==='inc'?'Me llegó ✓':e.day>dk(new Date())?'Pagado ✓':'Se cobró ✓')+'</button>';
  const day=new Date(e.day+'T12:00:00').toLocaleDateString('es-US',{weekday:'short',day:'numeric',month:'short'});
- return '<div class="ev"><span>'+esc(e.name)+'<small'+(e.late?' class="late"':'')+'>'+(showDay?day:EVT[e.type])+(st?' · '+st:'')+'</small></span><span class="r"><b'+(e.type==='inc'?' class="pos"':'')+'>'+(e.amount!==null?(e.type==='inc'?'+':'')+money(e.amount):'—')+'</b>'+((e.day<=dk(new Date())||(e.type!=='rec'&&e.type!=='inc'))?btn:'')+'</span></div>';}
+ return '<div class="ev"><span>'+esc(e.name)+'<small'+(e.late?' class="late"':'')+'>'+(showDay?day:EVT[e.type])+(st?' · '+st:'')+'</small></span><span class="r"><b'+(e.type==='inc'?' class="pos"':'')+'>'+(e.amount!==null?(e.type==='inc'?'+':'')+money(e.amount):'—')+'</b>'+((e.day<=dk(new Date())||e.type!=='inc')?btn:'')+'</span></div>';}
 function evBind(root){root.querySelectorAll('[data-ev]').forEach(b=>b.onclick=()=>{const [type,id,day,plan]=b.dataset.ev.split('|'),tk=dk(new Date());
  if(type==='rec'){const r=S.recs.find(x=>x.id===id);if(!r)return;const p=S.personal.find(x=>x.rec===id&&x.recDue===day);
   if(p){if(!confirm('¿Quitar el registro de '+r.name+' del '+day.split('-').reverse().slice(0,2).join('/')+'? Se borra el gasto.'))return;S.personal=S.personal.filter(x=>x!==p);save();rAll();toast('Registro quitado');return;}
   const v=prompt('¿Cuánto te cobraron de '+r.name+'?',r.amount.toFixed(2));if(v===null)return;const a=num(v);if(a===null||a<=0)return toast('Pon un monto mayor a 0');
-  S.personal.push({id:uid(),date:(day===tk?new Date():new Date(day+'T12:00:00')).toISOString(),amount:a,note:r.name,...(r.acct?{acct:r.acct}:{}),...(r.cat?{cat:r.cat}:{}),rec:r.id,recDue:day});save();rAll();toast(r.name+': '+money(a)+' registrado');return;}
+  S.personal.push({id:uid(),date:(day>=tk?new Date():new Date(day+'T12:00:00')).toISOString(),amount:a,note:r.name,...(r.acct?{acct:r.acct}:{}),...(r.cat?{cat:r.cat}:{}),rec:r.id,recDue:day});save();rAll();toast(r.name+': '+money(a)+' registrado');return;}
  if(type==='inc'){const r=S.incs.find(x=>x.id===id);if(!r)return;const p=S.personal.find(x=>x.inc===id&&x.incDue===day);
   if(p){if(!confirm('¿Quitar el sueldo de '+r.name+' del '+day.split('-').reverse().slice(0,2).join('/')+'? Se borra ese ingreso.'))return;S.personal=S.personal.filter(x=>x!==p);save();rAll();toast('Registro quitado');return;}
   const v=prompt('¿Cuánto te llegó de '+r.name+'? (cámbialo si fue otro monto)',r.amount.toFixed(2));if(v===null)return;const a=num(v);if(a===null||a<=0)return toast('Pon un monto mayor a 0');
@@ -642,7 +642,7 @@ function rCal(){const y=calM.getFullYear(),m=calM.getMonth(),from=new Date(y,m,1
  $('reclist').querySelectorAll('[data-rv]').forEach(b=>b.onclick=()=>openRec(S.recs.find(x=>x.id===b.dataset.rv)));$('radd').onclick=()=>openRec(null);
  // Personal: lo que vence hoy, lo pendiente y lo de esta semana
  const back=new Date();back.setHours(0,0,0,0);back.setDate(back.getDate()-45);const ahead=new Date();ahead.setHours(0,0,0,0);ahead.setDate(ahead.getDate()+8);
- const N=calEvents(S,back,ahead).filter(e=>!e.done||e.day>=tk),late=N.filter(e=>e.late),soon=N.filter(e=>!e.late),wk=soon.filter(e=>e.type!=='inc').reduce((a,e)=>a+(e.amount||0),0);
+ const N=calEvents(S,back,ahead).filter(e=>!e.done||e.day>=tk),late=N.filter(e=>e.late),soon=N.filter(e=>!e.late),wk=soon.filter(e=>e.type!=='inc'&&!e.done).reduce((a,e)=>a+(e.amount||0),0);
  const has=S.recs.length||S.incs.length||S.debts.some(d=>(d.kind==='card'&&fin(d.due)&&fin(d.start))||(d.kind==='affirm'&&d.plan.length));
  $('ms-cal').textContent=has?(late.length?late.length+' pendiente(s) · ':'')+money(wk)+' en 7 días':'Suscripciones y fechas de pago';
  const cc=$('ccal');cc.hidden=!has||!N.length;if(!cc.hidden){const inW=soon.filter(e=>e.type==='inc').reduce((a,e)=>a+(e.amount||0),0);cc.innerHTML='<h2 class="wk">Próximos cobros<small>'+(late.length?late.length+' pendiente(s) de confirmar · ':'')+(wk||!inW?money(wk)+' en los próximos 7 días':'')+(inW?(wk?' · ':'')+'entra +'+money(inW)+(wk?'':' en los próximos 7 días'):'')+'</small></h2>'+late.concat(soon).slice(0,4).map(e=>evHtml(e,true)).join('')+'<button class="link" id="calgo">Ver calendario ›</button>';evBind(cc);$('calgo').onclick=()=>go('cal',true);}}
