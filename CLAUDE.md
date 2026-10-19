@@ -17,3 +17,13 @@ Datos guardados (todo en `sd_tracker_v1`): `shifts` (turnos), `fills` (llenadas)
 - La lógica de cálculo está entre `//LOGIC-START` y `//LOGIC-END`; no tocarla salvo que el cambio lo pida.
 - Probar con Playwright (Chromium) en modo claro y oscuro, a 390×844, antes de subir; revisar capturas. Las pruebas que recargan la página deben abrirla con un servidor web local (`python3 -m http.server`), no con `file://`: con `file://` el navegador de pruebas a veces pierde el `localStorage` al recargar.
 - No romper los datos guardados: los cambios deben leer los datos que ya existen.
+
+## Reglas de seguridad (obligatorias, para la conexión con el banco y la nube)
+- Nunca poner claves secretas en el código ni en GitHub: van en las variables de entorno de Vercel.
+- La clave de SimpleFIN solo la usa la función de Vercel; el navegador nunca la ve.
+- Supabase: RLS activado en todas las tablas (cada usuario solo ve sus propios datos).
+- La clave `service_role` de Supabase nunca va en la app web; solo en Vercel.
+- Inicio de sesión obligatorio para ver cualquier dato.
+- Activar la protección de contraseñas filtradas en Supabase.
+- La conexión con el banco es solo de lectura: la app nunca mueve dinero.
+- Antes de terminar cualquier cambio, revisar el código (y el historial de git) buscando claves expuestas y explicarle al dueño qué se revisó.
