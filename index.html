@@ -146,6 +146,7 @@ select{width:100%;-webkit-appearance:none;appearance:none;font:inherit;color:var
 <main id="v-gastos" hidden><section class="card" id="pcats"></section><div id="plh"></div></main>
 <main id="v-oferta" hidden><section class="card"><div class="pair"><div><label for="o_pay">Pago de la oferta ($)</label><input id="o_pay" inputmode="decimal" autocomplete="off" placeholder="Ej. 18.50"></div><div><label for="o_mi">Millas</label><input id="o_mi" inputmode="decimal" autocomplete="off" placeholder="Ej. 12"></div></div>
 <label for="o_min">Minutos estimados <span style="opacity:.7">· opcional</span></label><input id="o_min" inputmode="numeric" autocomplete="off" placeholder="Ej. 35">
+<label class="swrow" for="o_ret" style="margin-top:14px">Contar la vuelta al Walmart<input type="checkbox" class="sw" id="o_ret"></label><div id="o_retw" hidden><label for="o_rmi">Millas de regreso <span style="opacity:.7">· opcional</span></label><input id="o_rmi" inputmode="decimal" autocomplete="off" placeholder="Vacío = igual que las de ida"></div>
 <div id="o_res"></div><button class="link" id="o_clear">Borrar y evaluar otra</button></section>
 <section class="card"><h2>Tus mínimos</h2><div class="pair"><div><label for="o_mm">Por milla ($)</label><input id="o_mm" inputmode="decimal" autocomplete="off"></div><div><label for="o_mh">Por hora ($) · opcional</label><input id="o_mh" inputmode="decimal" autocomplete="off"></div></div><p class="muted">"Buena" si llega a tu mínimo; "Regular" si se queda cerca (80% o más); "Mala" si no. Se guardan solos.</p></section></main>
 <main id="v-empezar" hidden><section class="card"><label for="so">Odómetro al salir de casa</label><input id="so" inputmode="decimal" autocomplete="off" placeholder="Ej. 84250"><button class="btn" id="go">Empezar turno</button><p class="muted">La hora de inicio se guarda sola al tocar el botón.</p></section></main>
@@ -275,7 +276,7 @@ function norm(raw){const o=raw&&typeof raw==='object'?raw:{},A=a=>Array.isArray(
   resAcc:typeof st.resAcc==='string'&&/^(ahorro|pers|a_[a-z0-9]+)$/.test(st.resAcc)?st.resAcc:'ahorro',resSince:st.resSince&&okd(st.resSince)?st.resSince:null, // cuenta donde va la reserva del carro (por defecto Ahorro) y desde cuándo
   job:['spark','fijo','ambos'].includes(st.job)?st.job:'spark', // Mi trabajo: Spark Driver / Trabajo fijo / Los dos
   goal:{days:ob(st.goal)&&Number.isInteger(st.goal.days)&&st.goal.days>=1&&st.goal.days<=7?st.goal.days:null,need:ob(st.goal)&&fin(st.goal.need)&&st.goal.need>0?st.goal.need:null}, // meta diaria
-  offer:{minMile:ob(st.offer)&&fin(st.offer.minMile)&&st.offer.minMile>=0?st.offer.minMile:1,minHour:ob(st.offer)&&fin(st.offer.minHour)&&st.offer.minHour>=0?st.offer.minHour:null}}};}
+  offer:{ret:ob(st.offer)&&st.offer.ret===true,minMile:ob(st.offer)&&fin(st.offer.minMile)&&st.offer.minMile>=0?st.offer.minMile:1,minHour:ob(st.offer)&&fin(st.offer.minHour)&&st.offer.minHour>=0?st.offer.minHour:null}}};}
 // Comisión de transferencia instantánea desde One (Spark): % del monto con un mínimo. Editable en Ajustes → Cuentas.
 const feeOf=(D,a)=>Math.round(Math.max(D.set.fee.min,a*D.set.fee.pct/100)*100)/100;
 // Calendario de cobros: suscripciones, día de pago de tarjetas y pagos de Affirm entre "from" y "to" (días locales, "to" excluido).
@@ -596,16 +597,19 @@ function payMode(){const pay=$('pcat').value.startsWith('pay:');$('addp').textCo
 // ---------- Calculadora de ofertas ----------
 // Costo por milla = gasolina (tus últimos ciclos) + reserva por milla. Solo estima: no guarda nada.
 function myAvg(){const p=[new Date(Date.now()-30*864e5),new Date(Date.now()+864e5)],L=S.shifts.filter(s=>vs(s)&&inP(s.start,p)).map(sc),mi=L.reduce((a,x)=>a+x.mi,0),e=L.reduce((a,x)=>a+x.e,0);return mi>0?{pm:e/mi,n:L.length}:null;}
-function rOffer(){const pay=num($('o_pay').value),mi=num($('o_mi').value),mn=num($('o_min').value),g=gas(S.fills),o=S.set.offer,box=$('o_res');
- if(pay===null||mi===null||mi<=0){box.innerHTML='<p class="muted">Escribe el pago y las millas de la oferta.</p>';return;}
+function rOffer(){const pay=num($('o_pay').value),mi0=num($('o_mi').value),mn0=num($('o_min').value),g=gas(S.fills),o=S.set.offer,box=$('o_res');$('o_ret').checked=o.ret;$('o_retw').hidden=!o.ret;
+ if(pay===null||mi0===null||mi0<=0){box.innerHTML='<p class="muted">Escribe el pago y las millas de la oferta.</p>';return;}
+ // Vuelta al Walmart: suma las millas de regreso (si no las pones, igual que las de ida) y ~2 min por milla de regreso
+ const rm=o.ret?(()=>{const v=num($('o_rmi').value);return v!==null&&v>=0?v:mi0;})():0,mi=mi0+rm,mn=mn0&&mn0>0?mn0+rm*2:mn0;
  const cpm=(g.pending?0:g.cpm)+rate(S),cost=mi*cpm,res=pay-cost,pm=pay/mi,ph=mn&&mn>0?res/(mn/60):null;
  let lvl=pm>=o.minMile?2:pm>=o.minMile*0.8?1:0;if(o.minHour&&ph!==null)lvl=Math.min(lvl,ph>=o.minHour?2:ph>=o.minHour*0.8?1:0);
  const V=[['bad','🔴 Mala'],['mid','🟡 Regular'],['good','✅ Buena']][lvl],av=myAvg();
- box.innerHTML='<div class="verd '+V[0]+'"><div class="vt">'+V[1]+'</div><div class="vs"><div>Por milla<b>'+money(pm)+'</b></div><div>Resultado (est.)<b'+(res<0?' class="neg"':'')+'>'+money(res)+'</b></div><div>Costo de hacerla<b>'+money(cost)+'</b></div><div>'+(ph!==null?'Por hora (est.)<b>'+money(ph)+'</b>':'Tu mínimo<b>'+money(o.minMile)+'/mi</b>')+'</div></div></div>'+
-  '<p class="muted">'+(g.pending?'Costo solo con la reserva ('+money(rate(S))+'/mi): aún no hay gasolina estimada. ':'Costo: gasolina '+money(g.cpm)+'/mi + reserva '+money(rate(S))+'/mi. ')+(av?'Tu promedio de los últimos 30 días: <b>'+money(av.pm)+'/mi</b> ('+av.n+' turno(s)); esta oferta '+(pm>=av.pm?'está por encima':'está por debajo')+'.':'')+'</p>'+(av&&o.minMile>av.pm*1.5?'<p class="muted"><b class="neg">Tu mínimo ('+money(o.minMile)+'/mi) es mucho más alto que tu promedio ('+money(av.pm)+'/mi): casi todas las ofertas saldrán "Mala". Revísalo abajo.</b></p>':'');}
+ box.innerHTML='<div class="verd '+V[0]+'"><div class="vt">'+V[1]+'</div><div class="vs"><div>Por milla'+(rm?' (con vuelta)':'')+'<b>'+money(pm)+'</b></div><div>Resultado (est.)<b'+(res<0?' class="neg"':'')+'>'+money(res)+'</b></div><div>Costo de hacerla<b>'+money(cost)+'</b></div><div>'+(ph!==null?'Por hora (est.)<b>'+money(ph)+'</b>':'Tu mínimo<b>'+money(o.minMile)+'/mi</b>')+'</div></div></div>'+
+  '<p class="muted">'+(rm?'Cuenta '+mi0+' mi de la oferta + '+r2(rm)+' mi de regreso = <b>'+r2(mi)+' mi</b>'+(mn0&&mn0>0?' y unos '+Math.round(rm*2)+' min más de manejo':'')+'. Tu mínimo por milla ahora también cuenta ida y vuelta. ':'')+(g.pending?'Costo solo con la reserva ('+money(rate(S))+'/mi): aún no hay gasolina estimada. ':'Costo: gasolina '+money(g.cpm)+'/mi + reserva '+money(rate(S))+'/mi. ')+(av?'Tu promedio de los últimos 30 días: <b>'+money(av.pm)+'/mi</b> ('+av.n+' turno(s)); esta oferta '+(pm>=av.pm?'está por encima':'está por debajo')+'.':'')+'</p>'+(av&&o.minMile>av.pm*1.5?'<p class="muted"><b class="neg">Tu mínimo ('+money(o.minMile)+'/mi) es mucho más alto que tu promedio ('+money(av.pm)+'/mi): casi todas las ofertas saldrán "Mala". Revísalo abajo.</b></p>':'');}
 function openOffer(){$('o_mm').value=S.set.offer.minMile;$('o_mh').value=fin(S.set.offer.minHour)?S.set.offer.minHour:'';rOffer();go('oferta',true);try{$('o_pay').focus();}catch(e){}}
-['o_pay','o_mi','o_min'].forEach(i=>$(i).oninput=rOffer);
-$('o_clear').onclick=()=>{['o_pay','o_mi','o_min'].forEach(i=>$(i).value='');rOffer();try{$('o_pay').focus();}catch(e){}};
+['o_pay','o_mi','o_min','o_rmi'].forEach(i=>$(i).oninput=rOffer);
+$('o_ret').onchange=()=>{S.set.offer.ret=$('o_ret').checked;save();rOffer();}; // se guarda: queda prendido para la próxima oferta
+$('o_clear').onclick=()=>{['o_pay','o_mi','o_min','o_rmi'].forEach(i=>$(i).value='');rOffer();try{$('o_pay').focus();}catch(e){}};
 $('o_mm').onchange=()=>{const v=num($('o_mm').value);if(v===null)return toast('Pon un mínimo por milla');S.set.offer.minMile=v;save();rOffer();toast('Mínimo por milla: '+money(v));};
 $('o_mh').onchange=()=>{const t=$('o_mh').value.trim(),v=t===''?null:num(t);if(t!==''&&v===null)return toast('Revisa el mínimo por hora');S.set.offer.minHour=v;save();rOffer();toast(v?'Mínimo por hora: '+money(v):'Sin mínimo por hora');};
 // ---------- Calendario de cobros ----------
