@@ -670,7 +670,8 @@ function rCal(){const y=calM.getFullYear(),m=calM.getMonth(),from=new Date(y,m,1
  $('reclist').querySelectorAll('[data-rv]').forEach(b=>b.onclick=()=>openRec(S.recs.find(x=>x.id===b.dataset.rv)));$('radd').onclick=()=>openRec(null);
  // Personal: lo que vence hoy, lo pendiente y lo de esta semana
  const back=new Date();back.setHours(0,0,0,0);back.setDate(back.getDate()-45);const ahead=new Date();ahead.setHours(0,0,0,0);ahead.setDate(ahead.getDate()+8);
- const N=calEvents(S,back,ahead).filter(e=>!e.done||e.day>=tk),late=N.filter(e=>e.late),soon=N.filter(e=>!e.late),wk=soon.filter(e=>e.type!=='inc'&&!e.done).reduce((a,e)=>a+(e.amount||0),0);
+ const N=calEvents(S,back,ahead).filter(e=>!e.done), // Próximos pagos: solo lo que falta; lo registrado sigue en el calendario
+ late=N.filter(e=>e.late),soon=N.filter(e=>!e.late),wk=soon.filter(e=>e.type!=='inc'&&!e.done).reduce((a,e)=>a+(e.amount||0),0);
  const has=S.recs.length||S.incs.length||S.debts.some(d=>(d.kind==='card'&&fin(d.due)&&fin(d.start))||(d.kind==='affirm'&&d.plan.length));
  $('ms-cal').textContent=has?(late.length?late.length+' pendiente(s) · ':'')+money(wk)+' en 7 días':'Suscripciones y fechas de pago';
  const cc=$('ccal');cc.hidden=!has||!N.length;if(!cc.hidden){const inW=soon.filter(e=>e.type==='inc').reduce((a,e)=>a+(e.amount||0),0);cc.innerHTML='<div class="pvh"><h2>Próximos pagos</h2><span>'+(late.length?late.length+' atrasado(s) · ':'')+'7 días</span></div>'+late.concat(soon).slice(0,3).map(pvHtml).join('')+'<button class="pvl" id="calgo">Ver todos los pagos y calendario →</button>';
