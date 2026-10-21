@@ -509,7 +509,7 @@ function shPrevBind(it){const f=()=>{const r=shCalc(it),o=$('e_prev');o.innerHTM
 function edFill(x){return '<div id="e_form">'+dtField('e_dt','Fecha',x.date)+fld('e_fo','Odómetro',x.odo)+'<div class="pair"><div>'+fld('e_fg','Galones',x.gal)+'</div><div>'+fld('e_fp','Cuánto pagaste ($)',x.paid)+'</div></div><label for="e_fa">Pagado con</label><span class="sel"><select id="e_fa">'+payOpts(x.acct,true)+'</select></span>'+'<label class="chk"><input type="checkbox" id="e_ff"'+(x.full!==false?' checked':'')+'> Llené el tanque completo</label>'+edBtns;}
 function bindEdit(){const k=ed.k,key=EDK[k],it=S[key].find(x=>x.id===ed.id);if(!it)return;
  arm($('e_del'),()=>{S[key]=S[key].filter(x=>x.id!==it.id);save();rAll();goBack();toast('Registro borrado');});
- $('e_ok').onclick=()=>{
+ $('e_ok').onclick=()=>{let xm='';
   if(k==='s'){const st=dtVal('e_st',it.start),en=dtVal('e_en',it.end),o1=numO($('e_so').value),o2=numO($('e_eo').value),sr=shCalc(it);
    if(!st||!en)return toast('Revisa la fecha y la hora');
    if(en<st)return toast('El fin debe ser después del inicio');if((en-st)/36e5>24)return toast('Un turno no puede durar más de 24 horas');
@@ -517,6 +517,9 @@ function bindEdit(){const k=ed.k,key=EDK[k],it=S[key].find(x=>x.id===ed.id);if(!
    if(sr.err)return toast(sr.err);const e=sr.e,tip=sr.P;if(sr.T!==null){it.sT=sr.T;it.sC=sr.C;}
    const om=it.endOdo-it.startOdo,pm=fin(it.reserve)&&om>0?it.reserve/om:rate(S); // conserva la reserva por milla que tenía el turno
    if((tip||0)!==(fin(it.tip)?it.tip:0))delete it.tp; // propina corregida a mano = confirmada
+   // Las propinas confirmadas de ese día son del turno anterior: si no coinciden, se corrige ese turno (igual que al terminar el turno)
+   if(sr.T!==null&&sr.C>0){const pv=S.shifts.filter(x=>vs(x)&&x!==it&&new Date(x.end)<=st).sort((a,b)=>new Date(b.end)-new Date(a.end))[0],ot=pv&&fin(pv.tip)?pv.tip:0;
+    if(pv&&pv.spk!==1&&Math.abs(ot-sr.C)>=0.005){tipConfirm(pv,sr.C);xm='. También la propina de tu turno del '+df(pv.start)+': '+money(ot)+' → '+money(sr.C);}}
    Object.assign(it,{start:st.toISOString(),end:en.toISOString(),startOdo:o1,endOdo:o2,earned:e,reserve:(o2-o1)*pm});if(tip)it.tip=tip;else delete it.tip;}
   else if(k==='p'){const dt=dtVal('e_dt',it.date),a=num($('e_pa').value);
    if(!dt)return toast('Revisa la fecha y la hora');if(a===null||a<=0)return toast('Pon un monto mayor a 0');
@@ -529,7 +532,7 @@ function bindEdit(){const k=ed.k,key=EDK[k],it=S[key].find(x=>x.id===ed.id);if(!
    const nf={...it,date:dt.toISOString(),odo:o,gal:gl,paid:p,full},w=checkFill(others,nf),sig='e|'+[o,gl,p,full].join('|');
    if(w&&fw!==sig){fw=sig;return toast(w+' Si es correcto, toca Guardar otra vez.',9000);}
    fw=null;Object.assign(it,nf);if($('e_fa').value)it.acct=$('e_fa').value;else delete it.acct;migrate(S);}
-  save();rAll();goBack();toast('Cambios guardados');};}
+  save();rAll();goBack();toast('Cambios guardados'+xm,xm?7000:undefined);};}
 function rHist(){const l=S.shifts.filter(vs).sort((a,b)=>new Date(b.start)-new Date(a.start)),f=[...S.fills].filter(vf).sort((a,b)=>b.odo-a.odo),g=gas(S.fills),cw=period('week')[0].getTime();
 const W=[];l.forEach(s=>{const k=period('week',s.start)[0].getTime();let w=W[W.length-1];if(!w||w.k!==k)W.push(w={k,s:[]});w.s.push(s);});
 $('list').innerHTML=W.length?W.map(w=>{const C=w.s.map(sc),e=C.reduce((a,c)=>a+c.e,0),ok=C.every(c=>c.net!==null),net=C.reduce((a,c)=>a+(c.net||0),0);
