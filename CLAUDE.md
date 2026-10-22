@@ -15,6 +15,7 @@ Datos guardados (todo en `sd_tracker_v1`): `shifts` (turnos), `fills` (llenadas)
 ## Cómo trabajar
 - Navegación: la animación de regreso (`anim('back')`) solo corre si `btnBack` es true (botón ‹ de la app o borrar deuda); con el gesto de atrás del iPhone no se anima, porque Safari ya lo hace.
 - La lógica de cálculo está entre `//LOGIC-START` y `//LOGIC-END`; no tocarla salvo que el cambio lo pida.
+- Revisión de diseño: la skill `apple-design` (en `.claude/skills/apple-design`, copia de github.com/dickwu/apple-design-skill con las guías de Apple) sirve para auditar pantallas contra las reglas de iPhone (contraste 4.5:1, botones de 44 pt, letra mínima 11 pt). Usarla para revisar, no para cambiar el estilo de la app.
 - Probar con Playwright (Chromium) en modo claro y oscuro, a 390×844, antes de subir; revisar capturas. Las pruebas que recargan la página deben abrirla con un servidor web local (`python3 -m http.server`), no con `file://`: con `file://` el navegador de pruebas a veces pierde el `localStorage` al recargar.
 - No romper los datos guardados: los cambios deben leer los datos que ya existen.
 
