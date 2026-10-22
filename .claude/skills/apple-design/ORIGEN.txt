@@ -1,0 +1,1 @@
+Origen: https://github.com/dickwu/apple-design-skill (commit 914b6a3, 15 oct 2026)
