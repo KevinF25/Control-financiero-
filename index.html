@@ -34,6 +34,9 @@ body{margin:0;background:var(--bg);color:var(--text);font:400 16px/1.45 "Instrum
 h2{font-size:17px;margin:0 0 10px;font-weight:600}
 label{display:block;font-size:13px;color:var(--muted);margin:10px 0 3px}
 input{width:100%;font:inherit;color:var(--text);background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 10px;min-height:42px}
+/* Safari pinta la fecha más ancha y centrada: igualarla a los demás campos (el selector sigue siendo el del iPhone) */
+input[type=date],input[type=datetime-local]{-webkit-appearance:none;appearance:none;display:block;min-width:0;max-width:100%;text-align:left;line-height:22px}
+input[type=date]::-webkit-date-and-time-value,input[type=datetime-local]::-webkit-date-and-time-value{text-align:left;margin:0}
 /* Fecha y hora: se ve el texto en español y encima va el campo nativo invisible, que al tocarlo abre el selector del teléfono. */
 .dtw{position:relative}.dtx{display:block;width:100%;color:var(--text);background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 10px;min-height:42px}
 .dti{position:absolute;inset:0;width:100%;height:100%;min-height:0;opacity:0;-webkit-appearance:none;appearance:none;cursor:pointer}
@@ -1059,7 +1062,7 @@ if(!location.hash&&view==='pers')history.replaceState(null,'',vurl('pers'));
 if(['#editar','#empezar','#terminar','#cuenta','#deuda','#editar-deuda','#pagar','#pago-programado','#recurrente'].includes(location.hash)&&HV[location.hash]!==view)history.replaceState(null,'',vurl(view));
 function anim(c){const el=$(VID[view]);el.classList.remove('enter','back');void el.offsetWidth;el.classList.add(c);}
 const isSub=v=>!!TTL[v]; // páginas con ‹ Atrás (las pestañas no)
-function go(v,push){if(S.set.job==='fijo'&&v==='work')v='pers';if(v==='work'||v==='pers'){lastTab=v;putTab(v);}if(push)history.pushState({p:1},'',vurl(v));else history.replaceState(null,'',vurl(v));const prev=view;view=v;rView();$('app').scrollTo(0,0);if(isSub(v)&&(push||!isSub(prev)))anim('enter');else if(isSub(prev))anim('back');}
+function go(v,push){if(S.set.job==='fijo'&&v==='work')v='pers';if(v==='work'||v==='pers'){lastTab=v;putTab(v);}if(push){history.replaceState({...(history.state||{}),y:$('app').scrollTop},'');history.pushState({p:1},'',vurl(v));} /* y = dónde estabas, para volver ahí sin salto */else history.replaceState(null,'',vurl(v));const prev=view;view=v;rView();$('app').scrollTo(0,0);if(isSub(v)&&(push||!isSub(prev)))anim('enter');else if(isSub(prev))anim('back');}
 function rView(){if(view==='deuda')rDebt();if(view==='cuenta')rCuenta(); // al volver a estas páginas, mostrar datos al día
  const sub=isSub(view);Object.keys(VID).forEach(k=>$(VID[k]).hidden=k!==view);
  document.querySelector('.tabs').hidden=sub;$('tabw').hidden=S.set.job==='fijo';document.querySelector('.tabs').classList.toggle('fx',S.set.job==='fijo');$('back').hidden=!sub;$('today').hidden=sub;$('menub').hidden=sub;$('bellb').hidden=sub;const tt=view==='editar'&&ed?ed.t:TTL[view];$('ttl').textContent=sub?tt:view==='pers'?'Personal':'Mis cuentas';document.title=sub?tt+' · Mis cuentas':'Control de gastos + Spark Driver';
@@ -1071,7 +1074,7 @@ document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go,
 $('back').onclick=goBack;
 $('menub').onclick=()=>go('menu',true);$('bellb').onclick=()=>go('avisos',true);
 $('actb').onclick=()=>{fw=null;fillSels();go(view==='work'?'llenada':'gasto',true);};
-window.addEventListener('popstate',()=>{view=fromHash();if(view==='work'||view==='pers'){lastTab=view;putTab(view);}rView();if(btnBack)anim('back');btnBack=false;});
+window.addEventListener('popstate',()=>{view=fromHash();if(view==='work'||view==='pers'){lastTab=view;putTab(view);}rView();$('app').scrollTop=(history.state&&history.state.y)||0;if(btnBack)anim('back');btnBack=false;});
 $('app').addEventListener('scroll',()=>$('top').classList.toggle('sc',$('app').scrollTop>4),{passive:true});
 if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost'))navigator.serviceWorker.register('sw.js').catch(()=>{});
 // ---------- Informe de ganancias de Spark (.xlsx) ----------

@@ -13,6 +13,7 @@ Datos guardados (todo en `sd_tracker_v1`): `shifts` (turnos), `fills` (llenadas)
 - Antes de cambios grandes de diseño o de navegación, **proponer y discutir primero**. Los arreglos pequeños se pueden hacer directo.
 
 ## Cómo trabajar
+- Navegación: al abrir una pantalla nueva, `go(v,true)` guarda en `history.state.y` cuánto habías bajado en la anterior; al regresar (gesto o ‹) se restaura, para que no brinque. Los campos de fecha llevan `appearance:none` para que Safari no los haga más anchos.
 - Navegación: la animación de regreso (`anim('back')`) solo corre si `btnBack` es true (botón ‹ de la app o borrar deuda); con el gesto de atrás del iPhone no se anima, porque Safari ya lo hace.
 - La lógica de cálculo está entre `//LOGIC-START` y `//LOGIC-END`; no tocarla salvo que el cambio lo pida.
 - Ventanas: nunca usar `prompt()`/`confirm()`/`alert()` del navegador. Para pedir un monto o texto, `await ask({t, q, v, num, hint, ok, neg})` (hoja desde abajo con teclado de números; devuelve el texto o null); para confirmar, `await sure({t, m, ok, red})` (opciones desde abajo; true/false). Listas de turnos, llenadas y gastos: `rowTap(contenedor, k)` hace que tocar el renglón abra Editar y que deslizar a la izquierda muestre Borrar (pregunta antes; Borrar sigue también dentro de Editar); en calendario e ingresos fijos `evTap`. Botones de al menos 44 pt de alto.
