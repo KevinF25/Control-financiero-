@@ -1,0 +1,32 @@
+# Archivos y carpetas que Claude no necesita leer (pesados, generados o secretos)
+
+# Dependencias y compilados
+node_modules/
+dist/
+build/
+.next/
+out/
+.vercel/
+.cache/
+coverage/
+
+# Secretos (nunca leerlos ni subirlos)
+.env
+.env.*
+*.pem
+*.key
+
+# Registros y temporales
+*.log
+logs/
+tmp/
+.DS_Store
+
+# Pruebas y capturas locales
+test-results/
+playwright-report/
+
+# Copias de seguridad y datos del dueño (datos personales)
+*copia*.json
+backup*.json
+*.xlsx
