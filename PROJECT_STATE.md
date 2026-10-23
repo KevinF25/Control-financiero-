@@ -2,7 +2,7 @@
 
 Estado del proyecto al **23 de octubre de 2026** (65 PRs unidos a `main`, del 12 al 23 de octubre).
 Este archivo resume todo el historial de conversación para empezar sesiones nuevas sin repetirlo.
-Los detalles técnicos finos están en `CLAUDE.md` (datos y reglas) y `DESIGN.md` (diseño).
+Reglas de trabajo en `CLAUDE.md`, detalle de datos y cálculos en `DATOS.md` y diseño en `DESIGN.md`.
 
 ---
 
@@ -127,7 +127,7 @@ Los detalles técnicos finos están en `CLAUDE.md` (datos y reglas) y `DESIGN.md
 ## 4. Tareas pendientes
 
 **Para revisar con el dueño (recién hecho)**
-- [ ] **Contador del turno:** el dueño lo está probando unos días. Si no sirve, quitarlo (`active.lv`, "La acepté ✓", el renglón "Llevas en este turno"); si sirve, dejarlo y quitar la palabra "prueba" de `CLAUDE.md`.
+- [ ] **Contador del turno:** el dueño lo está probando unos días. Si no sirve, quitarlo (`active.lv`, "La acepté ✓", el renglón "Llevas en este turno"); si sirve, dejarlo y quitar la palabra "prueba" de `DATOS.md`.
 - [ ] **En el iPhone real:**
   - que la barra flotante no choque con la rayita de inicio;
   - que las hojas queden encima del teclado y que el teclado salga solo;
@@ -157,7 +157,7 @@ Los detalles técnicos finos están en `CLAUDE.md` (datos y reglas) y `DESIGN.md
 - [ ] Hacer copia de seguridad seguido (la campanita avisa a los 7 días).
 
 ## Cómo seguir en una sesión nueva
-1. Leer `PROJECT_STATE.md`, `CLAUDE.md` y `DESIGN.md`.
+1. Leer `PROJECT_STATE.md`, `CLAUDE.md` y, según el cambio, `DATOS.md` y `DESIGN.md`.
 2. Trabajar en la rama `claude/code-review-design-improvements-8dxp7k`, actualizada desde `main`.
 3. Probar con Playwright (claro y oscuro, 390×844), revisar las capturas, buscar claves expuestas, hacer un PR en español y unirlo.
 4. Al terminar algo importante, actualizar este archivo.
