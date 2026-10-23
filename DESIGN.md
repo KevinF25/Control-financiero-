@@ -25,6 +25,7 @@ Siempre con variables CSS; nunca escribir un color directo en un componente.
 | `--onaccent` | `#ffffff` | `#0f1917` | Texto sobre el verde | 6.4 / 8.5 |
 | `--accbg` | `#e1efe9` | `#183a31` | Fondo verde claro (iconos, avisos, toque) | verde sobre él: 5.4 / 5.9 |
 | `--bad` | `#b3261e` | `#ff8a80` | Negativos, deudas, borrar | 6.5 / 6.9 |
+| `--hero` | `#185c4b` | `#1f4a3e` | Fondo de la tarjeta verde "Dinero disponible" (texto blanco 7.9 / 10.0; negativos `#ffd6d1`) | — |
 | `--glass` | `rgba(242,245,243,.82)` | `rgba(15,25,23,.82)` | Barra de arriba translúcida | — |
 
 Reglas:
@@ -46,8 +47,10 @@ Reglas:
 
 | Uso | Tamaño | Peso |
 | --- | --- | --- |
-| Monto grande (Dinero disponible) | 34 px | 700, `letter-spacing:-.01em`, verde |
-| Título de pantalla (barra de arriba) | 22 px | 700 |
+| Monto grande (Dinero disponible, Te quedó por hora) | 44 px | 700, `letter-spacing:-.035em`; centavos al 55 % (`bigM`) |
+| Título de pestaña (Trabajo/Personal), con la fecha arriba en 12 px mayúsculas | 30 px | 700, `letter-spacing:-.025em` |
+| Título de pantalla interna | 22 px | 700 |
+| Título de sección fuera de tarjeta (`.sech`) | 21 px | 700 |
 | Título de tarjeta (`h2`) | 17 px | 600 |
 | Texto normal, renglones | 15–16 px | 400 |
 | Montos en renglones | 15–16 px | 700 (`<b>`) |
@@ -61,7 +64,7 @@ Reglas:
 ## Espacios y formas
 - Margen de la pantalla: 14 px a los lados.
 - **Tarjeta (`.card`):**
-  - fondo `--card`, radio 16 px, relleno 16 px;
+  - fondo `--card`, radio 22 px, relleno 16 px;
   - 12 px de separación entre tarjetas;
   - sombra suave en claro (`--shadow`) y ninguna en oscuro.
 - **Botón principal (`.btn`):**
@@ -110,6 +113,15 @@ Reglas:
   - la acción va arriba (en rojo si borra) y "Cancelar" aparte y en negrita.
 - **Avisos breves (`#msg`):** píldora verde clara sobre la barra de abajo. Solo dan información, nunca preguntan.
 - **Nunca** se usan `alert()`, `confirm()` ni `prompt()` del navegador.
+
+- **Pantallas principales (diseño moderno):**
+  - "Dinero disponible" es la única tarjeta verde llena (`#acard.mhero`, fondo `--hero`, texto blanco). Es la pieza principal; no repetir ese estilo en otras tarjetas.
+  - Títulos de sección fuera de las tarjetas (`.sech`: "Resumen", "Próximos pagos" con "Ver todos", "Apartados"); se esconden solos si su tarjeta está oculta.
+  - Balance y Deuda son dos tarjetas separadas.
+  - Estados como etiquetas (`.pvr small`): "Hoy" y "Registrado" en verde, "Pendiente" en gris, "Atrasado" en rojo.
+  - Hoy/Semana/Mes: selector estilo iPhone (fondo gris, la opción elegida en blanco).
+  - Botón secundario de acción ("Evaluar oferta"): fondo `--accbg` y texto verde.
+  - En el teléfono, la barra de abajo flota como píldora separada de los bordes (en modo Trabajo fijo solo queda el (+)).
 
 ## Movimiento
 - **Animaciones:**

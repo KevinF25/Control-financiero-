@@ -16,9 +16,9 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#f2f5f3;--card:#fff;--text:#17302b;--muted:#5a6d68;--border:#d5ded9;--accent:#1d6b58;--onaccent:#fff;--accbg:#e1efe9;--bad:#b3261e;--shadow:0 1px 2px rgba(23,48,43,.06),0 2px 8px rgba(23,48,43,.05);--glass:rgba(242,245,243,.82);--glass2:rgba(255,255,255,.86)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1917;--card:#17252a;--text:#e3eeea;--muted:#8fa59f;--border:#2b3f3b;--accent:#5fc4a5;--onaccent:#0f1917;--accbg:#183a31;--bad:#ff8a80;--shadow:none;--glass:rgba(15,25,23,.82);--glass2:rgba(23,37,42,.86)}}
-:root[data-theme="dark"]{--bg:#0f1917;--card:#17252a;--text:#e3eeea;--muted:#8fa59f;--border:#2b3f3b;--accent:#5fc4a5;--onaccent:#0f1917;--accbg:#183a31;--bad:#ff8a80;--shadow:none;--glass:rgba(15,25,23,.82);--glass2:rgba(23,37,42,.86)}
+:root{--hero:#185c4b;--bg:#f2f5f3;--card:#fff;--text:#17302b;--muted:#5a6d68;--border:#d5ded9;--accent:#1d6b58;--onaccent:#fff;--accbg:#e1efe9;--bad:#b3261e;--shadow:0 1px 2px rgba(23,48,43,.04),0 10px 28px rgba(23,48,43,.07);--glass:rgba(242,245,243,.82);--glass2:rgba(255,255,255,.86)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--hero:#1f4a3e;--bg:#0f1917;--card:#17252a;--text:#e3eeea;--muted:#8fa59f;--border:#2b3f3b;--accent:#5fc4a5;--onaccent:#0f1917;--accbg:#183a31;--bad:#ff8a80;--shadow:none;--glass:rgba(15,25,23,.82);--glass2:rgba(23,37,42,.86)}}
+:root[data-theme="dark"]{--hero:#1f4a3e;--bg:#0f1917;--card:#17252a;--text:#e3eeea;--muted:#8fa59f;--border:#2b3f3b;--accent:#5fc4a5;--onaccent:#0f1917;--accbg:#183a31;--bad:#ff8a80;--shadow:none;--glass:rgba(15,25,23,.82);--glass2:rgba(23,37,42,.86)}
 html,body{height:100%;overflow:hidden}
 html{-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent;overscroll-behavior:none;background:var(--bg)}
 button,label,.tabs{-webkit-user-select:none;user-select:none;touch-action:manipulation}
@@ -116,6 +116,55 @@ select{width:100%;-webkit-appearance:none;appearance:none;font:inherit;color:var
 .verd{border-radius:14px;padding:14px 16px;margin-top:14px;background:var(--bg)}.verd .vt{font-size:22px;font-weight:700}.verd.good{background:var(--accbg)}.verd.good .vt{color:var(--accent)}.verd.bad .vt{color:var(--bad)}.verd.mid .vt{color:var(--text)}
 .verd .vs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.verd .vs div{font-size:13px;color:var(--muted)}.verd .vs b{display:block;font-size:18px;color:var(--text);font-weight:600}
 .pair{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
+/* Diseño moderno (aprobado con maquetas): títulos grandes, tarjeta verde, secciones, etiquetas y barra flotante */
+.card{border-radius:22px}
+#ttl:has(+ #today:not([hidden])){font-size:30px;letter-spacing:-.025em;line-height:1.1}
+.top .tl>div{display:flex;flex-direction:column-reverse}
+#today{font-size:12px;text-transform:uppercase;letter-spacing:.07em;font-weight:600;margin-bottom:1px}
+.sech{display:flex;justify-content:space-between;align-items:center;margin:22px 4px 8px;font-size:21px;font-weight:700;letter-spacing:-.015em}
+.sech:has(+ [hidden]){display:none}
+.sechl{background:none;border:0;padding:0 2px;min-height:44px;font:inherit;font-size:15px;font-weight:500;color:var(--accent);letter-spacing:0;cursor:pointer}
+.big small{font-size:.55em;font-weight:600;opacity:.75;letter-spacing:0}
+#acard.mhero{background:var(--hero);color:#fff;padding:22px 20px 18px;border-color:transparent}
+#acard.mhero .muted{color:rgba(255,255,255,.82)}
+#acard.mhero .big{color:#fff;font-size:44px;font-weight:700;letter-spacing:-.035em;line-height:1.1;margin-top:4px}
+#acard.mhero .neg{color:#ffd6d1}
+#acard.mhero .adiv{border-color:rgba(255,255,255,.22)}
+#acard.mhero .arow{color:#fff;border-color:rgba(255,255,255,.16)}
+#acard.mhero .arow small{color:rgba(255,255,255,.8)}
+#acard.mhero .btn2{background:rgba(255,255,255,.16);border-color:transparent;color:#fff}
+#dcard{background:none;box-shadow:none;border-color:transparent;padding:0}
+#dcard .hgrid{gap:12px}
+#dcard .hk{background:var(--card);border-radius:22px;padding:16px;box-shadow:var(--shadow);border:1px solid var(--border)}
+@media (prefers-color-scheme:light){#dcard .hk{border-color:transparent}}
+#dcard .hk b{font-size:25px;letter-spacing:-.02em}
+#dcard .hk span{font-size:13px;font-weight:600}
+#dcard .hl{color:var(--accent);font-style:normal;font-weight:500}
+#ccal{padding:6px 16px}
+#ccal .pvh,#ccal .pvl{display:none}
+#ccal .pv{border-top:0;position:relative;padding:12px 0;min-height:60px}
+#ccal .pv+.pv::before{content:"";position:absolute;left:52px;right:0;top:0;border-top:1px solid var(--border)}
+#ccal .pv .ic{width:40px;height:40px;border-radius:12px}
+.pvr small{display:inline-block;margin-top:4px;padding:2px 9px;border-radius:999px;background:var(--bg);color:var(--muted);font-size:12px;font-weight:600}
+.pvr small.hoy,.pvr small.ok{background:var(--accbg);color:var(--accent)}
+.pvr small.neg{background:color-mix(in srgb,var(--bad) 14%,transparent);color:var(--bad)}
+#gooffer{background:var(--accbg);border-color:transparent;color:var(--accent)}
+.seg{background:var(--bg);border-radius:12px;padding:3px;gap:0}
+.seg button{border:0;background:none;border-radius:9px;min-height:36px;font-weight:600;color:var(--muted)}
+.seg button.on{background:var(--card);color:var(--text);border-color:transparent;box-shadow:0 1px 4px rgba(0,0,0,.12)}
+#stats .hero{background:none;padding:6px 2px 4px}
+#stats .big{font-size:44px;font-weight:700;letter-spacing:-.035em}
+#stats .k{border-radius:14px}
+#stats .k.hi{background:var(--accent)}
+#stats .k.hi span,#stats .k.hi b{color:var(--onaccent)}
+@media (max-width:639px){
+ .tabs:not(.fx){left:14px;right:14px;bottom:max(12px,calc(env(safe-area-inset-bottom,0px) - 8px));padding:6px;border:1px solid var(--border);border-radius:30px;box-shadow:0 10px 30px rgba(0,0,0,.14)}
+ .tabs:not(.fx) .fab{width:48px;height:48px;box-shadow:none}
+ #wrap{padding-bottom:calc(112px + env(safe-area-inset-bottom,0px))}
+ #msg{bottom:calc(92px + env(safe-area-inset-bottom,0px))}
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .seg button.on{background:#2b3f3b}:root:not([data-theme="light"]) .tabs:not(.fx){box-shadow:0 10px 30px rgba(0,0,0,.5)}}
+:root[data-theme="dark"] .seg button.on{background:#2b3f3b}
 /* Hojas desde abajo (en lugar de las ventanitas del navegador) */
 #shd{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.38);opacity:0;transition:opacity .2s}
 #shd.on{opacity:1}
@@ -167,10 +216,13 @@ select{width:100%;-webkit-appearance:none;appearance:none;font:inherit;color:var
 </main>
 <main id="pers" hidden>
 <section class="card" id="acard"></section>
+<h2 class="sech">Resumen</h2>
 <section class="card" id="dcard"></section>
 <section class="card" id="updcard" hidden></section>
 <section class="card" id="bkcard" hidden></section>
+<h2 class="sech">Próximos pagos<button class="sechl" id="calgo2">Ver todos</button></h2>
 <section class="card" id="ccal" hidden></section>
+<h2 class="sech">Apartados</h2>
 <section class="card" id="apcard" hidden></section>
 <section class="card" id="psum" hidden></section>
 </main>
@@ -525,7 +577,7 @@ const gv=x.n===0?'—':(x.ng===x.n?'Pendiente':money(x.gc)+(x.ng?'*':''));
 const K=(l,v,c)=>'<div class="k'+(c?' '+c:'')+'"><span>'+l+'</span><b'+(String(v)[0]==='-'?' class="neg"':'')+'>'+v+'</b></div>';
 const R=[['day','Hoy'],['week','Semana'],['month','Mes']];
 let h='<div class="seg">'+R.map(r=>'<button data-r="'+r[0]+'" class="'+(S.range===r[0]?'on':'')+'">'+r[1]+'</button>').join('')+'</div>';
-h+='<div class="hero"><p class="muted">Te quedó por hora (est.)</p><div class="big'+(nph!==null&&nph<0?' neg':'')+(nph===null?' pend':'')+'">'+(nph!==null?money(nph):(x.n&&!x.complete?'Pendiente':'—'))+'</div></div>';
+h+='<div class="hero"><p class="muted">Te quedó por hora (est.)</p><div class="big'+(nph!==null&&nph<0?' neg':'')+(nph===null?' pend':'')+'">'+(nph!==null?bigM(nph):(x.n&&!x.complete?'Pendiente':'—'))+'</div></div>';
 const ppm=x.mi>0?x.e/x.mi:null; // por milla: el número para comparar con las ofertas (incluye las vueltas)
 if(x.n&&bph!==null)h=h.replace(/<\/div><\/div>$/,'</div><p class="muted hsub">Ganado por hora: <b>'+money(bph)+'</b>'+(nph!==null&&bph>0?' · te quedó el '+Math.round(nph/bph*100)+'%':'')+'</p></div>');
 h+=x.n?'<div class="grid">'+K('Ganado',money(x.e))+K('Gasolina (est.)',gv)+K('Reserva',money(x.rv))+K('Resultado (est.)',x.complete?money(x.net):'Pendiente','hi')+'</div>'+
@@ -740,9 +792,11 @@ function evHtml(e,showDay){const st=e.done?'Registrado ✓':(e.late?'Pendiente':
  return '<div class="ev"><span>'+esc(e.name)+'<small'+(e.late?' class="late"':'')+'>'+(showDay?day:EVT[e.type])+(st?' · '+st:'')+'</small></span><span class="r"><b'+(e.type==='inc'?' class="pos"':'')+'>'+(e.amount!==null?(e.type==='inc'?'+':'')+money(e.amount):'—')+'</b>'+((e.day<=dk(new Date())||e.type!=='inc')?btn:'')+'</span></div>';}
 // Personal → Próximos cobros: renglón con icono, monto y estado (se confirma en el calendario)
 const PVI={rec:'<path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17.5v-11"/>',card:'<rect width="20" height="14" x="2" y="5" rx="2"/><path d="M2 10h20"/>',affirm:'<path d="M21 7.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3.5"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h5"/><path d="M17.5 17.5 16 16.3V14"/><circle cx="16" cy="16" r="6"/>',inc:'<rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/>'};
+// Monto con los centavos más chicos (montos grandes)
+const bigM=x=>{const t=money(x),m=t.match(/^(.*)(\.\d\d)$/);return m?m[1]+'<small>'+m[2]+'</small>':t;};
 function pvHtml(e){const tk=dk(new Date()),inc=e.type==='inc',st=e.done?(inc?'Llegó ✓':'Registrado'):e.late?'Atrasado':e.day===tk?'Hoy':inc?'Por llegar':'Pendiente',
  day=new Date(e.day+'T12:00:00').toLocaleDateString('es-US',{weekday:'short',day:'numeric',month:'short'});
- return '<button class="pv" data-pv="'+e.day+'"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(PVI[e.type]||PVI.rec)+'</svg></span><span class="pvm">'+esc(e.name)+'<small>'+day+'</small></span><span class="pvr"><b'+(inc?' class="pos"':'')+'>'+(e.amount!==null?(inc?'+':'')+money(e.amount):'—')+'</b><small class="'+(e.done?'ok':e.late?'neg':'')+'">'+st+'</small></span></button>';}
+ return '<button class="pv" data-pv="'+e.day+'"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(PVI[e.type]||PVI.rec)+'</svg></span><span class="pvm">'+esc(e.name)+'<small>'+day+'</small></span><span class="pvr"><b'+(inc?' class="pos"':'')+'>'+(e.amount!==null?(inc?'+':'')+money(e.amount):'—')+'</b><small class="'+(e.done?'ok':e.late?'neg':e.day===tk?'hoy':'')+'">'+st+'</small></span></button>';}
 function evBind(root){root.querySelectorAll('[data-ev]').forEach(b=>b.onclick=()=>evAct(b.dataset.ev,b.classList.contains('ok')));}
 async function evAct(ev,isOk){{const dd=day=>new Date(day+'T12:00:00').toLocaleDateString('es-US',{day:'numeric',month:'short'});const [type,id,day,plan]=ev.split('|'),tk=dk(new Date());
  if(type==='rec'){const r=S.recs.find(x=>x.id===id);if(!r)return;const p=S.personal.find(x=>x.rec===id&&x.recDue===day);
@@ -776,7 +830,7 @@ function rCal(){const y=calM.getFullYear(),m=calM.getMonth(),from=new Date(y,m,1
  const has=S.recs.length||S.incs.length||S.debts.some(d=>(d.kind==='card'&&fin(d.due)&&fin(d.start))||(d.kind==='affirm'&&d.plan.length));
  $('ms-cal').textContent=has?(late.length?late.length+' pendiente(s) · ':'')+money(wk)+' en 7 días':'Suscripciones y fechas de pago';
  const cc=$('ccal');cc.hidden=!has||!N.length;if(!cc.hidden){const inW=soon.filter(e=>e.type==='inc').reduce((a,e)=>a+(e.amount||0),0);cc.innerHTML='<div class="pvh"><h2>Próximos pagos</h2><span>'+(late.length?late.length+' atrasado(s) · ':'')+'7 días</span></div>'+late.concat(soon).slice(0,3).map(pvHtml).join('')+'<button class="pvl" id="calgo">Ver todos los pagos y calendario →</button>';
-  cc.querySelectorAll('[data-pv]').forEach(b=>b.onclick=()=>{const [y,m]=b.dataset.pv.split('-').map(Number);calM=new Date(y,m-1,1);calSel=b.dataset.pv;rCal();go('cal',true);});$('calgo').onclick=()=>go('cal',true);}}
+  cc.querySelectorAll('[data-pv]').forEach(b=>b.onclick=()=>{const [y,m]=b.dataset.pv.split('-').map(Number);calM=new Date(y,m-1,1);calSel=b.dataset.pv;rCal();go('cal',true);});$('calgo').onclick=$('calgo2').onclick=()=>go('cal',true);}}
 function openRec(r){rv=r?r.id:null;$('r_name').value=r?r.name:'';$('r_amt').value=r?r.amount:'';$('r_freq').value=r?r.freq:'month';$('r_day').value=r&&fin(r.day)?r.day:'';$('r_wd').value=r&&fin(r.wday)?r.wday:1;
  $('r_date').value=r&&r.md?new Date().getFullYear()+'-'+r.md:'';$('r_acct').innerHTML=payOpts(r?r.acct||'':'',true);$('r_cat').innerHTML=catOpts(r?r.cat||'':'',true);catBind($('r_cat'));$('r_del').hidden=!r;recFreq();
  TTL.recedit=r?'Editar pago':'Nuevo pago recurrente';go('recedit',true);}
@@ -900,9 +954,9 @@ function rAcc(){const conf=ACCK.some(k=>fin(S.acc[k].start));
  $('caclist').innerHTML='<h2 class="wk">Tus cuentas<small>Toca una cuenta para ver sus movimientos, ajustarla al banco o cambiarle el nombre.</small></h2>'+ACCK.filter(k=>S.set.job!=='fijo'||k!=='spark'||fin(S.acc[k].start)).map(k=>{const r=acctBal(S,k);
   return '<button class="arow" data-cac="'+k+'"><span>'+esc(ACC[k])+'<small>'+(r?esc(DESC[k]||'Cuenta'):'Sin saldo · toca para ponerlo')+'</small></span><span class="r">'+(r?'<b'+(r.bal<0?' class="neg"':'')+'>'+money(r.bal)+'</b>':'')+CHV+'</span></button>';}).join('')+(conf?'<button class="btn full" id="catr">⇄ Transferir entre cuentas</button>':'')+'<button class="btn2 full" id="caadd">+ Agregar cuenta</button>';$('caadd').onclick=()=>openAcc(null);if($('catr'))$('catr').onclick=openTransfer;
  $('caclist').querySelectorAll('[data-cac]').forEach(b=>b.onclick=()=>{cv=b.dataset.cac;if(!fin(S.acc[cv].start))return openAcc(cv);rCuenta();go('cuenta',true);});
- if(!conf){$('acard').innerHTML='<h2>Cuentas</h2><p class="muted">Pon el saldo de tus tarjetas de débito y la app te dirá cuánto deberías tener en cada una.</p><button class="btn2 full" id="acfg">Configurar cuentas</button>';$('acfg').onclick=()=>go('cuentas',true);}
+ if(!conf){$('acard').classList.remove('mhero');$('acard').innerHTML='<h2>Cuentas</h2><p class="muted">Pon el saldo de tus tarjetas de débito y la app te dirá cuánto deberías tener en cada una.</p><button class="btn2 full" id="acfg">Configurar cuentas</button>';$('acfg').onclick=()=>go('cuentas',true);}
  else{const avK=ACCK.filter(k=>!isSav(k)&&fin(S.acc[k].start)),av=avK.reduce((a,k)=>a+acctBal(S,k).bal,0);
-  $('acard').innerHTML='<p class="muted" style="margin:0">Dinero disponible</p><div class="big'+(av<0?' neg':'')+'">'+money(av)+'</div><p class="muted" style="margin:2px 0 0">En tus cuentas de uso diario</p><div class="adiv"></div>'+ACCK.filter(k=>!isSav(k)).map(k=>{const r=acctBal(S,k);if(!r&&S.set.job==='fijo')return ''; // trabajo fijo: no mostrar cuentas sin configurar (p. ej. Spark)
+  $('acard').classList.add('mhero');$('acard').innerHTML='<p class="muted" style="margin:0">Dinero disponible</p><div class="big'+(av<0?' neg':'')+'">'+bigM(av)+'</div><p class="muted" style="margin:2px 0 0">En tus cuentas de uso diario</p><div class="adiv"></div>'+ACCK.filter(k=>!isSav(k)).map(k=>{const r=acctBal(S,k);if(!r&&S.set.job==='fijo')return ''; // trabajo fijo: no mostrar cuentas sin configurar (p. ej. Spark)
   if(!r)return '<button class="arow" data-acc="'+k+'"><span>'+ACC[k]+'<small>Sin saldo inicial</small></span></button>';
   return '<button class="arow" data-acc="'+k+'"><span>'+ACC[k]+(r.pend?'<small>+'+money(r.pend)+' pendientes</small>':'')+'</span><span class="r"><b'+(r.bal<0?' class="neg"':'')+'>'+money(r.bal)+'</b></span></button>';}).join('')+
   '<button class="btn2 full" id="atr">Ver cuentas y transferencias</button>';
