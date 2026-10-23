@@ -1,0 +1,18 @@
+# Nunca subir a GitHub: secretos, dependencias, compilados, registros ni datos personales
+.env
+.env.*
+*.pem
+*.key
+node_modules/
+dist/
+build/
+.next/
+.vercel/
+*.log
+logs/
+.DS_Store
+test-results/
+playwright-report/
+*copia*.json
+backup*.json
+*.xlsx
