@@ -50,7 +50,7 @@ Reglas:
 | Monto grande (Dinero disponible, Te quedó por hora) | 44 px | 700, `letter-spacing:-.035em`; centavos al 55 % (`bigM`) |
 | Título de pestaña (Trabajo/Personal), con la fecha arriba en 12 px mayúsculas | 30 px | 700, `letter-spacing:-.025em` |
 | Título de pantalla interna | 22 px | 700 |
-| Título de sección fuera de tarjeta (`.sech`) | 21 px | 700 |
+| Título de sección fuera de tarjeta (`.sech`) | 20 px | 700, 16 px arriba y 4 px abajo |
 | Título de tarjeta (`h2`) | 17 px | 600 |
 | Texto normal, renglones | 15–16 px | 400 |
 | Montos en renglones | 15–16 px | 700 (`<b>`) |
@@ -116,7 +116,7 @@ Reglas:
 
 - **Pantallas principales (diseño moderno):**
   - "Dinero disponible" es la única tarjeta verde llena (`#acard.mhero`, fondo `--hero`, texto blanco). Es la pieza principal; no repetir ese estilo en otras tarjetas.
-  - Títulos de sección fuera de las tarjetas (`.sech`: "Resumen", "Próximos pagos" con "Ver todos", "Apartados"); se esconden solos si su tarjeta está oculta.
+  - Títulos de sección fuera de las tarjetas (`.sech`: "Resumen", "Próximos pagos" con "Ver todos"); se esconden solos si su tarjeta está oculta.
   - Balance y Deuda son dos tarjetas separadas.
   - Estados como etiquetas (`.pvr small`): "Hoy" y "Registrado" en verde, "Pendiente" en gris, "Atrasado" en rojo.
   - Hoy/Semana/Mes: selector estilo iPhone (fondo gris, la opción elegida en blanco).
