@@ -13,6 +13,12 @@ Datos guardados (todo en `sd_tracker_v1`): `shifts` (turnos), `fills` (llenadas)
 - Antes de cambios grandes de diseño o de navegación, **proponer y discutir primero**. Los arreglos pequeños se pueden hacer directo.
 
 ## Cómo trabajar
+- Diseño: seguir `DESIGN.md` (colores, letra, tamaños y componentes de la app). Leerlo antes de cualquier cambio visual.
+- Reglas de trabajo (inspiradas en las guías de Karpathy):
+  - **Pensar antes de cambiar:** si el pedido no está claro o hay varias formas de entenderlo, preguntar o decir qué se va a suponer; no adivinar en silencio.
+  - **Lo más simple que funcione:** el código mínimo para lo que se pidió, sin opciones ni "por si acaso" que nadie pidió.
+  - **Cambios quirúrgicos:** tocar solo lo que el pedido necesita; no reordenar, renombrar ni "mejorar" código vecino. Si algo más se ve mal, se avisa en vez de cambiarlo.
+  - **Terminar con prueba:** antes de decir que está listo, comprobarlo (prueba de Playwright y capturas) y contar qué se probó y qué no se pudo probar.
 - Navegación: al abrir una pantalla nueva, `go(v,true)` guarda en `history.state.y` cuánto habías bajado en la anterior; al regresar (gesto o ‹) se restaura, para que no brinque. Los campos de fecha llevan `appearance:none` para que Safari no los haga más anchos.
 - Navegación: la animación de regreso (`anim('back')`) solo corre si `btnBack` es true (botón ‹ de la app o borrar deuda); con el gesto de atrás del iPhone no se anima, porque Safari ya lo hace.
 - La lógica de cálculo está entre `//LOGIC-START` y `//LOGIC-END`; no tocarla salvo que el cambio lo pida.
