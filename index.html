@@ -82,7 +82,8 @@ input:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:
 .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent);margin-right:8px;vertical-align:middle;animation:pulse 1.6s ease-in-out infinite}
 @keyframes pulse{50%{opacity:.3}}
 @media (prefers-reduced-motion:reduce){.dot{animation:none}.btn:active,.btn2:active,.seg button:active{transform:none}}
-.hero{background:var(--accbg);border-radius:10px;padding:12px 14px}.hero .muted{margin:0;color:var(--text);opacity:.75}
+.hero{background:var(--accbg);border-radius:10px;padding:12px 14px}
+#goalgo>span:first-child{flex:1;min-width:0}.gbar{display:block;height:6px;border-radius:99px;background:color-mix(in srgb,var(--accent) 18%,transparent);margin-top:8px;overflow:hidden}.gbar i{display:block;height:100%;border-radius:99px;background:var(--accent)}.hero .muted{margin:0;color:var(--text);opacity:.75}
 .row>div:last-child{display:flex;align-items:center;gap:4px;flex-shrink:0}
 main.enter{animation:enter .22s ease-out}main.back{animation:back .22s ease-out}
 @keyframes enter{from{opacity:0;transform:translateX(28px)}}@keyframes back{from{opacity:0;transform:translateX(-28px)}}
@@ -191,7 +192,7 @@ select{width:100%;-webkit-appearance:none;appearance:none;font:inherit;color:var
 <main id="v-oferta" hidden><section class="card"><div class="pair"><div><label for="o_pay">Pago de la oferta ($)</label><input id="o_pay" inputmode="decimal" autocomplete="off" placeholder="Ej. 18.50"></div><div><label for="o_mi">Millas</label><input id="o_mi" inputmode="decimal" autocomplete="off" placeholder="Ej. 12"></div></div>
 <label for="o_min">Minutos estimados <span style="opacity:.7">· opcional</span></label><input id="o_min" inputmode="numeric" autocomplete="off" placeholder="Ej. 35">
 <label class="swrow" for="o_ret" style="margin-top:14px">Contar la vuelta al Walmart<input type="checkbox" class="sw" id="o_ret"></label><div id="o_retw" hidden><label for="o_rmi">Millas de regreso <span style="opacity:.7">· opcional</span></label><input id="o_rmi" inputmode="decimal" autocomplete="off" placeholder="Vacío = igual que las de ida"></div>
-<div id="o_res"></div><button class="link" id="o_clear">Borrar y evaluar otra</button></section>
+<button class="btn" id="o_acc" hidden>La acepté ✓</button><div id="o_res"></div><button class="link" id="o_clear">Borrar y evaluar otra</button></section>
 <section class="card"><h2>Tus mínimos</h2><div class="pair"><div><label for="o_mm">Por milla ($)</label><input id="o_mm" inputmode="decimal" autocomplete="off"></div><div><label for="o_mh">Por hora ($) · opcional</label><input id="o_mh" inputmode="decimal" autocomplete="off"></div></div><p class="muted">"Buena" si llega a tu mínimo; "Regular" si se queda cerca (80% o más); "Mala" si no. Se guardan solos.</p></section></main>
 <main id="v-spark" hidden><section class="card" id="sp_head"></section><section class="card" id="sp_prev" hidden></section><section class="card" id="sp_year"></section><input type="file" id="sp_file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden></main>
 <main id="v-best" hidden><section class="card" id="bestd"></section><section class="card" id="besth"></section></main>
@@ -307,7 +308,7 @@ function sumP(D,p){const r={n:0,e:0,mi:0,h:0,gc:0,rv:0,net:0,ng:0,nn:0};
  r.complete=r.nn===0;return r;}
 function resTotal(D){return D.shifts.filter(vs).reduce((a,s)=>a+sc(s).rv,0);}
 function norm(raw){const o=raw&&typeof raw==='object'?raw:{},A=a=>Array.isArray(a)?a:[],ob=x=>x&&typeof x==='object',st=ob(o.set)?o.set:{};
- return{v:2,active:ob(o.active)&&fin(o.active.startOdo)&&okd(o.active.start)?{start:o.active.start,startOdo:o.active.startOdo}:null,
+ return{v:2,active:ob(o.active)&&fin(o.active.startOdo)&&okd(o.active.start)?{start:o.active.start,startOdo:o.active.startOdo,...(fin(o.active.lv)&&o.active.lv>0?{lv:o.active.lv}:{})}:null,
  shifts:A(o.shifts).filter(ob).map(s=>({...s,id:s.id||uid()})),
  fills:A(o.fills).filter(ob).map(f=>({...f,id:f.id||uid(),full:f.full!==false})),
  personal:A(o.personal).filter(ob).map(p=>({...p,id:p.id||uid(),type:p.type==='ingreso'?'ingreso':'gasto'})),
@@ -466,8 +467,9 @@ function goalInfo(){const dpw=S.set.goal.days;if(!dpw)return null;const n=goalNe
   before=M.filter(s=>new Date(s.start)<t0).reduce((a,s)=>a+s.earned,0),today=M.filter(s=>new Date(s.start)>=t0).reduce((a,s)=>a+s.earned,0),
   wd=Math.max(1,Math.round(left*dpw/7)),rem=n.G-before;
  return{...n,dpw,left,wd,before,today,rem,hoy:rem>0?rem/wd:0};}
-function goalLine(){const g=goalInfo();if(!g)return '';
- return '<button id="goalgo" class="hero"><span>'+(g.hoy>0?'Meta de hoy<small>'+(g.today>0?'Llevas '+money(g.today)+(g.today>=g.hoy?' · ¡ya la pasaste!':' · faltan '+money(g.hoy-g.today)):'Para llegar a '+money(g.G)+' este mes')+'</small>':(g.G<0.005?'Tu sueldo cubre lo que necesitas<small>Lo de Spark este mes es extra</small>':'Ya cubriste la meta del mes<small>'+money(g.before)+' de '+money(g.G)+'</small>'))+'</span><span class="r">'+(g.hoy>0?'<b>'+money(g.hoy)+'</b>':'')+CHV+'</span></button>';}
+// lv = lo que llevas en el turno abierto (aprox.): ofertas aceptadas o lo que pusiste de Spark. Al terminar el turno se usa el total real.
+function goalLine(){const g=goalInfo();if(!g)return '';const lv=S.active&&fin(S.active.lv)?S.active.lv:0,tot=g.today+lv,bar=g.hoy>0&&(S.active||g.today>0);
+ return '<button id="goalgo" class="hero"><span>'+(g.hoy>0?'Meta de hoy<small>'+(tot>0?'Llevas '+money(tot)+(lv?' (aprox.)':'')+(tot>=g.hoy?' · ¡ya la pasaste!':' · faltan '+money(g.hoy-tot)):'Para llegar a '+money(g.G)+' este mes')+'</small>'+(bar?'<i class="gbar" aria-hidden="true"><i style="width:'+Math.min(100,tot/g.hoy*100).toFixed(1)+'%"></i></i>':''):(g.G<0.005?'Tu sueldo cubre lo que necesitas<small>Lo de Spark este mes es extra</small>':'Ya cubriste la meta del mes<small>'+money(g.before)+' de '+money(g.G)+'</small>'))+'</span><span class="r">'+(g.hoy>0?'<b>'+money(g.hoy)+'</b>':'')+CHV+'</span></button>';}
 function goalMsg(g,earnedToday){if(!g||g.hoy<=0)return '';const d=earnedToday-g.hoy;if(d>=0)return ' Pasaste la meta de hoy por '+money(d)+'.';
  const r=g.rem-earnedToday,w2=Math.round((g.left-1)*g.dpw/7);return ' Te faltaron '+money(-d)+' para la meta'+(r<=0?', pero ya cubriste el mes.':g.left>1&&w2>0?'; tu próximo día necesitas '+money(r/w2)+'.':'.');}
 function rMeta(){const g=S.set.goal,n=goalNeed(),gi=goalInfo();$('ms-meta').textContent=gi?(gi.hoy>0?'Hoy: '+money(gi.hoy):'Mes cubierto'):'Apagada';
@@ -499,7 +501,8 @@ function rShift(){const a=S.active;setTimeout(()=>{if($('goalgo'))$('goalgo').on
 if(!a){$('shift').innerHTML=goalLine()+'<h2>Turno</h2><p class="muted">No tienes un turno abierto.</p><button class="btn" id="gostart">Empezar turno</button><button class="btn2 full" id="gooffer">Evaluar oferta</button>';$('gooffer').onclick=openOffer;
 $('gostart').onclick=()=>{go('empezar',true);try{$('so').focus();}catch(e){}};$('tcard').innerHTML='';return;}
 const info='Empezó a las '+tf(a.start)+' · <span class="el"></span> · salió con '+a.startOdo+' mi';
-$('shift').innerHTML=goalLine()+'<h2><span class="dot" aria-hidden="true"></span>Turno en curso</h2><p class="muted">'+info+'</p><button class="btn" id="goend">Terminar turno</button><button class="btn2 full" id="gooffer">Evaluar oferta</button>';$('gooffer').onclick=openOffer;
+$('shift').innerHTML=goalLine()+'<h2><span class="dot" aria-hidden="true"></span>Turno en curso</h2><p class="muted">'+info+'</p><button class="arow" id="golv"><span>Llevas en este turno (aprox.)<small>Suma las ofertas que aceptas. Tócalo para poner lo que dice Spark.</small></span><span class="r"><b>'+money(a.lv||0)+'</b>'+CHV+'</span></button><button class="btn" id="goend">Terminar turno</button><button class="btn2 full" id="gooffer">Evaluar oferta</button>';$('gooffer').onclick=openOffer;
+$('golv').onclick=async()=>{const v=await ask({t:'Lo que llevas',q:'¿Cuánto llevas en este turno?',hint:'Lo que dice Spark ahora. Al terminar el turno se usa el total real.',v:a.lv?a.lv.toFixed(2):''});if(v===null||!S.active)return;const n=num(v);if(n===null||n<0)return toast('Pon un monto válido');S.active.lv=r2(n);save();rAll();};
 $('goend').onclick=()=>{go('terminar',true);try{$('eo').focus();}catch(e){}};
 $('tcard').innerHTML='<p class="muted" style="margin:0 0 4px">'+info+'</p><label for="eo">Odómetro al llegar a casa</label><input id="eo" inputmode="decimal" autocomplete="off"><p class="muted" style="margin:14px 0 0">Copia de Spark → Ganancias → el día de hoy:</p><label for="ea">Total del día ($)</label><input id="ea" inputmode="decimal" autocomplete="off" placeholder="El número azul del día"><label for="econf">Propinas confirmadas ($)</label><input id="econf" inputmode="decimal" autocomplete="off" placeholder="Son de tu turno anterior · 0 si no hay"><label for="etip">Propinas no confirmadas ($) <span style="opacity:.7">· opcional</span></label><input id="etip" inputmode="decimal" autocomplete="off" placeholder="Las de hoy · mañana se corrigen solas"><p class="muted" id="tprev"></p><button class="btn" id="fin">Terminar turno</button><button class="link del" id="can" data-l="Cancelar turno">Cancelar turno</button>';tick();
 ['ea','econf','etip'].forEach(k=>$(k).oninput=tPrevw);tPrevw();
@@ -710,7 +713,7 @@ function payMode(){const pay=$('pcat').value.startsWith('pay:');$('addp').textCo
 // ---------- Calculadora de ofertas ----------
 // Costo por milla = gasolina (tus últimos ciclos) + reserva por milla. Solo estima: no guarda nada.
 function myAvg(){const p=[new Date(Date.now()-30*864e5),new Date(Date.now()+864e5)],L=S.shifts.filter(s=>vs(s)&&inP(s.start,p)).map(sc),mi=L.reduce((a,x)=>a+x.mi,0),e=L.reduce((a,x)=>a+x.e,0);return mi>0?{pm:e/mi,n:L.length}:null;}
-function rOffer(){const pay=num($('o_pay').value),mi0=num($('o_mi').value),mn0=num($('o_min').value),g=gas(S.fills),o=S.set.offer,box=$('o_res');$('o_ret').checked=o.ret;$('o_retw').hidden=!o.ret;
+function rOffer(){{const a=num($('o_pay').value);$('o_acc').hidden=!(S.active&&a!==null&&a>0);}const pay=num($('o_pay').value),mi0=num($('o_mi').value),mn0=num($('o_min').value),g=gas(S.fills),o=S.set.offer,box=$('o_res');$('o_ret').checked=o.ret;$('o_retw').hidden=!o.ret;
  if(pay===null||mi0===null||mi0<=0){box.innerHTML='<p class="muted">Escribe el pago y las millas de la oferta.</p>';return;}
  // Vuelta al Walmart: suma las millas de regreso (si no las pones, igual que las de ida) y ~2 min por milla de regreso
  const rm=o.ret?(()=>{const v=num($('o_rmi').value);return v!==null&&v>=0?v:mi0;})():0,mi=mi0+rm,mn=mn0&&mn0>0?mn0+rm*2:mn0;
@@ -722,6 +725,9 @@ function rOffer(){const pay=num($('o_pay').value),mi0=num($('o_mi').value),mn0=n
 function openOffer(){$('o_mm').value=S.set.offer.minMile;$('o_mh').value=fin(S.set.offer.minHour)?S.set.offer.minHour:'';rOffer();go('oferta',true);try{$('o_pay').focus();}catch(e){}}
 ['o_pay','o_mi','o_min','o_rmi'].forEach(i=>$(i).oninput=rOffer);
 $('o_ret').onchange=()=>{S.set.offer.ret=$('o_ret').checked;save();rOffer();}; // se guarda: queda prendido para la próxima oferta
+// Con turno abierto, "La acepté ✓" suma el pago a lo que llevas hoy (para la barra de la meta).
+$('o_acc').onclick=()=>{const a=num($('o_pay').value);if(!S.active||a===null||a<=0)return;S.active.lv=r2((S.active.lv||0)+a);save();const g=goalInfo(),t=(g?g.today:0)+S.active.lv;
+ ['o_pay','o_mi','o_min','o_rmi'].forEach(i=>$(i).value='');rOffer();rAll();goBack();toast('Sumado '+money(a)+'. Llevas '+money(t)+(g&&g.hoy>0?' de '+money(g.hoy):'')+' hoy (aprox.)');};
 $('o_clear').onclick=()=>{['o_pay','o_mi','o_min','o_rmi'].forEach(i=>$(i).value='');rOffer();try{$('o_pay').focus();}catch(e){}};
 $('o_mm').onchange=()=>{const v=num($('o_mm').value);if(v===null)return toast('Pon un mínimo por milla');S.set.offer.minMile=v;save();rOffer();toast('Mínimo por milla: '+money(v));};
 $('o_mh').onchange=()=>{const t=$('o_mh').value.trim(),v=t===''?null:num(t);if(t!==''&&v===null)return toast('Revisa el mínimo por hora');S.set.offer.minHour=v;save();rOffer();toast(v?'Mínimo por hora: '+money(v):'Sin mínimo por hora');};
