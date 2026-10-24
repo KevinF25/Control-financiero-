@@ -114,14 +114,8 @@ Reglas:
 - **Avisos breves (`#msg`):** píldora verde clara sobre la barra de abajo. Solo dan información, nunca preguntan.
 - **Nunca** se usan `alert()`, `confirm()` ni `prompt()` del navegador.
 
-- **Pantallas principales (diseño moderno):**
-  - "Dinero disponible" es la única tarjeta verde llena (`#acard.mhero`, fondo `--hero`, texto blanco). Es la pieza principal; no repetir ese estilo en otras tarjetas.
-  - Títulos de sección fuera de las tarjetas (`.sech`: "Resumen", "Próximos pagos" con "Ver todos"); se esconden solos si su tarjeta está oculta.
-  - Balance y Deuda son dos tarjetas separadas.
-  - Estados como etiquetas (`.pvr small`): "Hoy" y "Registrado" en verde, "Pendiente" en gris, "Atrasado" en rojo.
-  - Hoy/Semana/Mes: selector estilo iPhone (fondo gris, la opción elegida en blanco).
-  - Botón secundario de acción ("Evaluar oferta"): fondo `--accbg` y texto verde.
-  - En el teléfono, la barra de abajo flota como píldora separada de los bordes (en modo Trabajo fijo solo queda el (+)).
+- Botón secundario de acción ("Evaluar oferta"): fondo `--accbg` y texto verde.
+- Hoy/Semana/Mes: selector estilo iPhone (fondo gris, la opción elegida en blanco).
 
 ## Movimiento
 - **Animaciones:**
@@ -131,16 +125,18 @@ Reglas:
 - **Sin rebote:** `overscroll-behavior:none`.
 
 ## Pantallas principales
-- **Trabajo y Personal se mantienen limpias:**
-  - arriba, lo más importante (el dinero);
-  - abajo, lo secundario;
-  - lo demás va en el menú ···.
-- **Personal:**
-  - Dinero disponible;
-  - Balance del mes y Deuda total;
-  - Próximos pagos;
-  - Apartados.
-- **Sin accesos rápidos.**
+- **Trabajo y Personal se mantienen limpias:** arriba, lo más importante (el dinero); abajo, lo secundario; lo demás va en el menú ···. **Sin accesos rápidos.**
+- **Diseño moderno:**
+  - "Dinero disponible" es la única tarjeta verde llena (`#acard.mhero`, fondo `--hero`, texto blanco). No repetir ese estilo en otras tarjetas.
+  - Títulos de sección fuera de las tarjetas (`.sech`: "Resumen", "Próximos pagos" con "Ver todos"). Se esconden solos si su tarjeta está oculta.
+  - Balance y Deuda son dos tarjetas separadas.
+  - Estados como etiquetas (`.pvr small`): "Hoy" y "Registrado" en verde, "Pendiente" en gris, "Atrasado" en rojo.
+  - La barra de abajo flota como píldora separada de los bordes (en modo Trabajo fijo solo queda el (+)).
+- **Orden de Personal:**
+  1. Dinero disponible (solo cuentas de uso diario; botón "Ver cuentas y transferencias").
+  2. Balance del mes y Deuda total.
+  3. Próximos pagos ("7 días"; máximo 3).
+  4. Apartados (se esconde sin metas).
 
 ## Antes de subir un cambio visual
 1. Capturas a 390×844 en claro y oscuro (Playwright).
