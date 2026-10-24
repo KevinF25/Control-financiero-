@@ -24,7 +24,7 @@ Reglas de trabajo en `CLAUDE.md`. Datos y cálculos en `DATOS.md`. Diseño en `D
 | Informe de Spark | Lector propio de `.xlsx` (ZIP + `DecompressionStream` + `DOMParser`) |
 | Letra | Instrument Sans (Google Fonts) |
 | Pruebas | Playwright (Chromium), 390×844, claro y oscuro, con servidor local (`python3 -m http.server`) y la copia real del dueño (no está en el repo) |
-| Diseño | Skill `apple-design` (`.claude/skills/apple-design`) para auditar; `DESIGN.md` con colores, letra y componentes |
+| Diseño | `DESIGN.md` con colores, letra y componentes. Revisión a mano: contraste 4.5:1 y toques de 44 pt, en claro y oscuro |
 | Repositorio | GitHub `KevinF25/Control-financiero-` |
 
 ## 3. Lo que ya funciona

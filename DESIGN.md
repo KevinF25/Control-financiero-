@@ -140,5 +140,5 @@ Reglas:
 
 ## Antes de subir un cambio visual
 1. Capturas a 390×844 en claro y oscuro (Playwright).
-2. Medir contraste y tamaño de toque (skill `apple-design`).
+2. Medir contraste (4.5:1 o más) y tamaño de toque (44 pt o más) en los dos modos.
 3. Que se vea como el resto de la app: mismos colores, radios, letra e iconos.
