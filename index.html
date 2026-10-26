@@ -303,7 +303,7 @@ select{width:100%;-webkit-appearance:none;appearance:none;font:inherit;color:var
 <label for="pn">En qué (opcional)</label><input id="pn" autocomplete="off">
 <button class="btn" id="addp">Agregar gasto</button><p class="muted">No anotes aquí la gasolina del carro: ya se cuenta en Trabajo.</p></section></main>
 <main id="v-editar" hidden><section class="card" id="edc"></section></main>
-<main id="v-turnos" hidden><div id="list"></div></main>
+<main id="v-turnos" hidden><div id="list"></div><button class="btn2 full" id="gonew">Agregar turno olvidado</button></main>
 <main id="v-llenadas" hidden><section class="card"><div id="fsum"></div><div id="fills"></div></section></main>
 <main id="v-apconf" hidden><section class="card" id="mthead"></section><section class="card"><label for="mt_name">Nombre</label><input id="mt_name" autocomplete="off" maxlength="30" placeholder="Ej. Impuestos, Emergencias, Viaje">
 <label for="mt_mode">Cómo se llena</label><span class="sel"><select id="mt_mode"><option value="pct">Un % de lo que ganas en Spark</option><option value="week">Una cantidad fija por semana</option><option value="free">Solo la meta (pongo lo que pueda)</option></select></span>
@@ -602,7 +602,9 @@ const edBtns='<button class="btn" id="e_ok">Guardar cambios</button><button clas
 function edPers(i){return '<div id="e_form">'+dtField('e_dt','Fecha',i.date)+fld('e_pa','Monto ($)',i.amount)+'<label for="e_pac">Pagado con</label><span class="sel"><select id="e_pac">'+payOpts(i.acct,true)+'</select></span><label for="e_cat">Categoría</label><span class="sel"><select id="e_cat">'+catOpts(i.cat||'',true)+'</select></span>'+'<label for="e_pn">En qué (opcional)</label><input id="e_pn" autocomplete="off" value="'+esc(i.note||'')+'">'+edBtns;}
 const EDK={s:'shifts',f:'fills',p:'personal'},EDT={s:'Editar turno',f:'Editar llenada',p:'Editar gasto'};
 function openEd(k,id){const it=S[EDK[k]].find(x=>x.id===id);if(!it)return;ed={k,id,from:view,t:k==='p'&&it.type==='ingreso'?'Editar ingreso':EDT[k]};fw=null;$('edc').innerHTML=(k==='s'?edShift:k==='f'?edFill:edPers)(it);bindEdit();if(k==='s')shPrevBind(it);dtBind($('edc'));if($('e_cat'))catBind($('e_cat'));go('editar',true);}
-function edShift(s){return '<div id="e_form">'+dtField('e_st','Inicio',s.start)+dtField('e_en','Fin',s.end)+'<div class="pair"><div>'+fld('e_so','Odómetro inicial',s.startOdo)+'</div><div>'+fld('e_eo','Odómetro final',s.endOdo)+'</div></div>'+'<p class="muted" style="margin:14px 0 0">Copia de Spark → Ganancias → ese día:</p>'+fld('e_T','Total del día ($)',fin(s.sT)?s.sT:'').replace('autocomplete="off"','autocomplete="off" placeholder="El número azul de ese día"')+fld('e_C','Propinas confirmadas ($)',fin(s.sC)?s.sC:'').replace('autocomplete="off"','autocomplete="off" placeholder="Son del turno anterior · 0 si no hay"')+fld('e_tip','Propinas de este turno ($)',fin(s.tip)?s.tip:'').replace('autocomplete="off"','autocomplete="off" placeholder="Las no confirmadas (o las que Spark confirmó después)"')+'<p class="muted" id="e_prev"></p>'+edBtns;}
+function edShift(s,nw){return '<div id="e_form">'+(nw?'<p class="muted" style="margin:0 0 14px">Pon las horas reales del turno y los números de Spark de ese día.</p>':'')+dtField('e_st','Inicio',s.start)+dtField('e_en','Fin',s.end)+'<div class="pair"><div>'+fld('e_so','Odómetro inicial',fin(s.startOdo)?s.startOdo:'')+'</div><div>'+fld('e_eo','Odómetro final',fin(s.endOdo)?s.endOdo:'')+'</div></div>'+'<p class="muted" style="margin:14px 0 0">Copia de Spark → Ganancias → ese día:</p>'+fld('e_T','Total del día ($)',fin(s.sT)?s.sT:'').replace('autocomplete="off"','autocomplete="off" placeholder="El número azul de ese día"')+fld('e_C','Propinas confirmadas ($)',fin(s.sC)?s.sC:'').replace('autocomplete="off"','autocomplete="off" placeholder="Son del turno anterior · 0 si no hay"')+fld('e_tip','Propinas de este turno ($)',fin(s.tip)?s.tip:'').replace('autocomplete="off"','autocomplete="off" placeholder="Las no confirmadas (o las que Spark confirmó después)"')+'<p class="muted" id="e_prev"></p>'+(nw?'<button class="btn" id="e_ok">Guardar turno</button></div>':edBtns);}
+// Turno olvidado: se arma como borrador y solo entra a la lista al tocar "Guardar turno". Sin borrador no se guarda nada.
+$('gonew').onclick=()=>{const s=new Date();s.setHours(8,0,0,0);const e=new Date(s);e.setHours(16,0,0,0);ed={k:'s',id:null,from:view,t:'Turno olvidado',draft:{start:s.toISOString(),end:e.toISOString(),startOdo:null,endOdo:null,earned:0}};fw=null;$('edc').innerHTML=edShift(ed.draft,true);bindEdit();shPrevBind(ed.draft);dtBind($('edc'));go('editar',true);};
 // Editar turno: Ganancia = total del día − propinas confirmadas + propinas de este turno. Sin total (turnos viejos) se conserva lo que ganó sin propinas.
 function shCalc(it){const tt=$('e_T').value.trim(),ct=$('e_C').value.trim(),pt=$('e_tip').value.trim(),T=tt===''?null:num(tt),C=ct===''?null:num(ct),P=pt===''?0:num(pt);
  if(tt!==''&&(T===null||T<0))return{err:'Revisa el total del día'};if(ct!==''&&(C===null||C<0))return{err:'Revisa las propinas confirmadas'};if(P===null||P<0)return{err:'Revisa las propinas de este turno'};
@@ -610,20 +612,22 @@ function shCalc(it){const tt=$('e_T').value.trim(),ct=$('e_C').value.trim(),pt=$
  const base=T!==null?T-C:it.earned-(fin(it.tip)?it.tip:0);return{T,C,P,e:r2(base+P),base:r2(base)};}
 function shPrevBind(it){const f=()=>{const r=shCalc(it),o=$('e_prev');o.innerHTML=r.err?'':'Ganancia: <b>'+money(r.e)+'</b> ('+(r.T!==null?money(r.T)+(r.C?' − '+money(r.C):''):money(r.base)+' sin propinas')+(r.P?' + '+money(r.P):'')+')';};['e_T','e_C','e_tip'].forEach(k=>$(k).addEventListener('input',f));f();}
 function edFill(x){return '<div id="e_form">'+dtField('e_dt','Fecha',x.date)+fld('e_fo','Odómetro',x.odo)+'<div class="pair"><div>'+fld('e_fg','Galones',x.gal)+'</div><div>'+fld('e_fp','Cuánto pagaste ($)',x.paid)+'</div></div><label for="e_fa">Pagado con</label><span class="sel"><select id="e_fa">'+payOpts(x.acct,true)+'</select></span>'+'<label class="swrow" for="e_ff" style="margin-top:14px;min-height:44px">Llené el tanque completo<input type="checkbox" class="sw" id="e_ff"'+(x.full!==false?' checked':'')+'></label>'+edBtns;}
-function bindEdit(){const k=ed.k,key=EDK[k],it=S[key].find(x=>x.id===ed.id);if(!it)return;
- arm($('e_del'),()=>{S[key]=S[key].filter(x=>x.id!==it.id);save();rAll();goBack();toast('Registro borrado');});
+function bindEdit(){const k=ed.k,key=EDK[k],it=ed.draft||S[key].find(x=>x.id===ed.id);if(!it)return;
+ if(!ed.draft)arm($('e_del'),()=>{S[key]=S[key].filter(x=>x.id!==it.id);save();rAll();goBack();toast('Registro borrado');});
  $('e_ok').onclick=()=>{let xm='';
   if(k==='s'){const st=dtVal('e_st',it.start),en=dtVal('e_en',it.end),o1=numO($('e_so').value),o2=numO($('e_eo').value),sr=shCalc(it);
    if(!st||!en)return toast('Revisa la fecha y la hora');
    if(en<st)return toast('El fin debe ser después del inicio');if((en-st)/36e5>24)return toast('Un turno no puede durar más de 24 horas');
    if(o1===null||o2===null||o2<=o1)return toast('El odómetro final debe ser mayor al inicial');if(o2-o1>1000)return toast('Más de 1,000 millas en un turno: revisa el odómetro');
-   if(sr.err)return toast(sr.err);const e=sr.e,tip=sr.P;if(sr.T!==null){it.sT=sr.T;it.sC=sr.C;}
+   if(sr.err)return toast(sr.err);
+   if(ed.draft){if(sr.T===null||sr.C===null)return toast('Pon el total del día y las propinas confirmadas (0 si no hay)');if(en>new Date())return toast('La hora de fin no puede ser en el futuro');if(S.shifts.filter(vs).some(x=>st<new Date(x.end)&&en>new Date(x.start)))return toast('Ya hay un turno guardado en esas horas');}
+   const e=sr.e,tip=sr.P;if(sr.T!==null){it.sT=sr.T;it.sC=sr.C;}
    const om=it.endOdo-it.startOdo,pm=fin(it.reserve)&&om>0?it.reserve/om:rate(S); // conserva la reserva por milla que tenía el turno
    if((tip||0)!==(fin(it.tip)?it.tip:0))delete it.tp; // propina corregida a mano = confirmada
    // Las propinas confirmadas de ese día son del turno anterior: si no coinciden, se corrige ese turno (igual que al terminar el turno)
    if(sr.T!==null&&sr.C>0){const pv=S.shifts.filter(x=>vs(x)&&x!==it&&new Date(x.end)<=st).sort((a,b)=>new Date(b.end)-new Date(a.end))[0],ot=pv&&fin(pv.tip)?pv.tip:0;
     if(pv&&pv.spk!==1&&Math.abs(ot-sr.C)>=0.005){tipConfirm(pv,sr.C);xm='. También la propina de tu turno del '+df(pv.start)+': '+money(ot)+' → '+money(sr.C);}}
-   Object.assign(it,{start:st.toISOString(),end:en.toISOString(),startOdo:o1,endOdo:o2,earned:e,reserve:(o2-o1)*pm});if(tip)it.tip=tip;else delete it.tip;}
+   Object.assign(it,{start:st.toISOString(),end:en.toISOString(),startOdo:o1,endOdo:o2,earned:e,reserve:(o2-o1)*pm});if(tip)it.tip=tip;else delete it.tip;if(ed.draft){it.id=uid();it.tp=1;S.shifts.push(it);}}
   else if(k==='p'){const dt=dtVal('e_dt',it.date),a=num($('e_pa').value);
    if(!dt)return toast('Revisa la fecha y la hora');if(a===null||a<=0)return toast('Pon un monto mayor a 0');
    Object.assign(it,{date:dt.toISOString(),amount:a,note:$('e_pn').value.trim()});if($('e_pac').value)it.acct=$('e_pac').value;else delete it.acct;if($('e_cat').value)it.cat=$('e_cat').value;else delete it.cat;}

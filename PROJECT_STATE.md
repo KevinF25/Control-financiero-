@@ -31,6 +31,7 @@ Reglas de trabajo en `CLAUDE.md`. Datos y cálculos en `DATOS.md`. Diseño en `D
 
 **Trabajo (Spark)**
 - Turnos: empezar y terminar con el odómetro; al terminar se piden las tres cifras de Spark (total, propinas confirmadas y por confirmar).
+- Turno olvidado: en Historial, "Agregar turno olvidado" reconstruye un turno que no se empezó o no se terminó (mismos campos que Editar turno).
 - Propinas: entran a la cuenta 24 h después de la mitad del turno; mientras, "por llegar".
 - Turno guardado: lo ganado, lo que te quedó, "Aparta hoy" (metas y reserva del carro).
 - Llenadas de gasolina (MPG y costo por milla), reserva del carro por milla y estadísticas Hoy/Semana/Mes.

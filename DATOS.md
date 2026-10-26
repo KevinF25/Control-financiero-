@@ -69,6 +69,11 @@ Reglas de trabajo en `CLAUDE.md`. Diseño en `DESIGN.md`. Estado y pendientes en
 - Turnos viejos sin `sT`: si no se pone el total, se conserva lo ganado sin propinas.
 - Turnos viejos sin `tp` no se tocan.
 
+**Turno olvidado** (Historial → "Agregar turno olvidado")
+- Se arma como borrador (`ed.draft`) y solo entra a `shifts` al tocar "Guardar turno". Pide lo mismo que Editar turno (horas, odómetros y los números de Spark).
+- Rechaza horas en el futuro y horas que se crucen con un turno guardado.
+- Se guarda con `tp:1` y sin `cpm`/`mpg`: cuenta como "sin gasolina estimada", no inventa el costo de gasolina.
+
 **Propinas:**
 - Entran a la cuenta 24 h después de la mitad del turno. Spark confirma cada propina 24 h después de la entrega.
 - Mientras tanto se ven como "por llegar".
