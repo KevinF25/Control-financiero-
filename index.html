@@ -242,7 +242,7 @@ select{width:100%;-webkit-appearance:none;appearance:none;font:inherit;color:var
 <main id="v-gastos" hidden><section class="card" id="pcats"></section><div id="plh"></div></main>
 <main id="v-oferta" hidden><section class="card"><div class="pair"><div><label for="o_pay">Pago de la oferta ($)</label><input id="o_pay" inputmode="decimal" autocomplete="off" placeholder="Ej. 18.50"></div><div><label for="o_mi">Millas</label><input id="o_mi" inputmode="decimal" autocomplete="off" placeholder="Ej. 12"></div></div>
 <label for="o_min">Minutos estimados <span style="opacity:.7">· opcional</span></label><input id="o_min" inputmode="numeric" autocomplete="off" placeholder="Ej. 35">
-<label class="swrow" for="o_ret" style="margin-top:14px">Contar la vuelta al Walmart<input type="checkbox" class="sw" id="o_ret"></label><div id="o_retw" hidden><label for="o_rmi">Millas de regreso <span style="opacity:.7">· opcional</span></label><input id="o_rmi" inputmode="decimal" autocomplete="off" placeholder="Vacío = igual que las de ida"></div>
+<label class="swrow" style="margin-top:14px">Contar la vuelta al Walmart<input type="checkbox" class="sw" id="o_ret"></label><div id="o_retw" hidden><label for="o_rmi">Millas de regreso <span style="opacity:.7">· opcional</span></label><input id="o_rmi" inputmode="decimal" autocomplete="off" placeholder="Vacío = igual que las de ida"></div>
 <button class="btn" id="o_acc" hidden>La acepté ✓</button><div id="o_res"></div><button class="link" id="o_clear">Borrar y evaluar otra</button></section>
 <section class="card"><h2>Tus mínimos</h2><div class="pair"><div><label for="o_mm">Por milla ($)</label><input id="o_mm" inputmode="decimal" autocomplete="off"></div><div><label for="o_mh">Por hora ($) · opcional</label><input id="o_mh" inputmode="decimal" autocomplete="off"></div></div><p class="muted">"Buena" si llega a tu mínimo; "Regular" si se queda cerca (80% o más); "Mala" si no. Se guardan solos.</p></section></main>
 <main id="v-spark" hidden><section class="card" id="sp_head"></section><section class="card" id="sp_prev" hidden></section><section class="card" id="sp_year"></section><input type="file" id="sp_file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden></main>
@@ -282,19 +282,19 @@ select{width:100%;-webkit-appearance:none;appearance:none;font:inherit;color:var
 <label for="pl_date">Fecha del próximo pago</label><input type="date" id="pl_date"><p class="muted" id="pl_prev"></p><button class="btn" id="pl_save">Agregar plan</button><p class="muted">Copia lo que te muestra la app (Affirm, Wallet…). Cuando te cobren, anótalo en Nuevo gasto con "Pago a …" de esta deuda (o toca "Pagado ✓") y esa cuota se marca sola.</p></section></main>
 <main id="v-cuentas" hidden><section class="card" id="caclist"></section></main>
 <main id="v-acedit" hidden><section class="card"><label for="a_name">Nombre</label><input id="a_name" autocomplete="off" maxlength="30"><label for="a_bal">Saldo de hoy ($)</label><input id="a_bal" inputmode="decimal" autocomplete="off" placeholder="Lo que dice tu banco hoy">
-<label class="swrow" for="a_sav" id="a_savw" style="margin-top:14px">Es cuenta de ahorro<input type="checkbox" class="sw" id="a_sav"></label><label class="swrow" for="a_res" id="a_resw" style="margin-top:14px">Aquí guardo la reserva del carro<input type="checkbox" class="sw" id="a_res"></label><div id="a_feew"><div class="pair"><div><label for="a_fpct">Comisión instantánea (%)</label><input id="a_fpct" inputmode="decimal" autocomplete="off"></div><div><label for="a_fmin">Comisión mínima ($)</label><input id="a_fmin" inputmode="decimal" autocomplete="off"></div></div></div>
+<label class="swrow" id="a_savw" style="margin-top:14px">Es cuenta de ahorro<input type="checkbox" class="sw" id="a_sav"></label><label class="swrow" id="a_resw" style="margin-top:14px">Aquí guardo la reserva del carro<input type="checkbox" class="sw" id="a_res"></label><div id="a_feew"><div class="pair"><div><label for="a_fpct">Comisión instantánea (%)</label><input id="a_fpct" inputmode="decimal" autocomplete="off"></div><div><label for="a_fmin">Comisión mínima ($)</label><input id="a_fmin" inputmode="decimal" autocomplete="off"></div></div></div>
 <button class="btn" id="a_save">Guardar</button><button class="link del" id="a_del" data-l="Borrar esta cuenta">Borrar esta cuenta</button><p class="muted" id="a_note"></p></section></main>
 <main id="v-cuenta" hidden><section class="card" id="ccard"></section><section class="card" id="clist"></section></main>
 <main id="v-transfer" hidden><section class="card"><div class="pair"><div><label for="t_from">Desde</label><span class="sel"><select id="t_from"><option value="spark">Débito Spark</option><option value="pers">Débito Personal</option><option value="ahorro">Ahorro</option></select></span></div><div><label for="t_to">Hacia</label><span class="sel"><select id="t_to"><option value="pers">Débito Personal</option><option value="spark">Débito Spark</option><option value="ahorro">Ahorro</option></select></span></div></div>
 <label for="t_amt">Monto ($)</label><input id="t_amt" inputmode="decimal" autocomplete="off"><div id="t_forw" hidden><label for="t_for">Es para</label><span class="sel"><select id="t_for"></select></span></div>
-<label class="swrow" for="t_inst" id="t_instw" style="margin-top:14px">Transferencia instantánea<input type="checkbox" class="sw" id="t_inst"></label>
+<label class="swrow" id="t_instw" style="margin-top:14px">Transferencia instantánea<input type="checkbox" class="sw" id="t_inst"></label>
 <div id="t_feebox"><span class="sel"><select id="t_mode"><option value="aparte">One cobra la comisión aparte</option><option value="resta">One la resta de lo que llega</option></select></span><div class="hero fi" style="margin:10px 0 0" id="t_prev"></div></div>
 <button class="btn" id="t_save">Transferir</button><p class="muted">Una transferencia no es un gasto: el dinero solo cambia de cuenta. Entre Spark y Ahorro (dentro de One) no hay comisión.</p></section></main>
 <main id="v-llenada" hidden><div class="hero fi" id="fillinfo"></div><section class="card">
 <label for="fo">Odómetro</label><input id="fo" inputmode="decimal" autocomplete="off">
 <div class="pair"><div><label for="fg">Galones</label><input id="fg" inputmode="decimal" autocomplete="off"></div><div><label for="fp">Cuánto pagaste ($)</label><input id="fp" inputmode="decimal" autocomplete="off"></div></div>
 <label for="fa">Pagado con</label><span class="sel"><select id="fa"></select></span>
-<label class="swrow" for="ff" style="margin-top:14px;min-height:44px">Llené el tanque completo<input type="checkbox" class="sw" id="ff" checked></label>
+<label class="swrow" style="margin-top:14px;min-height:44px">Llené el tanque completo<input type="checkbox" class="sw" id="ff" checked></label>
 <button class="btn" id="addf">Guardar llenada</button>
 <p class="muted">El cálculo usa ciclos entre llenadas completas. Si fue parcial, apágalo.</p></section></main>
 <main id="v-gasto" hidden><section class="card"><label for="pa">Monto ($)</label><input id="pa" inputmode="decimal" autocomplete="off">
@@ -394,7 +394,7 @@ const feeOf=(D,a)=>Math.round(Math.max(D.set.fee.min,a*D.set.fee.pct/100)*100)/1
 const dim=(y,m)=>new Date(y,m+1,0).getDate();
 function calEvents(D,from,to){const E=[],tk=dk(new Date());
  for(let t=new Date(from);t<to;t.setDate(t.getDate()+1)){const day=dk(t),y=t.getFullYear(),m=t.getMonth(),d=t.getDate();
-  D.recs.forEach(r=>{if(!fin(r.amount)||(r.start&&day<r.start))return;let hit=false;
+  D.recs.forEach(r=>{if(!fin(r.amount)||(r.start&&day<r.start))return;let hit;
    if(r.freq==='week')hit=t.getDay()===r.wday;else if(r.freq==='year'){const [mm,dd]=String(r.md||'').split('-').map(Number);hit=m+1===mm&&d===Math.min(dd,dim(y,m));}else hit=fin(r.day)&&d===Math.min(r.day,dim(y,m));
    if(hit)E.push({day,type:'rec',name:r.name,amount:r.amount,id:r.id,done:D.personal.some(p=>p.rec===r.id&&p.recDue===day)});});
   D.debts.forEach(x=>{if(x.kind!=='card'||!fin(x.due)||!fin(x.start)||d!==Math.min(x.due,dim(y,m))||day<dk(x.since))return; // antes del saldo inicial ya estaba incluido en ese saldo
@@ -832,7 +832,7 @@ function rCal(){const y=calM.getFullYear(),m=calM.getMonth(),from=new Date(y,m,1
  late=N.filter(e=>e.late),soon=N.filter(e=>!e.late),wk=soon.filter(e=>e.type!=='inc'&&!e.done).reduce((a,e)=>a+(e.amount||0),0);
  const has=S.recs.length||S.incs.length||S.debts.some(d=>(d.kind==='card'&&fin(d.due)&&fin(d.start))||(d.kind==='affirm'&&d.plan.length));
  $('ms-cal').textContent=has?(late.length?late.length+' pendiente(s) · ':'')+money(wk)+' en 7 días':'Suscripciones y fechas de pago';
- const cc=$('ccal');cc.hidden=!has||!N.length;if(!cc.hidden){const inW=soon.filter(e=>e.type==='inc').reduce((a,e)=>a+(e.amount||0),0);cc.innerHTML='<div class="pvh"><h2>Próximos pagos</h2><span>'+(late.length?late.length+' atrasado(s) · ':'')+'7 días</span></div>'+late.concat(soon).slice(0,3).map(pvHtml).join('')+'<button class="pvl" id="calgo">Ver todos los pagos y calendario →</button>';
+ const cc=$('ccal');cc.hidden=!has||!N.length;if(!cc.hidden){cc.innerHTML='<div class="pvh"><h2>Próximos pagos</h2><span>'+(late.length?late.length+' atrasado(s) · ':'')+'7 días</span></div>'+late.concat(soon).slice(0,3).map(pvHtml).join('')+'<button class="pvl" id="calgo">Ver todos los pagos y calendario →</button>';
   cc.querySelectorAll('[data-pv]').forEach(b=>b.onclick=()=>{const [y,m]=b.dataset.pv.split('-').map(Number);calM=new Date(y,m-1,1);calSel=b.dataset.pv;rCal();go('cal',true);});$('calgo').onclick=$('calgo2').onclick=()=>go('cal',true);}}
 function openRec(r){rv=r?r.id:null;$('r_name').value=r?r.name:'';$('r_amt').value=r?r.amount:'';$('r_freq').value=r?r.freq:'month';$('r_day').value=r&&fin(r.day)?r.day:'';$('r_wd').value=r&&fin(r.wday)?r.wday:1;
  $('r_date').value=r&&r.md?new Date().getFullYear()+'-'+r.md:'';$('r_acct').innerHTML=payOpts(r?r.acct||'':'',true);$('r_cat').innerHTML=catOpts(r?r.cat||'':'',true);catBind($('r_cat'));$('r_del').hidden=!r;recFreq();
@@ -1222,7 +1222,7 @@ $('sp_file').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!
 // ---------- Mejores días y horas ----------
 // Días: lo ganado por día trabajado (informe de Spark) y por hora (tus turnos). Horarios: lo ganado por hora con viajes (aprox., informe de Spark).
 const DIAS=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'],FRANJAS=[[6,11,'Mañana (6–11 am)'],[11,15,'Mediodía (11 am–3 pm)'],[15,19,'Tarde (3–7 pm)'],[19,24,'Noche (7 pm–12)'],[0,6,'Madrugada (12–6 am)']];
-function rBest(){const W=spkWork(S.spk.rows),day={},hrs={},sh=S.shifts.filter(vs).map(sc);
+function rBest(){const W=spkWork(S.spk.rows),day={},hrs={};
  W.forEach(x=>{const d=new Date(x.w),k=dk(d);day[k]=(day[k]||0)+x.r.a;const hk=k+'|'+d.getHours();if(!hrs[hk])hrs[hk]={a:0,v:0};hrs[hk].a+=x.r.a;if(x.r.y==='v')hrs[hk].v++;});
  const D=DIAS.map(()=>({tot:0,n:0,e:0,h:0,ns:0}));Object.keys(day).forEach(k=>{const [y,m,dd]=k.split('-').map(Number),w=new Date(y,m-1,dd).getDay();D[w].tot+=day[k];D[w].n++;});
  S.shifts.filter(vs).forEach(s=>{const c=sc(s),w=new Date(s.start).getDay();D[w].e+=c.e;D[w].h+=c.h;D[w].ns++;});
@@ -1245,7 +1245,7 @@ async function tipAsk(s){const v=await ask({t:'Confirmar propina',q:'¿Cuánto c
  const was=s.earned;tipConfirm(s,c);save();rAll();toast('Propina confirmada: el turno pasa de '+money(was)+' a '+money(s.earned));}
 const dAdd=(k,n)=>{const [y,m,d]=k.split('-').map(Number);return dk(new Date(y,m-1,d+n));},dTxt=k=>new Date(k+'T12:00:00').toLocaleDateString('es-US',{weekday:'short',day:'numeric',month:'short'}),
  AVI={dp:PVI.card,up:PVI.card,rec:PVI.rec,card:PVI.card,affirm:PVI.affirm,inc:PVI.inc,bk:'<path d="M12 13v8"/><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="m8 17 4-4 4 4"/>',tp:'<circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/><path d="M7 6h1v4"/>',ap:'<path d="M11 17h3v2a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1v-3a3.16 3.16 0 0 0 2-2h1a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1h-1a5 5 0 0 0-2-4V3a4 4 0 0 0-3.2 1.6l-.3.4H11a6 6 0 0 0-6 6v1a5 5 0 0 0 2 4v3a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1z"/><path d="M16 10h.01"/><path d="M2 8v1a2 2 0 0 0 2 2h1"/>',c:'<path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/>'};
-function cOcc(c,tk){if(c.date>tk)return null;if(c.rep==='once')return c.date;const [y,m,d]=c.date.split('-').map(Number);
+function cOcc(c,tk){if(c.date>tk)return null;if(c.rep==='once')return c.date;const d=Number(c.date.split('-')[2]);
  if(c.rep==='week'){const n=Math.floor((new Date(tk+'T12:00:00')-new Date(c.date+'T12:00:00'))/(7*864e5));return dAdd(c.date,n*7);}
  const t=new Date(tk+'T12:00:00');for(let i=0;i<2;i++){const yy=t.getFullYear(),mm=t.getMonth()-i,dd=Math.min(d,dim(new Date(yy,mm,1).getFullYear(),new Date(yy,mm,1).getMonth())),k=dk(new Date(yy,mm,dd));if(k<=tk&&k>=c.date)return k;}return null;}
 function avList(){const tk=dk(new Date()),A=S.avisos,L=[],add=o=>{if(!A.done[o.k]&&!(A.snooze[o.k]&&A.snooze[o.k]>tk))L.push(o);},when=k=>k===tk?'Hoy':k<tk?'Desde el '+dTxt(k):'En '+Math.round((new Date(k+'T12:00:00')-new Date(tk+'T12:00:00'))/864e5)+' día(s) · '+dTxt(k);
