@@ -1,7 +1,13 @@
 # CLAUDE.md — Mis cuentas (Spark Driver)
 
 App personal de finanzas para un conductor de Walmart Spark. El dueño la usa en iPhone, instalada en la pantalla de inicio.
-**Avance y pendientes: ver `PROJECT_STATE.md`.** Detalle de datos y cálculos: `DATOS.md`. Diseño: `DESIGN.md`.
+## Qué leer según la tarea (para ahorrar tokens)
+| Tarea | Leer |
+| --- | --- |
+| Pendientes y estado actual | `PROJECT_STATE.md` (sección 4) |
+| Datos, cálculos, copia de seguridad | `DATOS.md`, solo la sección que toque |
+| Diseño, colores, pantallas | `DESIGN.md` |
+| Cambio de código | Esta página + `grep -n "nombre" index.html`; leer solo ese tramo, nunca el archivo completo (237 KB) |
 
 ## Comandos
 No hay `npm` ni proceso de compilación: se edita `index.html` y listo.
@@ -20,7 +26,6 @@ node prueba.js                       # pruebas con Playwright (global; Chromium 
 - **Datos:** `localStorage`, clave `sd_tracker_v1`. Copia de seguridad en JSON (importar une con `mergeIn`).
 - **Letra:** Instrument Sans (Google Fonts). Modo claro y oscuro según el iPhone.
 - **Informe de Spark (.xlsx):** lector propio (ZIP + `DecompressionStream` + `DOMParser`).
-- **Skill de revisión de diseño:** `.claude/skills/apple-design` (guías de Apple).
 - **Futuro (no empezado):** SimpleFIN (banco, solo lectura), Supabase (nube + inicio de sesión) y Vercel (funciones).
 
 ## Reglas de código
