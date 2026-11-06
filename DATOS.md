@@ -4,7 +4,7 @@ Detalle de los datos y de cada cálculo. Se guarda en `localStorage`, clave `sd_
 
 > **Regla de oro:** `norm()` debe conservar cualquier campo nuevo, o se pierde al cargar. Los cambios deben leer los datos que ya existen. El saldo usa solo datos reales, nunca estimaciones.
 
-Reglas de trabajo en `CLAUDE.md`. Diseño en `DESIGN.md`. Estado y pendientes en `PROJECT_STATE.md`.
+Reglas y diseño en `CLAUDE.md`.
 
 ---
 
